@@ -2,7 +2,7 @@
 
 ## Product model
 
-NuvyraSchola has three surfaces: a platform owner console, a responsive school web workspace, and later a React Native mobile app. All share one Node API and MySQL database. The two web surfaces initially share a React deployment with server-enforced role gates; separate subdomains/builds can follow without duplicating the backend.
+Schoolglass Desk has three surfaces: a platform owner console, a responsive school web workspace, and later a React Native mobile app. All share one Node API and MySQL database. The two web surfaces initially share a React deployment with server-enforced role gates; separate subdomains/builds can follow without duplicating the backend.
 
 Organizations group schools. Access is explicit membership, never just an organization match. Directors can switch between assigned schools within an organization. Each school maintains its own academic configuration and operational data.
 
@@ -49,7 +49,8 @@ Independent schools have no organization and retain separate explicit membership
 - [ ] Dedicated PDF export verification, school-specific templates and signatures. Browser print/Save as PDF layout is implemented.
 - [ ] Malware scanning, upload storage quotas/cleanup, homework submissions and feedback.
 - [ ] Timetable grid, substitution management, school calendar and events.
-- [ ] Account updates, deactivation, invitations/first-login change and persistent sessions.
+- [x] Account suspension/reactivation with session revocation and audited authorization.
+- [ ] Account profile updates, invitations/first-login change and persistent sessions.
 - [ ] Password reset delivery using an administrator-provided SMTP server, rate limits, and recovery auditing.
 - [ ] Search, pagination, imports with preview/error reporting, export permissions.
 

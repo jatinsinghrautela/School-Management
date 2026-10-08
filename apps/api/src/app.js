@@ -66,7 +66,8 @@ export function createApp(store) {
       return fail(res, 401, "Please sign in again");
     }
     req.user = (await store.all("users")).find((u) => u.id === session.userId);
-    if (!req.user) return fail(res, 401, "Account unavailable");
+    if (!req.user || req.user.active === false)
+      return fail(res, 401, "Account unavailable");
     req.session = session;
     if (session.support) {
       const parent = sessions.get(session.support.parentKey);
@@ -131,7 +132,11 @@ export function createApp(store) {
     const user = (await store.all("users")).find(
       (u) => u.email.toLowerCase() === email.toLowerCase(),
     );
-    if (!user || !(await bcrypt.compare(password, user.passwordHash)))
+    if (
+      !user ||
+      user.active === false ||
+      !(await bcrypt.compare(password, user.passwordHash))
+    )
       return fail(res, 401, "Invalid email or password");
     const token = randomBytes(32).toString("hex");
     sessions.set(hash(token), {
@@ -145,7 +150,7 @@ export function createApp(store) {
       (u) => u.email === req.body.email,
     );
     let token;
-    if (user) {
+    if (user && user.active !== false) {
       token = randomBytes(32).toString("hex");
       resets.set(hash(token), {
         userId: user.id,
@@ -165,6 +170,8 @@ export function createApp(store) {
     if (!valid(req.body.password, 200) || req.body.password.length < 12)
       return fail(res, 400, "Password must be at least 12 characters");
     const user = (await store.all("users")).find((u) => u.id === record.userId);
+    if (!user || user.active === false)
+      return fail(res, 400, "Account unavailable");
     await store.put("users", {
       ...user,
       passwordHash: await bcrypt.hash(req.body.password, 12),
@@ -182,6 +189,8 @@ export function createApp(store) {
       (u) => u.id === req.params.userId,
     );
     if (!target) return fail(res, 404, "Account not found");
+    if (target.active === false)
+      return fail(res, 400, "Reactivate the account before issuing recovery");
     const schools = await store.all("schools");
     const permitted =
       req.user.role === "owner" ||
@@ -224,7 +233,7 @@ export function createApp(store) {
   app.post("/api/platform/support", auth, owner, async (req, res) => {
     const { userId, reason, acknowledge } = req.body;
     const target = (await store.all("users")).find((u) => u.id === userId);
-    if (!target || target.role === "owner")
+    if (!target || target.role === "owner" || target.active === false)
       return fail(res, 400, "Select a school account");
     if (
       !valid(reason, 500) ||
@@ -307,6 +316,48 @@ export function createApp(store) {
     });
     await audit(req.user, "school.created", row.id);
     res.status(201).json(row);
+  });
+  app.post("/api/users/:userId/status", auth, async (req, res) => {
+    const target = (await store.all("users")).find(
+      (u) => u.id === req.params.userId,
+    );
+    if (!target) return fail(res, 404, "Account not found");
+    if (typeof req.body.active !== "boolean")
+      return fail(res, 400, "Choose an account status");
+    if (target.id === req.user.id || target.role === "owner")
+      return fail(
+        res,
+        403,
+        "Owner and own-account status cannot be changed here",
+      );
+    const schools = await store.all("schools");
+    const allowed =
+      req.user.role === "owner" ||
+      (managers.includes(req.user.role) &&
+        ["teacher", "student", "staff"].includes(target.role) &&
+        target.schoolIds.length > 0 &&
+        target.schoolIds.every((sid) =>
+          schools.some((s) => s.id === sid && canAccessSchool(req.user, s)),
+        ));
+    if (!allowed)
+      return fail(res, 403, "You cannot change this account status");
+    await store.transaction(target.schoolIds[0], async (tx) => {
+      const current = (await tx.all("users")).find((u) => u.id === target.id);
+      await tx.put("users", { ...current, active: req.body.active });
+      await tx.put("audit", {
+        id: id(),
+        actorId: req.user.id,
+        targetUserId: target.id,
+        action: req.body.active ? "user.reactivated" : "user.suspended",
+        schoolId: target.schoolIds[0],
+        createdAt: new Date().toISOString(),
+      });
+    });
+    for (const [key, s] of sessions)
+      if (s.userId === target.id) sessions.delete(key);
+    for (const [key, r] of resets)
+      if (r.userId === target.id) resets.delete(key);
+    res.json({ ok: true });
   });
   app.post("/api/users", auth, async (req, res) => {
     const {

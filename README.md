@@ -1,8 +1,8 @@
-# NuvyraSchola
+# Schoolglass Desk
 
 A multi-school workspace built with React, Node.js, and MySQL. One API serves the platform console and school web workspace; a mobile client will reuse it later.
 
-![NuvyraSchola school dashboard](docs/screenshots/glass-dashboard.png)
+![Schoolglass Desk school dashboard](docs/screenshots/schoolglass-dashboard.png)
 
 ## Current delivery
 
@@ -69,6 +69,8 @@ The 17 backend integration tests cover isolation, roles, recovery, uploads, atom
 Organization is optional when onboarding a school. Independent-school accounts are assigned to one school; grouped directors can retain multiple explicit school memberships. The owner can use People → Open as user to reproduce an issue under the selected account’s permissions, with a reason, visible banner and 30-minute expiry. Saved support changes affect real data and are audited. Account-security changes require the normal administrator session.
 
 Original SVG/CSS assets and system fonts power the design. See [asset provenance](docs/ASSET-PROVENANCE.md) for authorship and naming limitations.
+
+The English working title is configured in `apps/web/src/brand.js`. Dropdowns use styled native pickers in supporting browsers, with a rounded native fallback. People includes Suspend/Reactivate controls: owners manage school accounts; school management can manage assigned teachers, students and staff. Suspension revokes sessions and recovery tokens and blocks login; reactivation requires a fresh login. Support sessions cannot change account status.
 
 - The MySQL adapter stores JSON records with indexed type/school columns and school-locked academic transactions. Normalized tables, foreign keys, migrations and database-level academic uniqueness remain planned.
 - Sessions and reset tokens are held in API process memory. Server restart signs everyone out. Use a persistent session store before running multiple API instances.

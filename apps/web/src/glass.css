@@ -275,3 +275,126 @@ select option {
 .chip-one svg {
   color: #ade0c5;
 }
+/* Visible glass: let the backdrop show through without blurring every card. */
+body {
+  background:
+    radial-gradient(ellipse at 4% 10%, #9bddc8 0, transparent 45%),
+    radial-gradient(ellipse at 82% 36%, #e8bd995e 0, transparent 40%),
+    radial-gradient(ellipse at 50% 90%, #a9c9dc88 0, transparent 55%), #e1ede6;
+}
+.panel,
+.stat-card {
+  background: linear-gradient(135deg, #ffffff66, #ffffff26);
+  border-color: #ffffffb3;
+  box-shadow:
+    0 10px 30px #24473914,
+    inset 0 1px 0 #ffffffe0;
+}
+.sidebar {
+  background: #f1fbf477;
+}
+.topbar {
+  background: #f6fff766;
+}
+.login-form {
+  background: #ffffff66;
+}
+.modal,
+.academic-dialog {
+  background: #edf8f2ed;
+}
+.panel-heading,
+.school-card-footer {
+  background: #ffffff14;
+}
+.brand {
+  font-size: 20px;
+}
+select {
+  appearance: none;
+  border: 1px solid #9bbcaf !important;
+  border-radius: 12px !important;
+  background-color: #f5fff799 !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='m1 1 5 5 5-5' fill='none' stroke='%23245f4c' stroke-width='1.5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  padding-right: 38px !important;
+  cursor: pointer;
+  min-height: 42px;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+}
+select:hover {
+  border-color: #40856d !important;
+  box-shadow: 0 3px 12px #20584012;
+}
+/* Progressive native popover styling preserves keyboard navigation and validation. */
+@supports (appearance: base-select) {
+  select,
+  select::picker(select) {
+    appearance: base-select;
+  }
+  select {
+    background-image: none;
+  }
+  select::picker-icon {
+    color: #286650;
+    transition: rotate 0.18s;
+  }
+  select:open::picker-icon {
+    rotate: 180deg;
+  }
+  select::picker(select) {
+    border: 1px solid #ffffff;
+    border-radius: 15px;
+    padding: 6px;
+    background: #effaf4ed;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 14px 38px #1b48342b;
+    margin-top: 6px;
+    max-height: 280px;
+  }
+  select option {
+    padding: 10px 12px;
+    border-radius: 9px;
+    background: transparent;
+    gap: 10px;
+    color: #193d30;
+  }
+  select option:hover,
+  select option:focus {
+    background: #c7e9d9;
+  }
+  select option:checked {
+    background: #d9eee3;
+    font-weight: 650;
+  }
+  select option::checkmark {
+    color: #19684f;
+  }
+}
+@media (max-width: 800px) {
+  .sidebar {
+    background: #edf8f1eb;
+  }
+  select::picker(select) {
+    backdrop-filter: none;
+  }
+}
+@media print {
+  .panel,
+  .stat-card {
+    background: white;
+  }
+}
+.account-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.account-status .secondary {
+  font-size: 11px;
+  padding: 7px 10px;
+}

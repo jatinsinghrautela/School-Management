@@ -25,6 +25,8 @@ import {
 import "./styles.css";
 import { Academics, ExamResults } from "./academics.jsx";
 import "./glass.css";
+import { BRAND_NAME } from "./brand.js";
+document.title = `${BRAND_NAME} · School workspace`;
 const icons = {
   Overview: LayoutDashboard,
   Schools: Building2,
@@ -295,7 +297,8 @@ function App() {
           <span className="brand-icon">
             <Orbit size={25} />
           </span>
-          NuvyraSchola<span className="brand-dot">.</span>
+          {BRAND_NAME}
+          <span className="brand-dot">.</span>
         </a>
         <div className="workspace-tag">
           {owner ? "PLATFORM CONSOLE" : "SCHOOL WORKSPACE"}
@@ -749,7 +752,7 @@ function App() {
               </div>
               <div className="bottom-note">
                 <Sparkles size={15} /> A brighter campus, one connection at a
-                time.<span>NUVYRASCHOLA</span>
+                time.<span>{BRAND_NAME.toUpperCase()}</span>
               </div>
             </>
           )}
@@ -815,7 +818,7 @@ function App() {
                     </article>
                   ))}
                   {!platform?.schools.length && (
-                    <Empty text="Create an organization, then onboard its first school." />
+                    <Empty text="Onboard an independent school or create an organization for a group." />
                   )}
                 </div>
               )}
@@ -826,6 +829,7 @@ function App() {
                     "Email",
                     "Role",
                     "Access",
+                    "Status",
                     ...(owner ? ["Support"] : []),
                   ]}
                   rows={filtered(owner ? platform?.users : data?.users).map(
@@ -841,9 +845,38 @@ function App() {
                             )
                             .filter(Boolean)
                             .join(", ") || "School-wide",
+                      <div className="account-status">
+                        <span
+                          className={
+                            "badge " + (u.active === false ? "warning" : "")
+                          }
+                        >
+                          {u.active === false ? "Suspended" : "Active"}
+                        </span>
+                        {!support &&
+                          u.id !== user.id &&
+                          u.role !== "owner" &&
+                          (owner ||
+                            (manager &&
+                              ["teacher", "student", "staff"].includes(
+                                u.role,
+                              ))) && (
+                            <button
+                              className="secondary"
+                              disabled={loading}
+                              onClick={() =>
+                                save(`/users/${u.id}/status`, {
+                                  active: u.active === false,
+                                })
+                              }
+                            >
+                              {u.active === false ? "Reactivate" : "Suspend"}
+                            </button>
+                          )}
+                      </div>,
                       ...(owner
                         ? [
-                            u.role === "owner" ? (
+                            u.role === "owner" || u.active === false ? (
                               "—"
                             ) : (
                               <button
@@ -1448,7 +1481,8 @@ function Login({ api, onLogin, error }) {
           <span className="brand-icon">
             <Orbit size={25} />
           </span>
-          NuvyraSchola<span className="brand-dot">.</span>
+          {BRAND_NAME}
+          <span className="brand-dot">.</span>
         </a>
         <div>
           <span className="hero-pill">
@@ -1538,7 +1572,7 @@ function Login({ api, onLogin, error }) {
               {busy
                 ? "Please wait…"
                 : view === "login"
-                  ? "Sign in to NuvyraSchola"
+                  ? `Sign in to ${BRAND_NAME}`
                   : view === "forgot"
                     ? "Request password reset"
                     : "Update password"}

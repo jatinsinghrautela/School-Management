@@ -166,7 +166,60 @@ test("independent schools remain isolated and support sessions preserve role gat
       { title: "Forbidden", body: "test", audience: "all" },
       403,
     );
+    await call(
+      `/users/${principal.id}/status`,
+      login.token,
+      { active: false },
+      403,
+    );
+    await call(
+      `/users/${student.id}/status`,
+      support.token,
+      { active: false },
+      401,
+    );
+    await call(`/users/${student.id}/status`, login.token, { active: false });
+    await call("/me", ss.token, null, 401);
+    await call(
+      "/auth/login",
+      null,
+      { email: "ind-student@test.local", password: "Independent123!" },
+      401,
+    );
+    await call(`/users/${student.id}/recovery`, login.token, {}, 400);
+    await call(`/users/${student.id}/status`, login.token, { active: true });
+    await call("/auth/login", null, {
+      email: "ind-student@test.local",
+      password: "Independent123!",
+    });
+    await call(
+      `/users/${owner.user.id}/status`,
+      login.token,
+      { active: false },
+      403,
+    );
+    const other = await call("/auth/login", null, {
+      email: "student@orbit.local",
+      password: "OrbitDemo123!",
+    });
+    await call(
+      `/users/${other.user.id}/status`,
+      login.token,
+      { active: false },
+      403,
+    );
+    assert.ok(
+      (await store.all("audit")).some(
+        (r) => r.action === "user.suspended" && r.targetUserId === student.id,
+      ),
+    );
+    const replacement = await call("/platform/support", owner.token, {
+      userId: student.id,
+      reason: "Verify parent session revocation",
+      acknowledge: true,
+    });
     await call("/auth/logout", owner.token, {});
+    await call("/me", replacement.token, null, 401);
     await call("/me", ss.token, null, 401);
   } finally {
     await new Promise((r) => server.close(r));

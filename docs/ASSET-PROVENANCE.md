@@ -1,8 +1,8 @@
 # Asset provenance and branding
 
-## NuvyraSchola visual identity
+## Schoolglass Desk visual identity
 
-- NuvyraSchola is a working name coined for this project. It replaces the displayed Orbit brand; existing demo login addresses, passwords and storage keys remain compatible.
+- Schoolglass Desk is a working name coined for this project. It replaces the displayed Orbit brand; existing demo login addresses, passwords and storage keys remain compatible.
 - `apps/web/public/brand.svg` and `apps/web/src/glyphs.jsx` contain original AI-generated SVG geometry authored directly for this project. They do not embed icon-pack files, stock imagery or other brands’ artwork.
 - Backgrounds, glass treatments, decorative rings and animations are original CSS. No downloaded photos, raster textures or remote image services are used.
 - Typography uses locally available system fonts. Google Fonts requests and the Lucide dependency were removed. Application dependencies retain their respective open-source licenses; AI-generated branding does not replace these licenses.
@@ -12,3 +12,7 @@
 ## Performance choices
 
 Blur is limited to navigation surfaces at 8px, and disabled on mobile. Cards use translucent gradients without individual blur filters. Motion uses short opacity/transform transitions and the small existing decorative float, with reduced-motion overrides. No animation framework, animation loop or image download was added. Low-end device performance has not been benchmarked; build size and responsive browser checks are recorded in WORKLOG.
+
+## Updated working identity
+
+Schoolglass Desk is the current English title, replacing the earlier coined name after user feedback. The title is editable in `apps/web/src/brand.js`; the mark is original window geometry. No trademark clearance is claimed. Transparent cards now use gradients with approximately 15–40% white opacity, rather than the earlier near-opaque treatment. Dropdown popovers use a bounded blur only while open in supporting desktop browsers; the mobile fallback disables it.

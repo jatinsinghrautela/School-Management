@@ -1,6 +1,6 @@
 import React from "react";
 
-// Original project glyph geometry, generated for NuvyraSchola. No icon pack assets.
+// Original project glyph geometry, generated for Schoolglass Desk. No icon pack assets.
 function glyph(path) {
   return function Glyph({ size = 24, strokeWidth = 1.7, ...props }) {
     return (
@@ -21,7 +21,7 @@ function glyph(path) {
     );
   };
 }
-export const Orbit = glyph("M4 18V6l8 12V6l8 12V6 M3 12h18");
+export const Orbit = glyph("M6 4h14v14H6z M6 11h14M13 4v14M3 8v13h13");
 export const LayoutDashboard = glyph(
   "M4 4h7v7H4z M15 4h5v4h-5z M4 15h7v5H4z M15 12h5v8h-5z",
 );

@@ -23,11 +23,11 @@ export async function seed(store) {
   if (store.mode !== "demo") return;
   await store.put("organizations", {
     id: "org-demo",
-    name: "NuvyraSchola Demo Collective",
+    name: "Schoolglass Desk Demo Collective",
   });
   for (const [sid, name, city] of [
-    ["school-north", "NuvyraSchola Demo North", "Bengaluru"],
-    ["school-west", "NuvyraSchola Demo West", "Pune"],
+    ["school-north", "Schoolglass Desk Demo North", "Bengaluru"],
+    ["school-west", "Schoolglass Desk Demo West", "Pune"],
   ]) {
     await store.put("schools", {
       id: sid,
