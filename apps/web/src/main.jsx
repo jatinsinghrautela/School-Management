@@ -21,9 +21,10 @@ import {
   Check,
   FileText,
   Activity,
-} from "lucide-react";
+} from "./glyphs.jsx";
 import "./styles.css";
 import { Academics, ExamResults } from "./academics.jsx";
+import "./glass.css";
 const icons = {
   Overview: LayoutDashboard,
   Schools: Building2,
@@ -52,6 +53,42 @@ function App() {
     [query, setQuery] = useState(""),
     [mobile, setMobile] = useState(false),
     [message, setMessage] = useState("");
+  const [support, setSupport] = useState(null);
+  const [supportTarget, setSupportTarget] = useState(null);
+  const [supportReason, setSupportReason] = useState("");
+  const [supportAck, setSupportAck] = useState(false);
+  async function startSupport(e) {
+    e.preventDefault();
+    try {
+      const r = await api("/platform/support", {
+        userId: supportTarget.id,
+        reason: supportReason,
+        acknowledge: supportAck,
+      });
+      sessionStorage.setItem("orbit-owner-token", token);
+      sessionStorage.setItem("orbit-token", r.token);
+      setToken(r.token);
+      setUser(null);
+      setPage("Overview");
+      setSupportTarget(null);
+      setData(null);
+    } catch (e) {
+      setError(e.message);
+    }
+  }
+  async function endSupport() {
+    try {
+      await api("/support/end", {});
+    } catch {}
+    const original = sessionStorage.getItem("orbit-owner-token") || "";
+    sessionStorage.removeItem("orbit-owner-token");
+    sessionStorage.setItem("orbit-token", original);
+    setToken(original);
+    setSupport(null);
+    setUser(null);
+    setData(null);
+    setPage("Overview");
+  }
   const refreshVersion = useRef(0);
   const [narrow, setNarrow] = useState(window.innerWidth <= 800);
   useEffect(() => {
@@ -72,8 +109,13 @@ function App() {
     const result = await response.json();
     if (!response.ok) {
       if (response.status === 401 && token) {
-        sessionStorage.removeItem("orbit-token");
-        setToken("");
+        const original = sessionStorage.getItem("orbit-owner-token") || "";
+        sessionStorage.removeItem("orbit-owner-token");
+        if (original) sessionStorage.setItem("orbit-token", original);
+        else sessionStorage.removeItem("orbit-token");
+        setToken(original);
+        setSupport(null);
+        setPage("Overview");
         setUser(null);
       }
       throw new Error(result.error || "Request failed");
@@ -124,6 +166,8 @@ function App() {
           setUser(r.user);
           setSchools(r.schools);
           setMode(r.mode);
+          setSupport(r.support || null);
+          if (!r.support) sessionStorage.removeItem("orbit-owner-token");
           setSid(r.schools[0]?.id || "");
         }
       })
@@ -182,6 +226,7 @@ function App() {
     );
   }
   async function logout() {
+    if (sessionStorage.getItem("orbit-owner-token")) return endSupport();
     try {
       await api("/auth/logout", {});
     } catch (e) {
@@ -203,6 +248,9 @@ function App() {
       <Login
         api={api}
         onLogin={(r) => {
+          sessionStorage.removeItem("orbit-owner-token");
+          setSupport(null);
+          setError("");
           sessionStorage.setItem("orbit-token", r.token);
           setToken(r.token);
           setUser(r.user);
@@ -247,7 +295,7 @@ function App() {
           <span className="brand-icon">
             <Orbit size={25} />
           </span>
-          orbit<span className="brand-dot">.</span>
+          NuvyraSchola<span className="brand-dot">.</span>
         </a>
         <div className="workspace-tag">
           {owner ? "PLATFORM CONSOLE" : "SCHOOL WORKSPACE"}
@@ -317,6 +365,22 @@ function App() {
         </div>
       </aside>
       <main>
+        {(support || sessionStorage.getItem("orbit-owner-token")) && (
+          <div className="support-banner" role="status">
+            <div>
+              <strong>
+                Support session · {user.name} · {user.role}
+              </strong>
+              <p>
+                {support?.reason || "Restoring support context"} · Changes
+                affect this account’s school data.
+              </p>
+            </div>
+            <button className="secondary" onClick={endSupport}>
+              Return to owner
+            </button>
+          </div>
+        )}
         <header className="topbar">
           <div>
             <button
@@ -644,6 +708,17 @@ function App() {
                           <span />
                           <div>
                             <strong>{a.action.replaceAll(".", " ")}</strong>
+                            {a.targetUserId && (
+                              <small>
+                                {platform.users.find((u) => u.id === a.actorId)
+                                  ?.name || "Owner"}{" "}
+                                →{" "}
+                                {platform.users.find(
+                                  (u) => u.id === a.targetUserId,
+                                )?.name || "School account"}
+                              </small>
+                            )}
+                            {a.reason && <small>{a.reason}</small>}
                             <small>
                               {new Date(a.createdAt).toLocaleString("en-IN")}
                             </small>
@@ -674,7 +749,7 @@ function App() {
               </div>
               <div className="bottom-note">
                 <Sparkles size={15} /> A brighter campus, one connection at a
-                time.<span>POWERED BY ORBIT</span>
+                time.<span>NUVYRASCHOLA</span>
               </div>
             </>
           )}
@@ -732,10 +807,8 @@ function App() {
                       <p>{s.city}</p>
                       <div className="school-card-footer">
                         <span>
-                          {
-                            platform.organizations.find((o) => o.id === s.orgId)
-                              ?.name
-                          }
+                          {platform.organizations.find((o) => o.id === s.orgId)
+                            ?.name || "Independent school"}
                         </span>
                         <b>{s.code}</b>
                       </div>
@@ -748,7 +821,13 @@ function App() {
               )}
               {page === "People" && (
                 <Table
-                  columns={["Name", "Email", "Role", "Access"]}
+                  columns={[
+                    "Name",
+                    "Email",
+                    "Role",
+                    "Access",
+                    ...(owner ? ["Support"] : []),
+                  ]}
                   rows={filtered(owner ? platform?.users : data?.users).map(
                     (u) => [
                       u.name,
@@ -762,6 +841,25 @@ function App() {
                             )
                             .filter(Boolean)
                             .join(", ") || "School-wide",
+                      ...(owner
+                        ? [
+                            u.role === "owner" ? (
+                              "—"
+                            ) : (
+                              <button
+                                className="secondary"
+                                onClick={() => {
+                                  setSupportTarget(u);
+                                  setSupportReason("");
+                                  setSupportAck(false);
+                                  setError("");
+                                }}
+                              >
+                                Open as user
+                              </button>
+                            ),
+                          ]
+                        : []),
                     ],
                   )}
                 />
@@ -909,6 +1007,60 @@ function App() {
           )}
         </div>
       </main>
+      {supportTarget && (
+        <div className="modal-backdrop">
+          <section
+            className="modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="support-title"
+          >
+            <div className="panel-heading">
+              <h2 id="support-title">Reproduce an issue</h2>
+              <button
+                className="icon-button"
+                aria-label="Close support dialog"
+                onClick={() => setSupportTarget(null)}
+              >
+                <X />
+              </button>
+            </div>
+            <form onSubmit={startSupport}>
+              <p>
+                Open {supportTarget.name}’s workspace as {supportTarget.role}{" "}
+                for up to 30 minutes. Actions use their permissions and are
+                attributed to you in the support audit.
+              </p>
+              <label>
+                Support issue / ticket
+                <textarea
+                  aria-label="Support issue / ticket"
+                  required
+                  minLength={10}
+                  maxLength={500}
+                  value={supportReason}
+                  onChange={(e) => setSupportReason(e.target.value)}
+                />
+              </label>
+              <label className="checkbox">
+                <input
+                  type="checkbox"
+                  required
+                  checked={supportAck}
+                  onChange={(e) => setSupportAck(e.target.checked)}
+                />
+                I understand that saved changes affect real school data.
+              </label>
+              {error && (
+                <p role="alert" className="error">
+                  {error}
+                </p>
+              )}
+              <button className="primary">Start support session</button>
+            </form>
+          </section>
+        </div>
+      )}
       {modal === "recovery" ? (
         <Recovery
           api={api}
@@ -1296,7 +1448,7 @@ function Login({ api, onLogin, error }) {
           <span className="brand-icon">
             <Orbit size={25} />
           </span>
-          orbit<span className="brand-dot">.</span>
+          NuvyraSchola<span className="brand-dot">.</span>
         </a>
         <div>
           <span className="hero-pill">
@@ -1386,7 +1538,7 @@ function Login({ api, onLogin, error }) {
               {busy
                 ? "Please wait…"
                 : view === "login"
-                  ? "Sign in to Orbit"
+                  ? "Sign in to NuvyraSchola"
                   : view === "forgot"
                     ? "Request password reset"
                     : "Update password"}
@@ -1564,7 +1716,7 @@ function Editor({
     email: "",
     password: "",
     role: owner ? "director" : "teacher",
-    orgId: owner ? platform?.organizations[0]?.id || "" : school?.orgId,
+    orgId: owner ? "" : school?.orgId || "",
     schoolIds: owner ? [] : [school?.id],
     classIds: [],
     classId: type === "notice" ? "" : classes[0]?.id || "",
@@ -1604,10 +1756,15 @@ function Editor({
               ...form,
               [name]: e.target.value,
               ...(name === "classId" ? { studentId: "" } : {}),
+              ...(name === "orgId" ? { schoolIds: [] } : {}),
             })
           }
         >
-          <option value="">Choose {label.toLowerCase()}</option>
+          <option value="">
+            {name === "orgId"
+              ? "Independent school (no organization)"
+              : `Choose ${label.toLowerCase()}`}
+          </option>
           {options.map((o) => (
             <option key={o.id || o} value={o.id || o}>
               {o.name || o}
@@ -1717,7 +1874,13 @@ function Editor({
             <>
               {field("city", "City")}
               {field("code", "School code")}
-              {field("orgId", "Organization", platform?.organizations || [])}
+              {field(
+                "orgId",
+                "Organization (optional)",
+                platform?.organizations || [],
+                "text",
+                false,
+              )}
             </>
           )}
           {type === "user" && (
@@ -1737,12 +1900,18 @@ function Editor({
                   : ["teacher", "student", "staff"],
               )}
               {owner &&
-                field("orgId", "Organization", platform?.organizations || [])}
+                field(
+                  "orgId",
+                  "Organization (optional)",
+                  platform?.organizations || [],
+                  "text",
+                  false,
+                )}
               {owner && (
                 <fieldset>
                   <legend>School access</legend>
                   {platform?.schools
-                    .filter((s) => s.orgId === form.orgId)
+                    .filter((s) => (s.orgId || "") === form.orgId)
                     .map((s) => (
                       <label className="checkbox" key={s.id}>
                         <input
@@ -1752,7 +1921,9 @@ function Editor({
                             setForm({
                               ...form,
                               schoolIds: e.target.checked
-                                ? [...form.schoolIds, s.id]
+                                ? form.orgId
+                                  ? [...form.schoolIds, s.id]
+                                  : [s.id]
                                 : form.schoolIds.filter((id) => id !== s.id),
                             })
                           }

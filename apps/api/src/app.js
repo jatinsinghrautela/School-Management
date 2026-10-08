@@ -30,8 +30,8 @@ export function createApp(store) {
     helmet({
       contentSecurityPolicy: {
         directives: {
-          "style-src": ["'self'", "https://fonts.googleapis.com"],
-          "font-src": ["'self'", "https://fonts.gstatic.com"],
+          "style-src": ["'self'"],
+          "font-src": ["'self'"],
         },
       },
     }),
@@ -67,6 +67,37 @@ export function createApp(store) {
     }
     req.user = (await store.all("users")).find((u) => u.id === session.userId);
     if (!req.user) return fail(res, 401, "Account unavailable");
+    req.session = session;
+    if (session.support) {
+      const parent = sessions.get(session.support.parentKey);
+      if (!parent || parent.expires < Date.now())
+        return fail(res, 401, "Support session ended");
+      if (
+        req.method !== "GET" &&
+        req.path !== "/api/support/end" &&
+        req.path !== "/api/auth/logout"
+      ) {
+        if (
+          req.path.startsWith("/api/auth/") ||
+          req.path.startsWith("/api/users")
+        )
+          return fail(
+            res,
+            403,
+            "Account security changes require the normal administrator session",
+          );
+        await store.put("audit", {
+          id: id(),
+          actorId: session.support.ownerId,
+          targetUserId: req.user.id,
+          action: "support.request",
+          path: req.path,
+          reason: session.support.reason,
+          schoolId: req.user.schoolIds[0] || null,
+          createdAt: new Date().toISOString(),
+        });
+      }
+    }
     next();
   };
   const owner = (req, res, next) =>
@@ -156,7 +187,7 @@ export function createApp(store) {
       req.user.role === "owner" ||
       (managers.includes(req.user.role) &&
         ["teacher", "student", "staff"].includes(target.role) &&
-        target.orgId === req.user.orgId &&
+        (target.orgId || null) === (req.user.orgId || null) &&
         target.schoolIds.length > 0 &&
         target.schoolIds.every((sid) =>
           schools.some((s) => s.id === sid && canAccessSchool(req.user, s)),
@@ -181,8 +212,63 @@ export function createApp(store) {
         canAccessSchool(req.user, s),
       ),
       mode: store.mode,
+      support: req.session.support
+        ? {
+            ownerId: req.session.support.ownerId,
+            reason: req.session.support.reason,
+            expires: req.session.expires,
+          }
+        : null,
     }),
   );
+  app.post("/api/platform/support", auth, owner, async (req, res) => {
+    const { userId, reason, acknowledge } = req.body;
+    const target = (await store.all("users")).find((u) => u.id === userId);
+    if (!target || target.role === "owner")
+      return fail(res, 400, "Select a school account");
+    if (
+      !valid(reason, 500) ||
+      reason.trim().length < 10 ||
+      acknowledge !== true
+    )
+      return fail(
+        res,
+        400,
+        "Describe the support issue and acknowledge that changes affect real data",
+      );
+    const token = randomBytes(32).toString("hex");
+    const expires = Date.now() + 30 * 60 * 1000;
+    const support = {
+      ownerId: req.user.id,
+      parentKey: hash(req.headers.authorization.replace(/^Bearer /, "")),
+      reason: reason.trim(),
+    };
+    await store.put("audit", {
+      id: id(),
+      actorId: req.user.id,
+      targetUserId: target.id,
+      action: "support.started",
+      reason: support.reason,
+      schoolId: target.schoolIds[0] || null,
+      createdAt: new Date().toISOString(),
+    });
+    sessions.set(hash(token), { userId: target.id, expires, support });
+    res.json({ token, user: publicUser(target) });
+  });
+  app.post("/api/support/end", auth, async (req, res) => {
+    if (!req.session.support)
+      return fail(res, 400, "No support session active");
+    await store.put("audit", {
+      id: id(),
+      actorId: req.session.support.ownerId,
+      targetUserId: req.user.id,
+      action: "support.ended",
+      schoolId: req.user.schoolIds[0] || null,
+      createdAt: new Date().toISOString(),
+    });
+    sessions.delete(hash(req.headers.authorization.replace(/^Bearer /, "")));
+    res.json({ ok: true });
+  });
   app.get("/api/platform", auth, owner, async (req, res) =>
     res.json({
       organizations: await store.all("organizations"),
@@ -205,15 +291,19 @@ export function createApp(store) {
     const { name, city, code, orgId } = req.body;
     if (
       ![name, city, code].every((v) => valid(v)) ||
-      !(await store.all("organizations")).some((o) => o.id === orgId)
+      (orgId && !(await store.all("organizations")).some((o) => o.id === orgId))
     )
-      return fail(res, 400, "Valid school details and organization required");
+      return fail(
+        res,
+        400,
+        "Valid school details and optional organization required",
+      );
     const row = await store.put("schools", {
       id: id(),
       name,
       city,
       code,
-      orgId,
+      orgId: orgId || null,
     });
     await audit(req.user, "school.created", row.id);
     res.status(201).json(row);
@@ -261,12 +351,16 @@ export function createApp(store) {
         (sid) =>
           !schools.some(
             (s) =>
-              s.id === sid && s.orgId === orgId && canAccessSchool(req.user, s),
+              s.id === sid &&
+              (s.orgId || null) === (orgId || null) &&
+              canAccessSchool(req.user, s),
           ),
       )
     )
       return fail(res, 403, "Invalid school membership");
     const classes = await store.all("classes");
+    if (!orgId && new Set(schoolIds).size !== 1)
+      return fail(res, 400, "Independent school accounts belong to one school");
     if (
       classIds.some(
         (cid) =>
@@ -287,7 +381,7 @@ export function createApp(store) {
       email: email.toLowerCase(),
       passwordHash: await bcrypt.hash(password, 12),
       role,
-      orgId,
+      orgId: orgId || null,
       schoolIds: [...new Set(schoolIds)],
       classIds: [...new Set(classIds)],
     });

@@ -10,7 +10,7 @@ import {
   Printer,
   LockKeyhole,
   RotateCcw,
-} from "lucide-react";
+} from "./glyphs.jsx";
 
 function Field({ label, children }) {
   return (

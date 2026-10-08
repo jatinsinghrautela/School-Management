@@ -1,12 +1,12 @@
-# Orbit School
+# NuvyraSchola
 
 A multi-school workspace built with React, Node.js, and MySQL. One API serves the platform console and school web workspace; a mobile client will reuse it later.
 
-![Orbit school dashboard](docs/screenshots/dashboard.png)
+![NuvyraSchola school dashboard](docs/screenshots/glass-dashboard.png)
 
 ## Current delivery
 
-An evolving web implementation with organization/school onboarding, role-based accounts, multi-school switching, academic setup, atomic attendance/marks registers, published weighted report cards, learning resources, assisted password recovery, notices and dashboards. There is no public registration. Production readiness and remaining modules are tracked in the plan.
+An evolving web implementation with grouped or independent school onboarding, role-based accounts, audited owner support sessions, multi-school switching, academic setup, atomic attendance/marks registers, published weighted report cards, learning resources, assisted password recovery, notices and dashboards. There is no public registration. Production readiness and remaining modules are tracked in the plan.
 
 ## Requirements
 
@@ -62,9 +62,13 @@ npm run build
 npm run db:check
 ```
 
-The 16 backend integration tests cover isolation, roles, recovery, uploads, atomic registers, academic configuration, publication, weighted grading and immutable report versions. The MySQL check verifies rollback and concurrent school transaction serialization.
+The 17 backend integration tests cover isolation, roles, recovery, uploads, atomic registers, academic configuration, publication, weighted grading, immutable report versions, independent schools and audited support sessions. The MySQL check verifies rollback and concurrent school transaction serialization.
 
 ## Boundaries
+
+Organization is optional when onboarding a school. Independent-school accounts are assigned to one school; grouped directors can retain multiple explicit school memberships. The owner can use People → Open as user to reproduce an issue under the selected account’s permissions, with a reason, visible banner and 30-minute expiry. Saved support changes affect real data and are audited. Account-security changes require the normal administrator session.
+
+Original SVG/CSS assets and system fonts power the design. See [asset provenance](docs/ASSET-PROVENANCE.md) for authorship and naming limitations.
 
 - The MySQL adapter stores JSON records with indexed type/school columns and school-locked academic transactions. Normalized tables, foreign keys, migrations and database-level academic uniqueness remain planned.
 - Sessions and reset tokens are held in API process memory. Server restart signs everyone out. Use a persistent session store before running multiple API instances.

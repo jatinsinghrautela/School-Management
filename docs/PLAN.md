@@ -2,9 +2,11 @@
 
 ## Product model
 
-Orbit has three surfaces: a platform owner console, a responsive school web workspace, and later a React Native mobile app. All share one Node API and MySQL database. The two web surfaces initially share a React deployment with server-enforced role gates; separate subdomains/builds can follow without duplicating the backend.
+NuvyraSchola has three surfaces: a platform owner console, a responsive school web workspace, and later a React Native mobile app. All share one Node API and MySQL database. The two web surfaces initially share a React deployment with server-enforced role gates; separate subdomains/builds can follow without duplicating the backend.
 
 Organizations group schools. Access is explicit membership, never just an organization match. Directors can switch between assigned schools within an organization. Each school maintains its own academic configuration and operational data.
+
+Independent schools have no organization and retain separate explicit memberships. Independent accounts belong to one school. Platform owners can reproduce issues with a 30-minute audited support session using an existing account’s permissions.
 
 ## Roles
 
@@ -31,6 +33,9 @@ Organizations group schools. Access is explicit membership, never just an organi
 - [x] MySQL persistence adapter, optional isolated demo mode.
 - [x] Real-record count dashboards and latest audit activity.
 - [x] Authorization regression tests.
+- [x] Independent-school onboarding and isolated memberships.
+- [x] Owner support sessions with reasons, audit attribution, expiry and visible return controls.
+- [x] Original SVG branding/glyphs, glass palette and performance-conscious motion. See ASSET-PROVENANCE.md.
 
 ## Phase 2: Complete core academics
 

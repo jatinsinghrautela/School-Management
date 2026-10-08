@@ -66,3 +66,9 @@ Routes under `/api/schools/:schoolId`:
 | GET `/reports/:examId/:studentId/history`                                                 | Management-only immutable report history                      |
 
 Terms, enrollment rollover and normalized academic SQL migrations remain planned.
+
+## Independent schools and support access
+
+Schools may have `orgId: null`. Organization membership never grants access by itself: explicit school membership remains required. An independent-school account can belong to exactly one school, so unrelated independent schools cannot accidentally form a group. Organization selection is optional during school and leadership onboarding.
+
+The platform owner selects an existing account in People → Open as user, enters a support reason and acknowledges live-data changes. This creates a separate 30-minute session with the target’s existing permissions; it does not reveal or change their password. A persistent banner and Return to owner action identify this mode. Start/end events and attempted mutations record the owner, target and reason. Account-security mutations are blocked in support mode. Revoking or expiring the parent owner session invalidates support access. Sessions remain process-memory based as documented above.

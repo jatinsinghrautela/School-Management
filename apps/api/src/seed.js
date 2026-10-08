@@ -23,11 +23,11 @@ export async function seed(store) {
   if (store.mode !== "demo") return;
   await store.put("organizations", {
     id: "org-demo",
-    name: "Horizon Education Group",
+    name: "NuvyraSchola Demo Collective",
   });
   for (const [sid, name, city] of [
-    ["school-north", "Horizon International", "Bengaluru"],
-    ["school-west", "Horizon Academy", "Pune"],
+    ["school-north", "NuvyraSchola Demo North", "Bengaluru"],
+    ["school-west", "NuvyraSchola Demo West", "Pune"],
   ]) {
     await store.put("schools", {
       id: sid,
@@ -127,7 +127,8 @@ export async function seed(store) {
     classId: "school-north-10",
     type: "homework",
     title: "Explore quadratic equations",
-    description: "Complete exercises 4.1 and 4.2 before our next class.",
+    description:
+      "Create two quadratic equations with roots of your choice. Expand each equation, then explain how its coefficients relate to the roots.",
     url: "",
     dueDate: "2026-10-12",
     createdAt: new Date().toISOString(),

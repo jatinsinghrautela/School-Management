@@ -1,0 +1,277 @@
+:root {
+  font-family:
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    sans-serif;
+  --purple: #11796f;
+  --muted: #58716e;
+  --border: #cededb;
+  color: #16332f;
+  background: #ecf4f1;
+}
+body {
+  background:
+    radial-gradient(ellipse at 10% 5%, #cbece5 0, transparent 48%),
+    radial-gradient(ellipse at 95% 25%, #f8e6d6 0, transparent 42%), #ecf4f1;
+}
+h1,
+h2,
+h3,
+h4,
+.brand,
+.stat-card strong {
+  font-family: inherit;
+}
+.sidebar {
+  background: #f6fcf8df;
+  border-right: 1px solid #ffffff;
+  box-shadow: 8px 0 36px #153a3410;
+}
+.brand {
+  font-size: 21px;
+  letter-spacing: -0.9px;
+  gap: 8px;
+}
+.brand-icon {
+  background: #c4e9df;
+  color: #126e60;
+  border: 1px solid #ffffff;
+  border-radius: 14px;
+}
+.nav-item {
+  border-radius: 14px;
+  transition:
+    background 0.16s ease,
+    transform 0.16s ease;
+}
+.nav-item:hover {
+  background: #ffffffbb;
+  transform: translateX(2px);
+}
+.nav-item.active {
+  background: #155f55;
+  color: white;
+  box-shadow: 0 5px 18px #155f5520;
+}
+.topbar {
+  background: #f6fcf8cc;
+  border-bottom: 1px solid #ffffff;
+}
+.panel,
+.stat-card {
+  background: linear-gradient(135deg, #ffffffc9, #f7fffb80);
+  border: 1px solid #ffffff;
+  border-radius: 20px;
+  box-shadow:
+    0 8px 26px #294b4210,
+    inset 0 1px 0 #ffffff;
+}
+.panel-heading {
+  border-color: #d8e5df;
+}
+.stat-card p,
+.stat-card small,
+.breadcrumb,
+.muted {
+  color: #526e67;
+}
+.stat-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 14px 32px #294b4218;
+}
+.hero {
+  background: linear-gradient(120deg, #123f3a, #17312f 60%, #28483d);
+  border: 1px solid #5d8a784f;
+  border-radius: 26px;
+  box-shadow: 0 18px 38px #123f3a20;
+}
+.hero:before {
+  background: radial-gradient(circle, #69dbc835, transparent 65%);
+}
+.hero-pill {
+  border-color: #b4e0cf45;
+  background: #ffffff0d;
+  color: #c9f5e4;
+}
+.hero button,
+.primary {
+  background: #155f55;
+  color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 5px 14px #155f551b;
+}
+.hero button {
+  background: #c0f2df;
+  color: #143b30;
+}
+.primary:hover {
+  background: #0e4d43;
+}
+.secondary {
+  background: #ffffffa8;
+  color: #24584b;
+  border: 1px solid #c9ded4;
+  border-radius: 12px;
+}
+.badge {
+  background: #daeee5;
+  color: #215e47;
+}
+.tint-0 {
+  background: #d0eae1;
+  color: #216854;
+}
+.tint-1 {
+  background: #d9e9ed;
+  color: #326479;
+}
+.tint-2 {
+  background: #f4e0cf;
+  color: #865338;
+}
+.tint-3 {
+  background: #e6e1f2;
+  color: #675285;
+}
+.school-icon {
+  background: #d3eae1;
+  color: #1f6c56;
+}
+.modal,
+.academic-dialog {
+  background: #f5fcf8f5;
+  border: 1px solid white;
+  border-radius: 22px;
+  box-shadow: 0 24px 80px #153c3530;
+}
+.modal-backdrop,
+.academic-backdrop {
+  background: #143b3459;
+}
+input,
+select,
+textarea {
+  color: #173c32;
+}
+select option {
+  background: #f5fbf7;
+  color: #173c32;
+}
+:is(button, a, input, select, textarea):focus-visible {
+  outline-color: #1b8a73;
+}
+.login-story {
+  background: linear-gradient(145deg, #173e36, #102b29 70%, #294d42);
+}
+.login-side {
+  background: transparent;
+}
+.login-form {
+  padding: 32px;
+  border-radius: 24px;
+  background: #ffffffc2;
+  border: 1px solid white;
+  box-shadow: 0 16px 50px #24473912;
+}
+.login-orbit {
+  color: #9bdec3;
+}
+.support-banner {
+  margin: 14px 28px 0;
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  background: #fff0d9;
+  color: #684617;
+  border: 1px solid #e5c89b;
+  border-radius: 16px;
+}
+.support-banner p {
+  font-size: 12px;
+  margin-top: 5px;
+}
+/* Blur only the two bounded navigation surfaces; cards use translucent gradients. */
+@supports (backdrop-filter: blur(8px)) {
+  .sidebar,
+  .topbar {
+    backdrop-filter: blur(8px);
+  }
+}
+@keyframes arrive {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.content {
+  animation: arrive 0.32s ease both;
+}
+@media (max-width: 800px) {
+  .sidebar {
+    background: #f0f8f4;
+    backdrop-filter: none;
+  }
+  .topbar {
+    backdrop-filter: none;
+  }
+  .login-form {
+    padding: 24px;
+  }
+  .support-banner {
+    margin: 12px 16px 0;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .brand {
+    font-size: 21px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+@media print {
+  body {
+    background: white;
+  }
+  .support-banner {
+    display: none;
+  }
+}
+.planet {
+  background: radial-gradient(
+    circle at 28% 22%,
+    #b4ecd5,
+    #38866f 52%,
+    #173c35 86%
+  );
+  color: #e1fff1;
+  box-shadow:
+    inset -15px -16px 25px #102c2855,
+    0 0 60px #83debd20;
+}
+.ring {
+  border-color: #92d8bf40;
+}
+.star {
+  color: #d0eedb;
+}
+.floating-chip {
+  background: #254e40dd;
+  border-color: #b0e1c544;
+  backdrop-filter: none;
+}
+.chip-one svg {
+  color: #ade0c5;
+}
