@@ -124,3 +124,10 @@
 - Added verified India 2026 central gazetted dates after identifying gaps in the bundled dataset, with source/license attribution in Settings and the interface. Other-year/regional coverage limits are documented and shown to administrators.
 - Kept legacy workbook imports compatible; added location validation, regional rules, substitute dates and include/exclude tests. 26 tests and production build passed; dependency audit reports zero known vulnerabilities.
 - Browser verified the relocated Calendar tools, Karnataka selection, Include/Exclude dropdown and successful template download; saved `docs/screenshots/calendar-public-holidays.png`.
+
+## Holiday-aware attendance milestone (2026-10-08)
+
+- Connected active school-wide Calendar holidays to both attendance endpoints with school-locked transactional checks. Includes imported dates and inclusive multi-day closures; cancelled, other-school and ordinary event entries stay open.
+- Added holiday notices and disabled saves in the register and single-record dialog. Historical rows are retained and labelled; dashboard percentages exclude records on active holidays and restore eligibility when closures are cancelled or edited.
+- Added regression coverage for both write paths, date boundaries, atomic rejection without audit/record writes, role/tenant scope, imported closures and cancellation. All 27 tests and production build passed. The initial sandbox test run lacked localhost access; the authorized rerun passed.
+- Browser verified both forms on a synthetic demo closure and re-enabled controls on a school day. Saved `docs/screenshots/attendance-calendar-rules.png`; behavior and remaining attendance work are described in ATTENDANCE.md.

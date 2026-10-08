@@ -321,12 +321,14 @@ function App() {
     resources = data?.resources || [],
     marks = data?.marks || [],
     attendance = data?.attendance || [];
-  const percent = attendance.length
+  const countedAttendance = attendance.filter((a) => !a.excludedFromAttendance);
+  const percent = countedAttendance.length
     ? Math.round(
         (100 *
-          attendance.filter((a) => ["present", "late"].includes(a.status))
-            .length) /
-          attendance.length,
+          countedAttendance.filter((a) =>
+            ["present", "late"].includes(a.status),
+          ).length) /
+          countedAttendance.length,
       )
     : null;
   return (
@@ -658,7 +660,7 @@ function App() {
                         CalendarCheck,
                         "Attendance",
                         percent === null ? "—" : percent + "%",
-                        "Present + late / recorded entries",
+                        "Present + late / school-day records",
                       ],
                       [
                         BookOpen,
@@ -1002,6 +1004,7 @@ function App() {
                   classes={classes}
                   students={students}
                   records={attendance}
+                  calendar={data.calendar}
                   api={api}
                   schoolId={sid}
                   refresh={refresh}
@@ -1009,7 +1012,13 @@ function App() {
               )}
               {page === "Attendance" && (
                 <Table
-                  columns={["Student", "Class", "Date", "Status"]}
+                  columns={[
+                    "Student",
+                    "Class",
+                    "Date",
+                    "Status",
+                    "Calendar eligibility",
+                  ]}
                   rows={filtered(attendance).map((a) => [
                     data.users.find((u) => u.id === a.studentId)?.name ||
                       "Student",
@@ -1022,6 +1031,9 @@ function App() {
                     >
                       {a.status}
                     </span>,
+                    a.excludedFromAttendance
+                      ? `Excluded: ${a.holidayTitles.join("; ")}`
+                      : "School day",
                   ])}
                 />
               )}
@@ -1332,6 +1344,7 @@ function App() {
             platform={platform}
             classes={classes}
             students={students}
+            calendar={data?.calendar || []}
           />
         )
       )}
@@ -1351,6 +1364,7 @@ function RecordGrid({
   classes,
   students,
   records,
+  calendar = [],
   api,
   schoolId,
   refresh,
@@ -1364,6 +1378,17 @@ function RecordGrid({
     [busy, setBusy] = useState(false),
     [feedback, setFeedback] = useState("");
   const roster = students.filter((s) => s.classIds.includes(classId));
+  const holidays =
+    kind === "attendance"
+      ? calendar.filter(
+          (e) =>
+            e.kind === "holiday" &&
+            !e.cancelled &&
+            e.startDate <= date &&
+            e.endDate >= date,
+        )
+      : [];
+  const closed = holidays.length > 0;
   const existing = (s) =>
     records.find(
       (r) =>
@@ -1387,6 +1412,10 @@ function RecordGrid({
     setFeedback("");
     let saved = 0;
     try {
+      if (closed)
+        throw new Error(
+          "Attendance is closed on this school holiday. Update the Calendar first.",
+        );
       const selected = roster.filter((s) => value(s) !== "");
       if (!selected.length)
         throw new Error("Enter at least one record before saving.");
@@ -1502,6 +1531,14 @@ function RecordGrid({
             </>
           )}
         </div>
+        {closed && (
+          <div className="alert" role="status">
+            Attendance is closed: {holidays.map((h) => h.title).join("; ")}.
+            Existing records are retained but excluded from attendance
+            percentages. School management must update the Calendar before
+            recording on this date.
+          </div>
+        )}
         <div className="table-wrap">
           <table>
             <thead>
@@ -1519,6 +1556,7 @@ function RecordGrid({
                     {kind === "attendance" ? (
                       <select
                         aria-label={`Attendance for ${s.name}`}
+                        disabled={closed || busy}
                         value={value(s)}
                         onChange={(e) =>
                           setValues({ ...values, [s.id]: e.target.value })
@@ -1566,7 +1604,7 @@ function RecordGrid({
             <button
               type="button"
               className="secondary"
-              disabled={busy || !roster.length}
+              disabled={busy || closed || !roster.length}
               onClick={() =>
                 setValues(
                   Object.fromEntries(roster.map((s) => [s.id, "present"])),
@@ -1576,7 +1614,10 @@ function RecordGrid({
               Mark all present
             </button>
           )}
-          <button className="primary" disabled={busy || !roster.length}>
+          <button
+            className="primary"
+            disabled={busy || closed || !roster.length}
+          >
             {busy ? "Saving…" : "Save register"}
             <Check size={15} />
           </button>
@@ -1959,6 +2000,7 @@ function Editor({
   platform,
   classes,
   students,
+  calendar = [],
 }) {
   const [file, setFile] = useState(null);
   const [form, setForm] = useState({
@@ -1987,6 +2029,16 @@ function Editor({
     city: "",
     code: "",
   });
+  const attendanceHolidays =
+    type === "attendance"
+      ? calendar.filter(
+          (e) =>
+            e.kind === "holiday" &&
+            !e.cancelled &&
+            e.startDate <= form.date &&
+            e.endDate >= form.date,
+        )
+      : [];
   const field = (
     name,
     label,
@@ -2227,6 +2279,13 @@ function Editor({
           {type === "attendance" && (
             <>
               {field("date", "Date", null, "date")}
+              {attendanceHolidays.length > 0 && (
+                <div className="alert" role="status">
+                  Attendance is closed:{" "}
+                  {attendanceHolidays.map((h) => h.title).join("; ")}. School
+                  management must update the Calendar first.
+                </div>
+              )}
               {field("status", "Status", [
                 "present",
                 "absent",
@@ -2291,7 +2350,10 @@ function Editor({
             <button type="button" className="secondary" onClick={close}>
               Cancel
             </button>
-            <button className="primary" disabled={loading}>
+            <button
+              className="primary"
+              disabled={loading || attendanceHolidays.length > 0}
+            >
               {loading ? "Saving…" : "Save changes"}
               <Check size={16} />
             </button>

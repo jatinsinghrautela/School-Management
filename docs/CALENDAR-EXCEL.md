@@ -10,7 +10,7 @@ School directors, admins and principals open **Calendar → Plan yearly calendar
 
 The rows are authoritative: changing Settings preferences inside Excel does not recalculate them. Generate a new template to change the weekend defaults. A template is school-specific; uploads from another school, incomplete years, duplicated dates, formulas, invalid statuses and oversized/unsupported archives are rejected with row errors. Maximum upload size is 1 MB, with a 5 MB expanded archive limit.
 
-This workflow imports **all-day, whole-school calendar entries**, not weekly teaching periods. Holidays do not yet block attendance or override weekly timetables. Excel uploads allow one holiday/event per date; use the Calendar editor for additional or class-specific events.
+This workflow imports **all-day, whole-school calendar entries**, not weekly teaching periods. Applied active holidays block both attendance write endpoints and the attendance forms. Existing records on those dates remain in history, with an exclusion label, and do not count in dashboard attendance percentages. Templates and unconfirmed previews do not close attendance. Cancel/edit the active holiday, or import its date as Working, to reopen the date (any remaining manual holiday also needs updating). Weekly timetables are not yet overridden. Excel uploads allow one holiday/event per date; use the Calendar editor for additional or class-specific events.
 
 Pending release work includes background import processing, expired-preview cleanup and normalized/indexed storage. Only synthetic records should be used until the release checks in PLAN.md are complete.
 

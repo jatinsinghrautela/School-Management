@@ -1,5 +1,26 @@
 import { Router } from "express";
 import { id, managers, visibleNotice, roles } from "./domain.js";
+export const holidaysOn = (entries, schoolId, date) =>
+  entries.filter(
+    (e) =>
+      e.schoolId === schoolId &&
+      e.kind === "holiday" &&
+      !e.cancelled &&
+      !e.classId &&
+      e.audience === "all" &&
+      e.startDate <= date &&
+      e.endDate >= date,
+  );
+export async function requireAttendanceDay(store, schoolId, date) {
+  const holidays = holidaysOn(await store.all("calendar"), schoolId, date);
+  if (holidays.length)
+    throw Object.assign(
+      new Error(
+        `Attendance is closed on ${date}: ${holidays.map((h) => h.title).join("; ")}. School management must update the Calendar before recording attendance.`,
+      ),
+      { status: 409 },
+    );
+}
 export const validDate = (value) =>
   typeof value === "string" &&
   /^\d{4}-\d{2}-\d{2}$/.test(value) &&

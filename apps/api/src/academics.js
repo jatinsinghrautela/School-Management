@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { requireAttendanceDay } from "./calendar.js";
 import { createHash } from "node:crypto";
 import { id, managers, canSeeClass } from "./domain.js";
 
@@ -476,6 +477,7 @@ export function createAcademicRouter(store) {
       );
       const result = await transact(req, async (tx) => {
         await classFor(tx, req, classId);
+        await requireAttendanceDay(tx, req.school.id, date);
         const users = await tx.all("users"),
           existing = await scoped(tx, "attendance", req.school.id);
         assert(

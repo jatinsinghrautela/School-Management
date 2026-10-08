@@ -43,7 +43,8 @@ Independent schools have no organization and retain separate explicit membership
 - [x] Academic years, current-year selection, grades, sections, subjects and editable teacher subject assignments.
 - [ ] Terms, enrollment history and year promotion.
 - [x] Atomic attendance and configured exam marks batches.
-- [ ] Holidays, session-wise attendance and correction approvals.
+- [x] Holiday-aware attendance: transactional write guards, closure reasons, retained history and holiday exclusion from dashboard percentages.
+- [ ] Session-wise attendance and correction approvals.
 - [x] Exam schedules, configurable grade bands, subject weighting, pass thresholds and draft/published results.
 - [x] Student report cards, manager publication, reasoned reopening, immutable versions and manager archive access.
 - [ ] Dedicated PDF export verification, school-specific templates and signatures. Browser print/Save as PDF layout is implemented.
@@ -53,7 +54,7 @@ Independent schools have no organization and retain separate explicit membership
 - [x] School calendar: multi-day events, school-wide holidays, class/role audiences, audited editing and reasoned cancellation.
 - [x] Yearly calendar Excel templates with Sunday/Saturday holiday preferences, full-year validation, review previews and atomic audited imports that preserve manual entries.
 - [x] Yearly planning lives on Calendar, with country/state/region public-holiday references and Include/Exclude preferences; India 2026 includes verified central gazetted dates.
-- [ ] Date-specific timetable substitutions and holiday-aware attendance rules.
+- [ ] Date-specific timetable substitutions and holiday-aware timetable display.
 - [x] Account suspension/reactivation with session revocation and audited authorization.
 - [x] Authorized school-account name/contact updates with transactional audit records.
 - [x] Account-access milestone: persistent MySQL sessions/recovery, mandatory first-login password change, authenticated password updates and device-session revocation.

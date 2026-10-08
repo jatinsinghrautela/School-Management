@@ -1,4 +1,9 @@
-import { createCalendarRouter, visibleCalendar } from "./calendar.js";
+import {
+  createCalendarRouter,
+  visibleCalendar,
+  holidaysOn,
+  requireAttendanceDay,
+} from "./calendar.js";
 import { createCalendarImportRouter } from "./calendar-import.js";
 import express from "express";
 import helmet from "helmet";
@@ -779,6 +784,7 @@ export function createApp(store) {
       r.schoolIds.includes(sid),
     );
     const academics = await academicWorkspace(store, u, sid);
+    const calendar = await scoped("calendar");
     const publishedExams = new Set(
       academics.exams.filter((e) => e.status === "published").map((e) => e.id),
     );
@@ -798,9 +804,16 @@ export function createApp(store) {
                 : true,
         )
         .map(publicUser),
-      attendance: (await scoped("attendance")).filter(
-        (r) => u.role !== "student" || r.studentId === u.id,
-      ),
+      attendance: (await scoped("attendance"))
+        .filter((r) => u.role !== "student" || r.studentId === u.id)
+        .map((r) => {
+          const holidays = holidaysOn(calendar, sid, r.date);
+          return {
+            ...r,
+            excludedFromAttendance: holidays.length > 0,
+            holidayTitles: holidays.map((e) => e.title),
+          };
+        }),
       marks: (await scoped("marks")).filter(
         (r) =>
           u.role !== "student" ||
@@ -887,59 +900,66 @@ export function createApp(store) {
         )
       )
         return fail(res, 409, "Use the configured exam register for this exam");
-      const row = await store.transaction(req.school.id, async (tx) => {
-        const rows = await tx.all(kind);
-        const old = rows.find(
-          (r) =>
-            r.schoolId === req.school.id &&
-            r.classId === b.classId &&
-            r.studentId === b.studentId &&
-            !r.examId &&
-            (kind === "attendance"
-              ? r.date === b.date
-              : r.exam === b.exam && r.subject === b.subject),
-        );
-        const row = {
-          id:
-            old?.id ||
-            (kind === "attendance"
-              ? createHash("sha256")
-                  .update(
-                    JSON.stringify([
-                      "attendance",
-                      req.school.id,
-                      b.classId,
-                      b.date,
-                      b.studentId,
-                    ]),
-                  )
-                  .digest("hex")
-                  .slice(0, 36)
-              : id()),
-          schoolId: req.school.id,
-          classId: b.classId,
-          studentId: b.studentId,
-          ...(kind === "attendance"
-            ? { date: b.date, status: b.status }
-            : {
-                exam: b.exam,
-                subject: b.subject,
-                score: b.score,
-                maxScore: b.maxScore,
-              }),
-          updatedAt: new Date().toISOString(),
-        };
-        await tx.put(kind, row);
-        await tx.put("audit", {
-          id: id(),
-          actorId: req.user.id,
-          action: `${kind}.saved`,
-          schoolId: req.school.id,
-          createdAt: new Date().toISOString(),
+      try {
+        const row = await store.transaction(req.school.id, async (tx) => {
+          if (kind === "attendance")
+            await requireAttendanceDay(tx, req.school.id, b.date);
+          const rows = await tx.all(kind);
+          const old = rows.find(
+            (r) =>
+              r.schoolId === req.school.id &&
+              r.classId === b.classId &&
+              r.studentId === b.studentId &&
+              !r.examId &&
+              (kind === "attendance"
+                ? r.date === b.date
+                : r.exam === b.exam && r.subject === b.subject),
+          );
+          const row = {
+            id:
+              old?.id ||
+              (kind === "attendance"
+                ? createHash("sha256")
+                    .update(
+                      JSON.stringify([
+                        "attendance",
+                        req.school.id,
+                        b.classId,
+                        b.date,
+                        b.studentId,
+                      ]),
+                    )
+                    .digest("hex")
+                    .slice(0, 36)
+                : id()),
+            schoolId: req.school.id,
+            classId: b.classId,
+            studentId: b.studentId,
+            ...(kind === "attendance"
+              ? { date: b.date, status: b.status }
+              : {
+                  exam: b.exam,
+                  subject: b.subject,
+                  score: b.score,
+                  maxScore: b.maxScore,
+                }),
+            updatedAt: new Date().toISOString(),
+          };
+          await tx.put(kind, row);
+          await tx.put("audit", {
+            id: id(),
+            actorId: req.user.id,
+            action: `${kind}.saved`,
+            schoolId: req.school.id,
+            createdAt: new Date().toISOString(),
+          });
+          return row;
         });
-        return row;
-      });
-      res.json(row);
+        res.json(row);
+      } catch (error) {
+        if (error.status === 409) return fail(res, 409, error.message);
+        throw error;
+      }
     });
   app.post("/api/schools/:schoolId/resources", teach, async (req, res) => {
     if (!(await checkClass(req, res))) return;
