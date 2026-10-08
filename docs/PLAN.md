@@ -8,15 +8,15 @@ Organizations group schools. Access is explicit membership, never just an organi
 
 ## Roles
 
-| Role | Scope and capabilities |
-| --- | --- |
-| Owner | Onboard organizations/schools, create leadership accounts, platform KPIs, audit activity |
-| Director | Manage assigned schools across an organization |
-| Admin / principal | Manage one or more assigned schools, classes, teachers/students/staff, notices |
-| Teacher | Assigned classes/subjects, attendance, marks, learning resources |
-| Student | Own results/attendance, assigned class materials and targeted notices |
-| Staff | Own profile and applicable notices; job-specific permissions later |
-| Parent / guardian (planned) | Explicit linked-child access, never unrestricted class access |
+| Role                        | Scope and capabilities                                                                   |
+| --------------------------- | ---------------------------------------------------------------------------------------- |
+| Owner                       | Onboard organizations/schools, create leadership accounts, platform KPIs, audit activity |
+| Director                    | Manage assigned schools across an organization                                           |
+| Admin / principal           | Manage one or more assigned schools, classes, teachers/students/staff, notices           |
+| Teacher                     | Assigned classes/subjects, attendance, marks, learning resources                         |
+| Student                     | Own results/attendance, assigned class materials and targeted notices                    |
+| Staff                       | Own profile and applicable notices; job-specific permissions later                       |
+| Parent / guardian (planned) | Explicit linked-child access, never unrestricted class access                            |
 
 ## Phase 1: Initial web MVP — implemented
 

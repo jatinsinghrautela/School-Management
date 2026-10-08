@@ -13,10 +13,12 @@
 ### Verification and additions
 
 - Production React build passed.
-- Ten HTTP integration tests passed: tenancy, class access, mutations, notices, sessions, single-use reset, recovery hierarchy, file validation and authorized downloads.
+- Eleven HTTP integration tests passed: tenancy, class access, mutations, notices, sessions, single-use reset, recovery hierarchy, file validation, authorized downloads and complete organization/school/principal/student onboarding.
 - MySQL 8.4 initialized successfully; verified an audit record persisted across independent connections.
 - Dependency audit reports zero known vulnerabilities after overriding shell-quote to patched 1.12.0.
 - Browser verified director school switching, individual attendance/marks, teacher editable registers, calculated results, responsive layout and mobile navigation.
 - Added local PDF/image uploads and protected downloads, administrator-assisted recovery, provisional result summaries, serving the React build through Node, and GitHub CI.
 - Corrected focus styling and accessible form labels during browser verification; hidden mobile navigation is inert.
-- GitHub browser handoff now shows the new empty `jatinsinghrautela/School-Management` repository. Remote synchronization is the next step.
+- Connected origin to `https://github.com/jatinsinghrautela/School-Management.git`; initial commit `bd4ec16` successfully pushed to main.
+- Local secrets, uploaded files, node_modules and generated builds are ignored and excluded from Git.
+- Added readable code formatting, an npm format command, and a saved dashboard screenshot. Final local test suite: 11 passed; production build passed; no known npm advisories.

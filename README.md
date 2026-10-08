@@ -2,6 +2,8 @@
 
 A multi-school workspace built with React, Node.js, and MySQL. One API serves the platform console and school web workspace; a mobile client will reuse it later.
 
+![Orbit school dashboard](docs/screenshots/dashboard.png)
+
 ## Current delivery
 
 An initial working web MVP, not a completed production school ERP. Includes organization/school onboarding, leadership and school user creation, multi-school switching, class creation, attendance and marks tables, provisional totals and printable reports, learning resource links and PDF/image uploads, administrator-assisted password recovery, role/class notices, and dashboards. There is no public registration. Dashboards use actual records, not invented student counts.

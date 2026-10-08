@@ -17,27 +17,27 @@ Passwords use bcrypt. Session tokens are 32 random bytes and stored by SHA-256 d
 
 ## API v0
 
-| Endpoint | Access | Description |
-| --- | --- | --- |
-| GET /api/health | Public | Health and persistence mode |
-| POST /api/auth/login | Public | Email/password, token and safe user |
-| POST /api/auth/forgot-password | Public | Neutral response; demo-only token |
-| POST /api/auth/reset-password | Valid reset token | Password change and session revocation |
-| POST /api/auth/logout | Signed in | Revoke current session |
-| GET /api/me | Signed in | Safe user and accessible schools |
-| GET /api/platform | Owner | Organizations, schools, users, latest audit |
-| POST /api/platform/organizations | Owner | Create organization |
-| POST /api/platform/schools | Owner | Create school in organization |
-| POST /api/users | Owner or school management | Create permitted role with verified memberships |
-| POST /api/users/:id/recovery | Owner or permitted school management | Issue a private 15-minute reset token after identity verification |
-| GET /api/schools/:id/workspace | School member | Filtered classes/users/records |
-| POST /api/schools/:id/classes | School management | Create class |
-| POST /api/schools/:id/attendance | Teacher or school management | Upsert date/class/student attendance |
-| POST /api/schools/:id/marks | Teacher or school management | Upsert exam/subject/class/student mark |
-| POST /api/schools/:id/resources | Teacher or school management | Class-scoped HTTPS link and instructions |
-| POST /api/schools/:id/uploads | Teacher or school management | Multipart file + resource fields, PDF/PNG/JPEG up to 5 MB |
-| GET /api/schools/:id/files/:fileId | School/class member | Authorized private attachment download |
-| POST /api/schools/:id/notices | School management | Broadcast by audience and optional class |
+| Endpoint                           | Access                               | Description                                                       |
+| ---------------------------------- | ------------------------------------ | ----------------------------------------------------------------- |
+| GET /api/health                    | Public                               | Health and persistence mode                                       |
+| POST /api/auth/login               | Public                               | Email/password, token and safe user                               |
+| POST /api/auth/forgot-password     | Public                               | Neutral response; demo-only token                                 |
+| POST /api/auth/reset-password      | Valid reset token                    | Password change and session revocation                            |
+| POST /api/auth/logout              | Signed in                            | Revoke current session                                            |
+| GET /api/me                        | Signed in                            | Safe user and accessible schools                                  |
+| GET /api/platform                  | Owner                                | Organizations, schools, users, latest audit                       |
+| POST /api/platform/organizations   | Owner                                | Create organization                                               |
+| POST /api/platform/schools         | Owner                                | Create school in organization                                     |
+| POST /api/users                    | Owner or school management           | Create permitted role with verified memberships                   |
+| POST /api/users/:id/recovery       | Owner or permitted school management | Issue a private 15-minute reset token after identity verification |
+| GET /api/schools/:id/workspace     | School member                        | Filtered classes/users/records                                    |
+| POST /api/schools/:id/classes      | School management                    | Create class                                                      |
+| POST /api/schools/:id/attendance   | Teacher or school management         | Upsert date/class/student attendance                              |
+| POST /api/schools/:id/marks        | Teacher or school management         | Upsert exam/subject/class/student mark                            |
+| POST /api/schools/:id/resources    | Teacher or school management         | Class-scoped HTTPS link and instructions                          |
+| POST /api/schools/:id/uploads      | Teacher or school management         | Multipart file + resource fields, PDF/PNG/JPEG up to 5 MB         |
+| GET /api/schools/:id/files/:fileId | School/class member                  | Authorized private attachment download                            |
+| POST /api/schools/:id/notices      | School management                    | Broadcast by audience and optional class                          |
 
 Mutations validate school/class membership and key fields. Responses use JSON and 400/401/403/404/409/413/500 status codes. Development uses a local same-origin Vite proxy; the API also serves the built React app after a build. Mobile will need documented origin/transport configuration and secure token storage.
 

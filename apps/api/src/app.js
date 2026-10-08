@@ -1,51 +1,577 @@
-import express from 'express';
-import helmet from 'helmet';
-import rateLimit from 'express-rate-limit';
-import bcrypt from 'bcryptjs';
-import { randomBytes, createHash } from 'node:crypto';
-import { fileURLToPath } from 'node:url';
-import { existsSync } from 'node:fs';
-import { mkdir, writeFile, unlink } from 'node:fs/promises';
-import multer from 'multer';
-import { id, managers, roles, canAccessSchool, canSeeClass, publicUser, visibleNotice } from './domain.js';
-const hash=t=>createHash('sha256').update(t).digest('hex');
+import express from "express";
+import helmet from "helmet";
+import rateLimit from "express-rate-limit";
+import bcrypt from "bcryptjs";
+import { randomBytes, createHash } from "node:crypto";
+import { fileURLToPath } from "node:url";
+import { existsSync } from "node:fs";
+import { mkdir, writeFile, unlink } from "node:fs/promises";
+import multer from "multer";
+import {
+  id,
+  managers,
+  roles,
+  canAccessSchool,
+  canSeeClass,
+  publicUser,
+  visibleNotice,
+} from "./domain.js";
+const hash = (t) => createHash("sha256").update(t).digest("hex");
 export function createApp(store) {
-  const app=express(), sessions=new Map(), resets=new Map();
-  app.use(helmet({contentSecurityPolicy:{directives:{'style-src':["'self'",'https://fonts.googleapis.com'],'font-src':["'self'",'https://fonts.gstatic.com']}}})); app.use(express.json({limit:'100kb'}));
-  app.use((req,res,next)=>{if(['POST','PUT','PATCH'].includes(req.method)&&!req.is('multipart/form-data')&&(!req.body||typeof req.body!=='object'||Array.isArray(req.body)))return res.status(400).json({error:'A JSON object is required'});next();});
-  const fail=(res,status,message)=>res.status(status).json({error:message});
-  const valid=(v,max=200)=>typeof v==='string' && v.trim().length>0 && v.length<=max;
-  const audit=async(user,action,schoolId)=>store.put('audit',{id:id(),actorId:user.id,action,schoolId,createdAt:new Date().toISOString()});
-  const auth=async(req,res,next)=>{ const token=req.headers.authorization?.replace(/^Bearer /,''); const session=sessions.get(hash(token || '')); if(!session || session.expires<Date.now()){if(session)sessions.delete(hash(token));return fail(res,401,'Please sign in again');} req.user=(await store.all('users')).find(u=>u.id===session.userId); if(!req.user)return fail(res,401,'Account unavailable');next(); };
-  const owner=(req,res,next)=>req.user.role==='owner'?next():fail(res,403,'Platform owner access required');
-  const manage=(req,res,next)=>managers.includes(req.user.role)?next():fail(res,403,'School management access required');
-  const teach=(req,res,next)=>['teacher',...managers].includes(req.user.role)?next():fail(res,403,'Teaching access required');
-  app.get('/api/health',(req,res)=>res.json({status:'ok',mode:store.mode}));
-  app.use('/api/auth',rateLimit({windowMs:15*60*1000,limit:50,standardHeaders:'draft-8',legacyHeaders:false}));
-  app.post('/api/auth/login',async(req,res)=>{const {email,password}=req.body; if(!valid(email)||!valid(password,200))return fail(res,400,'Email and password required'); const user=(await store.all('users')).find(u=>u.email.toLowerCase()===email.toLowerCase()); if(!user || !await bcrypt.compare(password,user.passwordHash))return fail(res,401,'Invalid email or password');const token=randomBytes(32).toString('hex');sessions.set(hash(token),{userId:user.id,expires:Date.now()+8*60*60*1000});res.json({token,user:publicUser(user),mode:store.mode});});
-  app.post('/api/auth/forgot-password',async(req,res)=>{const user=(await store.all('users')).find(u=>u.email===req.body.email);let token;if(user){token=randomBytes(32).toString('hex');resets.set(hash(token),{userId:user.id,expires:Date.now()+15*60*1000});}res.json({message:'If an account exists, a reset request has been created. Contact your administrator for assisted recovery.',...(store.mode==='demo'&&token?{demoToken:token}:{})});});
-  app.post('/api/auth/reset-password',async(req,res)=>{const record=resets.get(hash(req.body.token || ''));if(!record || record.expires<Date.now())return fail(res,400,'Invalid or expired reset token');if(!valid(req.body.password,200)||req.body.password.length<12)return fail(res,400,'Password must be at least 12 characters');const user=(await store.all('users')).find(u=>u.id===record.userId);await store.put('users',{...user,passwordHash:await bcrypt.hash(req.body.password,12)});resets.delete(hash(req.body.token));for(const [k,v]of sessions)if(v.userId===user.id)sessions.delete(k);res.json({message:'Password updated. Please sign in.'});});
-  app.post('/api/auth/logout',auth,(req,res)=>{sessions.delete(hash(req.headers.authorization.replace(/^Bearer /,'')));res.json({ok:true});});
-  app.post('/api/users/:userId/recovery',auth,async(req,res)=>{const target=(await store.all('users')).find(u=>u.id===req.params.userId);if(!target)return fail(res,404,'Account not found');const schools=await store.all('schools');const permitted=req.user.role==='owner'||(managers.includes(req.user.role)&&['teacher','student','staff'].includes(target.role)&&target.orgId===req.user.orgId&&target.schoolIds.length>0&&target.schoolIds.every(sid=>schools.some(s=>s.id===sid&&canAccessSchool(req.user,s))));if(!permitted)return fail(res,403,'You cannot recover this account');const token=randomBytes(32).toString('hex');resets.set(hash(token),{userId:target.id,expires:Date.now()+15*60*1000});await audit(req.user,'user.recovery-issued',target.schoolIds[0]||null);res.json({token,message:'This token expires in 15 minutes. Share privately with the verified account holder.'});});
-  app.get('/api/me',auth,async(req,res)=>res.json({user:publicUser(req.user),schools:(await store.all('schools')).filter(s=>canAccessSchool(req.user,s)),mode:store.mode}));
-  app.get('/api/platform',auth,owner,async(req,res)=>res.json({organizations:await store.all('organizations'),schools:await store.all('schools'),users:(await store.all('users')).map(publicUser),audit:(await store.all('audit')).slice(-20).reverse()}));
-  app.post('/api/platform/organizations',auth,owner,async(req,res)=>{if(!valid(req.body.name))return fail(res,400,'Organization name required');const row=await store.put('organizations',{id:id(),name:req.body.name.trim()});await audit(req.user,'organization.created',null);res.status(201).json(row);});
-  app.post('/api/platform/schools',auth,owner,async(req,res)=>{const {name,city,code,orgId}=req.body;if(![name,city,code].every(v=>valid(v))||!(await store.all('organizations')).some(o=>o.id===orgId))return fail(res,400,'Valid school details and organization required');const row=await store.put('schools',{id:id(),name,city,code,orgId});await audit(req.user,'school.created',row.id);res.status(201).json(row);});
-  app.post('/api/users',auth,async(req,res)=>{const {name,email,password,role,orgId,schoolIds,classIds=[]}=req.body;if(req.user.role!=='owner'&&!managers.includes(req.user.role))return fail(res,403,'Management access required');if(!valid(name)||!valid(email)||!/^\S+@\S+\.\S+$/.test(email)||!valid(password,200)||password.length<12||!roles.includes(role)||!Array.isArray(schoolIds)||!schoolIds.length||!Array.isArray(classIds))return fail(res,400,'Valid user details and a 12-character password required');if(req.user.role!=='owner'&&!['teacher','student','staff'].includes(role))return fail(res,403,'Only the platform owner can create school leadership accounts');const schools=await store.all('schools');if(schoolIds.some(sid=>!schools.some(s=>s.id===sid&&s.orgId===orgId&&canAccessSchool(req.user,s))))return fail(res,403,'Invalid school membership');const classes=await store.all('classes');if(classIds.some(cid=>!classes.some(c=>c.id===cid&&schoolIds.includes(c.schoolId)))||(['student','teacher'].includes(role)&&!classIds.length))return fail(res,400,'Assign valid classes to students and teachers');if((await store.all('users')).some(u=>u.email.toLowerCase()===email.toLowerCase()))return fail(res,409,'Email already exists');const user=await store.put('users',{id:id(),name,email:email.toLowerCase(),passwordHash:await bcrypt.hash(password,12),role,orgId,schoolIds:[...new Set(schoolIds)],classIds:[...new Set(classIds)]});await audit(req.user,'user.created',schoolIds[0]);res.status(201).json(publicUser(user));});
-  app.use('/api/schools/:schoolId',auth,async(req,res,next)=>{const school=(await store.all('schools')).find(s=>s.id===req.params.schoolId);if(!school||!canAccessSchool(req.user,school))return fail(res,403,'School access denied');req.school=school;next();});
-  app.get('/api/schools/:schoolId/workspace',async(req,res)=>{const sid=req.params.schoolId,u=req.user;const scoped=async k=>(await store.all(k)).filter(r=>r.schoolId===sid&&(!r.classId||canSeeClass(u,r.classId)));const users=(await store.all('users')).filter(r=>r.schoolIds.includes(sid));res.json({school:req.school,classes:(await scoped('classes')).filter(c=>canSeeClass(u,c.id)),users:users.filter(r=>u.role==='student'?r.id===u.id:u.role==='teacher'?r.id===u.id||(r.role==='student'&&r.classIds.some(c=>u.classIds.includes(c))):u.role==='staff'?r.id===u.id:true).map(publicUser),attendance:(await scoped('attendance')).filter(r=>u.role!=='student'||r.studentId===u.id),marks:(await scoped('marks')).filter(r=>u.role!=='student'||r.studentId===u.id),resources:await scoped('resources'),notices:(await scoped('notices')).filter(n=>visibleNotice(u,n))});});
-  app.post('/api/schools/:schoolId/classes',manage,async(req,res)=>{if(!valid(req.body.name))return fail(res,400,'Class name required');const row=await store.put('classes',{id:id(),schoolId:req.school.id,name:req.body.name});await audit(req.user,'class.created',req.school.id);res.status(201).json(row);});
-  const checkClass=async(req,res)=>{const cls=(await store.all('classes')).find(c=>c.id===req.body.classId&&c.schoolId===req.school.id);if(!cls||!canSeeClass(req.user,cls.id)){fail(res,403,'Class access denied');return false;}return true;};
-  for(const kind of ['attendance','marks'])app.post(`/api/schools/:schoolId/${kind}`,teach,async(req,res)=>{if(!await checkClass(req,res))return;const b=req.body,student=(await store.all('users')).find(u=>u.id===b.studentId&&u.role==='student'&&u.schoolIds.includes(req.school.id)&&u.classIds.includes(b.classId));if(!student)return fail(res,400,'Invalid student');if(kind==='attendance'&&(!/^\d{4}-\d{2}-\d{2}$/.test(b.date)||!['present','absent','late','excused'].includes(b.status)))return fail(res,400,'Valid date and attendance status required');if(kind==='marks'&&(!valid(b.exam)||!valid(b.subject)||typeof b.score!=='number'||typeof b.maxScore!=='number'||!Number.isFinite(b.score)||!Number.isFinite(b.maxScore)||b.score<0||b.maxScore<=0||b.score>b.maxScore))return fail(res,400,'Valid exam, subject and score required');const rows=await store.all(kind);const old=rows.find(r=>r.schoolId===req.school.id&&r.classId===b.classId&&r.studentId===b.studentId&&(kind==='attendance'?r.date===b.date:r.exam===b.exam&&r.subject===b.subject));const row={id:old?.id||id(),schoolId:req.school.id,classId:b.classId,studentId:b.studentId,...(kind==='attendance'?{date:b.date,status:b.status}:{exam:b.exam,subject:b.subject,score:b.score,maxScore:b.maxScore}),updatedAt:new Date().toISOString()};await store.put(kind,row);await audit(req.user,`${kind}.saved`,req.school.id);res.json(row);});
-  app.post('/api/schools/:schoolId/resources',teach,async(req,res)=>{if(!await checkClass(req,res))return;const {classId,title,type,description='',url='',dueDate=''}=req.body;if(!valid(title)||!['homework','syllabus','timetable','material'].includes(type)||typeof description!=='string'||description.length>5000||typeof url!=='string'||(url&&!/^https:\/\//i.test(url)))return fail(res,400,'Valid resource details and HTTPS link required');const row=await store.put('resources',{id:id(),schoolId:req.school.id,classId,title,type,description,url,dueDate,createdAt:new Date().toISOString()});await audit(req.user,'resource.created',req.school.id);res.status(201).json(row);});
-  const upload=multer({storage:multer.memoryStorage(),limits:{fileSize:5*1024*1024,files:1,fields:8,fieldSize:6000}});
-  const uploadRoot=fileURLToPath(new URL('../data/uploads/',import.meta.url));
-  app.post('/api/schools/:schoolId/uploads',teach,upload.single('file'),async(req,res)=>{if(!await checkClass(req,res))return;const {classId,title,type,description='',dueDate=''}=req.body;if(!req.file||!valid(title)||!['homework','syllabus','timetable','material'].includes(type)||description.length>5000)return fail(res,400,'Choose a file and valid resource details');const b=req.file.buffer;const pdf=b.subarray(0,5).toString()==='%PDF-';const png=b.subarray(0,8).equals(Buffer.from([137,80,78,71,13,10,26,10]));const jpeg=b[0]===255&&b[1]===216&&b[2]===255;if(!pdf&&!png&&!jpeg)return fail(res,400,'Only PDF, PNG and JPEG files are supported');const fileId=id();const name=req.file.originalname.replace(/[^a-zA-Z0-9._ -]/g,'_').slice(0,120)||'resource';await mkdir(uploadRoot,{recursive:true});await writeFile(uploadRoot+fileId,b,{flag:'wx'});try{await store.put('files',{id:fileId,schoolId:req.school.id,classId,name,mime:pdf?'application/pdf':png?'image/png':'image/jpeg',size:b.length});const row=await store.put('resources',{id:id(),schoolId:req.school.id,classId,title,type,description,dueDate,fileId,fileName:name,url:'',createdAt:new Date().toISOString()});await audit(req.user,'resource.uploaded',req.school.id);res.status(201).json(row);}catch(e){await unlink(uploadRoot+fileId).catch(()=>{});throw e;}});
-  app.get('/api/schools/:schoolId/files/:fileId',async(req,res)=>{const file=(await store.all('files')).find(f=>f.id===req.params.fileId&&f.schoolId===req.school.id);if(!file||!canSeeClass(req.user,file.classId))return fail(res,404,'File not found');res.setHeader('Cache-Control','private, no-store');res.setHeader('Content-Type',file.mime);res.download(uploadRoot+file.id,file.name);});
-  app.post('/api/schools/:schoolId/notices',manage,async(req,res)=>{const {title,body,audience='all',classId=null}=req.body;if(!valid(title)||!valid(body,5000)||!['all',...roles].includes(audience))return fail(res,400,'Valid notice details required');if(classId&&!await checkClass(req,res))return;const row=await store.put('notices',{id:id(),schoolId:req.school.id,title,body,audience,classId,createdAt:new Date().toISOString()});await audit(req.user,'notice.published',req.school.id);res.status(201).json(row);});
-  app.use('/api',(req,res)=>fail(res,404,'API endpoint not found'));
-  const webRoot=fileURLToPath(new URL('../../web/dist/',import.meta.url));
-  if(existsSync(webRoot)){app.use(express.static(webRoot));app.get(/^(?!\/api(?:\/|$)).*/, (req,res)=>res.sendFile(webRoot+'index.html'));}
-  app.use((err,req,res,next)=>{console.error(err.message);if(res.headersSent)return next(err);const status=err instanceof multer.MulterError?400:[400,413].includes(err.status)?err.status:500;res.status(status).json({error:err instanceof multer.MulterError?'Upload rejected. Maximum one file, 5 MB.':status===400?'Invalid JSON request.':status===413?'Request exceeds the size limit.':'The request could not be completed.'});});
+  const app = express(),
+    sessions = new Map(),
+    resets = new Map();
+  app.use(
+    helmet({
+      contentSecurityPolicy: {
+        directives: {
+          "style-src": ["'self'", "https://fonts.googleapis.com"],
+          "font-src": ["'self'", "https://fonts.gstatic.com"],
+        },
+      },
+    }),
+  );
+  app.use(express.json({ limit: "100kb" }));
+  app.use((req, res, next) => {
+    if (
+      ["POST", "PUT", "PATCH"].includes(req.method) &&
+      !req.is("multipart/form-data") &&
+      (!req.body || typeof req.body !== "object" || Array.isArray(req.body))
+    )
+      return res.status(400).json({ error: "A JSON object is required" });
+    next();
+  });
+  const fail = (res, status, message) =>
+    res.status(status).json({ error: message });
+  const valid = (v, max = 200) =>
+    typeof v === "string" && v.trim().length > 0 && v.length <= max;
+  const audit = async (user, action, schoolId) =>
+    store.put("audit", {
+      id: id(),
+      actorId: user.id,
+      action,
+      schoolId,
+      createdAt: new Date().toISOString(),
+    });
+  const auth = async (req, res, next) => {
+    const token = req.headers.authorization?.replace(/^Bearer /, "");
+    const session = sessions.get(hash(token || ""));
+    if (!session || session.expires < Date.now()) {
+      if (session) sessions.delete(hash(token));
+      return fail(res, 401, "Please sign in again");
+    }
+    req.user = (await store.all("users")).find((u) => u.id === session.userId);
+    if (!req.user) return fail(res, 401, "Account unavailable");
+    next();
+  };
+  const owner = (req, res, next) =>
+    req.user.role === "owner"
+      ? next()
+      : fail(res, 403, "Platform owner access required");
+  const manage = (req, res, next) =>
+    managers.includes(req.user.role)
+      ? next()
+      : fail(res, 403, "School management access required");
+  const teach = (req, res, next) =>
+    ["teacher", ...managers].includes(req.user.role)
+      ? next()
+      : fail(res, 403, "Teaching access required");
+  app.get("/api/health", (req, res) =>
+    res.json({ status: "ok", mode: store.mode }),
+  );
+  app.use(
+    "/api/auth",
+    rateLimit({
+      windowMs: 15 * 60 * 1000,
+      limit: 50,
+      standardHeaders: "draft-8",
+      legacyHeaders: false,
+    }),
+  );
+  app.post("/api/auth/login", async (req, res) => {
+    const { email, password } = req.body;
+    if (!valid(email) || !valid(password, 200))
+      return fail(res, 400, "Email and password required");
+    const user = (await store.all("users")).find(
+      (u) => u.email.toLowerCase() === email.toLowerCase(),
+    );
+    if (!user || !(await bcrypt.compare(password, user.passwordHash)))
+      return fail(res, 401, "Invalid email or password");
+    const token = randomBytes(32).toString("hex");
+    sessions.set(hash(token), {
+      userId: user.id,
+      expires: Date.now() + 8 * 60 * 60 * 1000,
+    });
+    res.json({ token, user: publicUser(user), mode: store.mode });
+  });
+  app.post("/api/auth/forgot-password", async (req, res) => {
+    const user = (await store.all("users")).find(
+      (u) => u.email === req.body.email,
+    );
+    let token;
+    if (user) {
+      token = randomBytes(32).toString("hex");
+      resets.set(hash(token), {
+        userId: user.id,
+        expires: Date.now() + 15 * 60 * 1000,
+      });
+    }
+    res.json({
+      message:
+        "If an account exists, a reset request has been created. Contact your administrator for assisted recovery.",
+      ...(store.mode === "demo" && token ? { demoToken: token } : {}),
+    });
+  });
+  app.post("/api/auth/reset-password", async (req, res) => {
+    const record = resets.get(hash(req.body.token || ""));
+    if (!record || record.expires < Date.now())
+      return fail(res, 400, "Invalid or expired reset token");
+    if (!valid(req.body.password, 200) || req.body.password.length < 12)
+      return fail(res, 400, "Password must be at least 12 characters");
+    const user = (await store.all("users")).find((u) => u.id === record.userId);
+    await store.put("users", {
+      ...user,
+      passwordHash: await bcrypt.hash(req.body.password, 12),
+    });
+    resets.delete(hash(req.body.token));
+    for (const [k, v] of sessions) if (v.userId === user.id) sessions.delete(k);
+    res.json({ message: "Password updated. Please sign in." });
+  });
+  app.post("/api/auth/logout", auth, (req, res) => {
+    sessions.delete(hash(req.headers.authorization.replace(/^Bearer /, "")));
+    res.json({ ok: true });
+  });
+  app.post("/api/users/:userId/recovery", auth, async (req, res) => {
+    const target = (await store.all("users")).find(
+      (u) => u.id === req.params.userId,
+    );
+    if (!target) return fail(res, 404, "Account not found");
+    const schools = await store.all("schools");
+    const permitted =
+      req.user.role === "owner" ||
+      (managers.includes(req.user.role) &&
+        ["teacher", "student", "staff"].includes(target.role) &&
+        target.orgId === req.user.orgId &&
+        target.schoolIds.length > 0 &&
+        target.schoolIds.every((sid) =>
+          schools.some((s) => s.id === sid && canAccessSchool(req.user, s)),
+        ));
+    if (!permitted) return fail(res, 403, "You cannot recover this account");
+    const token = randomBytes(32).toString("hex");
+    resets.set(hash(token), {
+      userId: target.id,
+      expires: Date.now() + 15 * 60 * 1000,
+    });
+    await audit(req.user, "user.recovery-issued", target.schoolIds[0] || null);
+    res.json({
+      token,
+      message:
+        "This token expires in 15 minutes. Share privately with the verified account holder.",
+    });
+  });
+  app.get("/api/me", auth, async (req, res) =>
+    res.json({
+      user: publicUser(req.user),
+      schools: (await store.all("schools")).filter((s) =>
+        canAccessSchool(req.user, s),
+      ),
+      mode: store.mode,
+    }),
+  );
+  app.get("/api/platform", auth, owner, async (req, res) =>
+    res.json({
+      organizations: await store.all("organizations"),
+      schools: await store.all("schools"),
+      users: (await store.all("users")).map(publicUser),
+      audit: (await store.all("audit")).slice(-20).reverse(),
+    }),
+  );
+  app.post("/api/platform/organizations", auth, owner, async (req, res) => {
+    if (!valid(req.body.name))
+      return fail(res, 400, "Organization name required");
+    const row = await store.put("organizations", {
+      id: id(),
+      name: req.body.name.trim(),
+    });
+    await audit(req.user, "organization.created", null);
+    res.status(201).json(row);
+  });
+  app.post("/api/platform/schools", auth, owner, async (req, res) => {
+    const { name, city, code, orgId } = req.body;
+    if (
+      ![name, city, code].every((v) => valid(v)) ||
+      !(await store.all("organizations")).some((o) => o.id === orgId)
+    )
+      return fail(res, 400, "Valid school details and organization required");
+    const row = await store.put("schools", {
+      id: id(),
+      name,
+      city,
+      code,
+      orgId,
+    });
+    await audit(req.user, "school.created", row.id);
+    res.status(201).json(row);
+  });
+  app.post("/api/users", auth, async (req, res) => {
+    const {
+      name,
+      email,
+      password,
+      role,
+      orgId,
+      schoolIds,
+      classIds = [],
+    } = req.body;
+    if (req.user.role !== "owner" && !managers.includes(req.user.role))
+      return fail(res, 403, "Management access required");
+    if (
+      !valid(name) ||
+      !valid(email) ||
+      !/^\S+@\S+\.\S+$/.test(email) ||
+      !valid(password, 200) ||
+      password.length < 12 ||
+      !roles.includes(role) ||
+      !Array.isArray(schoolIds) ||
+      !schoolIds.length ||
+      !Array.isArray(classIds)
+    )
+      return fail(
+        res,
+        400,
+        "Valid user details and a 12-character password required",
+      );
+    if (
+      req.user.role !== "owner" &&
+      !["teacher", "student", "staff"].includes(role)
+    )
+      return fail(
+        res,
+        403,
+        "Only the platform owner can create school leadership accounts",
+      );
+    const schools = await store.all("schools");
+    if (
+      schoolIds.some(
+        (sid) =>
+          !schools.some(
+            (s) =>
+              s.id === sid && s.orgId === orgId && canAccessSchool(req.user, s),
+          ),
+      )
+    )
+      return fail(res, 403, "Invalid school membership");
+    const classes = await store.all("classes");
+    if (
+      classIds.some(
+        (cid) =>
+          !classes.some((c) => c.id === cid && schoolIds.includes(c.schoolId)),
+      ) ||
+      (["student", "teacher"].includes(role) && !classIds.length)
+    )
+      return fail(res, 400, "Assign valid classes to students and teachers");
+    if (
+      (await store.all("users")).some(
+        (u) => u.email.toLowerCase() === email.toLowerCase(),
+      )
+    )
+      return fail(res, 409, "Email already exists");
+    const user = await store.put("users", {
+      id: id(),
+      name,
+      email: email.toLowerCase(),
+      passwordHash: await bcrypt.hash(password, 12),
+      role,
+      orgId,
+      schoolIds: [...new Set(schoolIds)],
+      classIds: [...new Set(classIds)],
+    });
+    await audit(req.user, "user.created", schoolIds[0]);
+    res.status(201).json(publicUser(user));
+  });
+  app.use("/api/schools/:schoolId", auth, async (req, res, next) => {
+    const school = (await store.all("schools")).find(
+      (s) => s.id === req.params.schoolId,
+    );
+    if (!school || !canAccessSchool(req.user, school))
+      return fail(res, 403, "School access denied");
+    req.school = school;
+    next();
+  });
+  app.get("/api/schools/:schoolId/workspace", async (req, res) => {
+    const sid = req.params.schoolId,
+      u = req.user;
+    const scoped = async (k) =>
+      (await store.all(k)).filter(
+        (r) => r.schoolId === sid && (!r.classId || canSeeClass(u, r.classId)),
+      );
+    const users = (await store.all("users")).filter((r) =>
+      r.schoolIds.includes(sid),
+    );
+    res.json({
+      school: req.school,
+      classes: (await scoped("classes")).filter((c) => canSeeClass(u, c.id)),
+      users: users
+        .filter((r) =>
+          u.role === "student"
+            ? r.id === u.id
+            : u.role === "teacher"
+              ? r.id === u.id ||
+                (r.role === "student" &&
+                  r.classIds.some((c) => u.classIds.includes(c)))
+              : u.role === "staff"
+                ? r.id === u.id
+                : true,
+        )
+        .map(publicUser),
+      attendance: (await scoped("attendance")).filter(
+        (r) => u.role !== "student" || r.studentId === u.id,
+      ),
+      marks: (await scoped("marks")).filter(
+        (r) => u.role !== "student" || r.studentId === u.id,
+      ),
+      resources: await scoped("resources"),
+      notices: (await scoped("notices")).filter((n) => visibleNotice(u, n)),
+    });
+  });
+  app.post("/api/schools/:schoolId/classes", manage, async (req, res) => {
+    if (!valid(req.body.name)) return fail(res, 400, "Class name required");
+    const row = await store.put("classes", {
+      id: id(),
+      schoolId: req.school.id,
+      name: req.body.name,
+    });
+    await audit(req.user, "class.created", req.school.id);
+    res.status(201).json(row);
+  });
+  const checkClass = async (req, res) => {
+    const cls = (await store.all("classes")).find(
+      (c) => c.id === req.body.classId && c.schoolId === req.school.id,
+    );
+    if (!cls || !canSeeClass(req.user, cls.id)) {
+      fail(res, 403, "Class access denied");
+      return false;
+    }
+    return true;
+  };
+  for (const kind of ["attendance", "marks"])
+    app.post(`/api/schools/:schoolId/${kind}`, teach, async (req, res) => {
+      if (!(await checkClass(req, res))) return;
+      const b = req.body,
+        student = (await store.all("users")).find(
+          (u) =>
+            u.id === b.studentId &&
+            u.role === "student" &&
+            u.schoolIds.includes(req.school.id) &&
+            u.classIds.includes(b.classId),
+        );
+      if (!student) return fail(res, 400, "Invalid student");
+      if (
+        kind === "attendance" &&
+        (!/^\d{4}-\d{2}-\d{2}$/.test(b.date) ||
+          !["present", "absent", "late", "excused"].includes(b.status))
+      )
+        return fail(res, 400, "Valid date and attendance status required");
+      if (
+        kind === "marks" &&
+        (!valid(b.exam) ||
+          !valid(b.subject) ||
+          typeof b.score !== "number" ||
+          typeof b.maxScore !== "number" ||
+          !Number.isFinite(b.score) ||
+          !Number.isFinite(b.maxScore) ||
+          b.score < 0 ||
+          b.maxScore <= 0 ||
+          b.score > b.maxScore)
+      )
+        return fail(res, 400, "Valid exam, subject and score required");
+      const rows = await store.all(kind);
+      const old = rows.find(
+        (r) =>
+          r.schoolId === req.school.id &&
+          r.classId === b.classId &&
+          r.studentId === b.studentId &&
+          (kind === "attendance"
+            ? r.date === b.date
+            : r.exam === b.exam && r.subject === b.subject),
+      );
+      const row = {
+        id: old?.id || id(),
+        schoolId: req.school.id,
+        classId: b.classId,
+        studentId: b.studentId,
+        ...(kind === "attendance"
+          ? { date: b.date, status: b.status }
+          : {
+              exam: b.exam,
+              subject: b.subject,
+              score: b.score,
+              maxScore: b.maxScore,
+            }),
+        updatedAt: new Date().toISOString(),
+      };
+      await store.put(kind, row);
+      await audit(req.user, `${kind}.saved`, req.school.id);
+      res.json(row);
+    });
+  app.post("/api/schools/:schoolId/resources", teach, async (req, res) => {
+    if (!(await checkClass(req, res))) return;
+    const {
+      classId,
+      title,
+      type,
+      description = "",
+      url = "",
+      dueDate = "",
+    } = req.body;
+    if (
+      !valid(title) ||
+      !["homework", "syllabus", "timetable", "material"].includes(type) ||
+      typeof description !== "string" ||
+      description.length > 5000 ||
+      typeof url !== "string" ||
+      (url && !/^https:\/\//i.test(url))
+    )
+      return fail(res, 400, "Valid resource details and HTTPS link required");
+    const row = await store.put("resources", {
+      id: id(),
+      schoolId: req.school.id,
+      classId,
+      title,
+      type,
+      description,
+      url,
+      dueDate,
+      createdAt: new Date().toISOString(),
+    });
+    await audit(req.user, "resource.created", req.school.id);
+    res.status(201).json(row);
+  });
+  const upload = multer({
+    storage: multer.memoryStorage(),
+    limits: { fileSize: 5 * 1024 * 1024, files: 1, fields: 8, fieldSize: 6000 },
+  });
+  const uploadRoot = fileURLToPath(
+    new URL("../data/uploads/", import.meta.url),
+  );
+  app.post(
+    "/api/schools/:schoolId/uploads",
+    teach,
+    upload.single("file"),
+    async (req, res) => {
+      if (!(await checkClass(req, res))) return;
+      const { classId, title, type, description = "", dueDate = "" } = req.body;
+      if (
+        !req.file ||
+        !valid(title) ||
+        !["homework", "syllabus", "timetable", "material"].includes(type) ||
+        description.length > 5000
+      )
+        return fail(res, 400, "Choose a file and valid resource details");
+      const b = req.file.buffer;
+      const pdf = b.subarray(0, 5).toString() === "%PDF-";
+      const png = b
+        .subarray(0, 8)
+        .equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]));
+      const jpeg = b[0] === 255 && b[1] === 216 && b[2] === 255;
+      if (!pdf && !png && !jpeg)
+        return fail(res, 400, "Only PDF, PNG and JPEG files are supported");
+      const fileId = id();
+      const name =
+        req.file.originalname.replace(/[^a-zA-Z0-9._ -]/g, "_").slice(0, 120) ||
+        "resource";
+      await mkdir(uploadRoot, { recursive: true });
+      await writeFile(uploadRoot + fileId, b, { flag: "wx" });
+      try {
+        await store.put("files", {
+          id: fileId,
+          schoolId: req.school.id,
+          classId,
+          name,
+          mime: pdf ? "application/pdf" : png ? "image/png" : "image/jpeg",
+          size: b.length,
+        });
+        const row = await store.put("resources", {
+          id: id(),
+          schoolId: req.school.id,
+          classId,
+          title,
+          type,
+          description,
+          dueDate,
+          fileId,
+          fileName: name,
+          url: "",
+          createdAt: new Date().toISOString(),
+        });
+        await audit(req.user, "resource.uploaded", req.school.id);
+        res.status(201).json(row);
+      } catch (e) {
+        await unlink(uploadRoot + fileId).catch(() => {});
+        throw e;
+      }
+    },
+  );
+  app.get("/api/schools/:schoolId/files/:fileId", async (req, res) => {
+    const file = (await store.all("files")).find(
+      (f) => f.id === req.params.fileId && f.schoolId === req.school.id,
+    );
+    if (!file || !canSeeClass(req.user, file.classId))
+      return fail(res, 404, "File not found");
+    res.setHeader("Cache-Control", "private, no-store");
+    res.setHeader("Content-Type", file.mime);
+    res.download(uploadRoot + file.id, file.name);
+  });
+  app.post("/api/schools/:schoolId/notices", manage, async (req, res) => {
+    const { title, body, audience = "all", classId = null } = req.body;
+    if (
+      !valid(title) ||
+      !valid(body, 5000) ||
+      !["all", ...roles].includes(audience)
+    )
+      return fail(res, 400, "Valid notice details required");
+    if (classId && !(await checkClass(req, res))) return;
+    const row = await store.put("notices", {
+      id: id(),
+      schoolId: req.school.id,
+      title,
+      body,
+      audience,
+      classId,
+      createdAt: new Date().toISOString(),
+    });
+    await audit(req.user, "notice.published", req.school.id);
+    res.status(201).json(row);
+  });
+  app.use("/api", (req, res) => fail(res, 404, "API endpoint not found"));
+  const webRoot = fileURLToPath(new URL("../../web/dist/", import.meta.url));
+  if (existsSync(webRoot)) {
+    app.use(express.static(webRoot));
+    app.get(/^(?!\/api(?:\/|$)).*/, (req, res) =>
+      res.sendFile(webRoot + "index.html"),
+    );
+  }
+  app.use((err, req, res, next) => {
+    console.error(err.message);
+    if (res.headersSent) return next(err);
+    const status =
+      err instanceof multer.MulterError
+        ? 400
+        : [400, 413].includes(err.status)
+          ? err.status
+          : 500;
+    res
+      .status(status)
+      .json({
+        error:
+          err instanceof multer.MulterError
+            ? "Upload rejected. Maximum one file, 5 MB."
+            : status === 400
+              ? "Invalid JSON request."
+              : status === 413
+                ? "Request exceeds the size limit."
+                : "The request could not be completed.",
+      });
+  });
   return app;
 }

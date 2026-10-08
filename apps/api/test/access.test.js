@@ -1,21 +1,256 @@
-import { test, before, after } from 'node:test';
-import assert from 'node:assert/strict';
-import { createStore } from '../src/store.js';
-import { seed } from '../src/seed.js';
-import { createApp } from '../src/app.js';
-import { unlink } from 'node:fs/promises';
-let store,server,base;
-before(async()=>{store=await createStore('demo');await seed(store);server=createApp(store).listen(0,'127.0.0.1');await new Promise(resolve=>server.once('listening',resolve));base=`http://127.0.0.1:${server.address().port}/api`;});
-after(async()=>{await new Promise(resolve=>server.close(resolve));for(const file of await store.all('files'))await unlink(new URL(`../data/uploads/${file.id}`,import.meta.url)).catch(()=>{});await store.close();});
-async function request(path,token,body){const r=await fetch(base+path,{method:body?'POST':'GET',headers:{'Content-Type':'application/json',...(token?{Authorization:`Bearer ${token}`}:{})},...(body?{body:JSON.stringify(body)}:{})});return {status:r.status,data:await r.json()};}
-async function login(role){const r=await request('/auth/login',null,{email:`${role}@orbit.local`,password:'OrbitDemo123!'});assert.equal(r.status,200);return r.data.token;}
-test('unauthenticated calls cannot read school records',async()=>assert.equal((await request('/schools/school-north/workspace')).status,401));
-test('director switches only between assigned schools',async()=>{const token=await login('director');assert.equal((await request('/me',token)).data.schools.length,2);assert.equal((await request('/schools/school-west/workspace',token)).status,200);assert.equal((await request('/schools/unknown/workspace',token)).status,403);assert.equal((await request('/platform',token)).status,403);});
-test('student cannot write attendance or read other schools/classes',async()=>{const token=await login('student');assert.equal((await request('/schools/school-west/workspace',token)).status,403);assert.equal((await request('/schools/school-north/attendance',token,{classId:'school-north-10',studentId:'user-student',date:'2026-10-08',status:'present'})).status,403);const r=await request('/schools/school-north/workspace',token);assert.deepEqual(r.data.classes.map(c=>c.id),['school-north-10']);assert.deepEqual(r.data.users.map(u=>u.id),['user-student']);assert.ok(!JSON.stringify(r.data).includes('passwordHash'));});
-test('teacher writes assigned-class marks and attendance; cannot escalate privileges',async()=>{const token=await login('teacher');const prefix='/schools/school-north';assert.equal((await request(prefix+'/attendance',token,{classId:'school-north-9',studentId:'user-student',date:'2026-10-08',status:'present'})).status,403);const row={classId:'school-north-10',studentId:'user-student',date:'2026-10-08',status:'present'};assert.equal((await request(prefix+'/attendance',token,row)).status,200);assert.equal((await request(prefix+'/attendance',token,{...row,status:'late'})).status,200);assert.equal((await request(prefix+'/workspace',token)).data.attendance.length,1);const marks={classId:row.classId,studentId:row.studentId,exam:'Term 1',subject:'Maths',score:85,maxScore:100};assert.equal((await request(prefix+'/marks',token,marks)).status,200);assert.equal((await request(prefix+'/marks',token,{...marks,score:101})).status,400);assert.equal((await request(prefix+'/notices',token,{title:'No',body:'No'})).status,403);assert.equal((await request('/users',token,{})).status,403);});
-test('notices are filtered by audience and class',async()=>{const principal=await login('principal');assert.equal((await request('/schools/school-north/notices',principal,{title:'Teacher only',body:'Faculty meeting',audience:'teacher',classId:null})).status,201);const student=await login('student');const r=await request('/schools/school-north/workspace',student);assert.ok(!r.data.notices.some(n=>n.title==='Teacher only'));});
-test('school management cannot create leadership or cross-school memberships',async()=>{const token=await login('principal');const body={name:'New admin',email:'new@test.local',password:'long-test-password',role:'director',orgId:'org-demo',schoolIds:['school-north'],classIds:[]};assert.equal((await request('/users',token,body)).status,403);assert.equal((await request('/users',token,{...body,role:'staff',schoolIds:['school-west']})).status,403);assert.equal((await request('/users',token,{...body,role:'student',classIds:['school-west-10']})).status,400);});
-test('logout revokes session',async()=>{const token=await login('teacher');assert.equal((await request('/auth/logout',token,{})).status,200);assert.equal((await request('/me',token)).status,401);});
-test('reset tokens are single use and invalidate active sessions',async()=>{const token=await login('student');const reset=await request('/auth/forgot-password',null,{email:'student@orbit.local'});const body={token:reset.data.demoToken,password:'ChangedDemo123!'};assert.equal((await request('/auth/reset-password',null,body)).status,200);assert.equal((await request('/me',token)).status,401);assert.equal((await request('/auth/reset-password',null,body)).status,400);});
-test('recovery respects leadership hierarchy and student cannot issue tokens',async()=>{const principal=await login('principal');assert.equal((await request('/users/user-director/recovery',principal,{})).status,403);const r=await request('/users/user-teacher/recovery',principal,{});assert.equal(r.status,200);assert.equal(r.data.token.length,64);const teacher=await login('teacher');assert.equal((await request('/users/user-student/recovery',teacher,{})).status,403);});
-test('uploads enforce class assignment and safe formats, downloads require membership',async()=>{const token=await login('teacher');async function upload(classId,contents){const form=new FormData();form.append('classId',classId);form.append('title','Test worksheet');form.append('type','homework');form.append('file',new Blob([contents]),'worksheet.pdf');const r=await fetch(base+'/schools/school-north/uploads',{method:'POST',headers:{Authorization:`Bearer ${token}`},body:form});return {status:r.status,data:await r.json()};}assert.equal((await upload('school-north-9','%PDF-1.7\n')).status,403);assert.equal((await upload('school-north-10','<script>unsafe</script>')).status,400);const result=await upload('school-north-10','%PDF-1.7\nSynthetic test fixture');assert.equal(result.status,201);const file=await fetch(base+`/schools/school-north/files/${result.data.fileId}`,{headers:{Authorization:`Bearer ${token}`}});assert.equal(file.status,200);assert.ok(file.headers.get('content-disposition').startsWith('attachment'));assert.ok((await file.text()).startsWith('%PDF-'));assert.equal((await request(`/schools/school-west/files/${result.data.fileId}`,token)).status,403);assert.equal((await request(`/schools/school-north/files/${result.data.fileId}`)).status,401);});
+import { test, before, after } from "node:test";
+import assert from "node:assert/strict";
+import { createStore } from "../src/store.js";
+import { seed } from "../src/seed.js";
+import { createApp } from "../src/app.js";
+import { unlink } from "node:fs/promises";
+let store, server, base;
+before(async () => {
+  store = await createStore("demo");
+  await seed(store);
+  server = createApp(store).listen(0, "127.0.0.1");
+  await new Promise((resolve) => server.once("listening", resolve));
+  base = `http://127.0.0.1:${server.address().port}/api`;
+});
+after(async () => {
+  await new Promise((resolve) => server.close(resolve));
+  for (const file of await store.all("files"))
+    await unlink(new URL(`../data/uploads/${file.id}`, import.meta.url)).catch(
+      () => {},
+    );
+  await store.close();
+});
+async function request(path, token, body) {
+  const r = await fetch(base + path, {
+    method: body ? "POST" : "GET",
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    ...(body ? { body: JSON.stringify(body) } : {}),
+  });
+  return { status: r.status, data: await r.json() };
+}
+async function login(role) {
+  const r = await request("/auth/login", null, {
+    email: `${role}@orbit.local`,
+    password: "OrbitDemo123!",
+  });
+  assert.equal(r.status, 200);
+  return r.data.token;
+}
+test("unauthenticated calls cannot read school records", async () =>
+  assert.equal((await request("/schools/school-north/workspace")).status, 401));
+test("director switches only between assigned schools", async () => {
+  const token = await login("director");
+  assert.equal((await request("/me", token)).data.schools.length, 2);
+  assert.equal(
+    (await request("/schools/school-west/workspace", token)).status,
+    200,
+  );
+  assert.equal(
+    (await request("/schools/unknown/workspace", token)).status,
+    403,
+  );
+  assert.equal((await request("/platform", token)).status, 403);
+});
+test("student cannot write attendance or read other schools/classes", async () => {
+  const token = await login("student");
+  assert.equal(
+    (await request("/schools/school-west/workspace", token)).status,
+    403,
+  );
+  assert.equal(
+    (
+      await request("/schools/school-north/attendance", token, {
+        classId: "school-north-10",
+        studentId: "user-student",
+        date: "2026-10-08",
+        status: "present",
+      })
+    ).status,
+    403,
+  );
+  const r = await request("/schools/school-north/workspace", token);
+  assert.deepEqual(
+    r.data.classes.map((c) => c.id),
+    ["school-north-10"],
+  );
+  assert.deepEqual(
+    r.data.users.map((u) => u.id),
+    ["user-student"],
+  );
+  assert.ok(!JSON.stringify(r.data).includes("passwordHash"));
+});
+test("teacher writes assigned-class marks and attendance; cannot escalate privileges", async () => {
+  const token = await login("teacher");
+  const prefix = "/schools/school-north";
+  assert.equal(
+    (
+      await request(prefix + "/attendance", token, {
+        classId: "school-north-9",
+        studentId: "user-student",
+        date: "2026-10-08",
+        status: "present",
+      })
+    ).status,
+    403,
+  );
+  const row = {
+    classId: "school-north-10",
+    studentId: "user-student",
+    date: "2026-10-08",
+    status: "present",
+  };
+  assert.equal((await request(prefix + "/attendance", token, row)).status, 200);
+  assert.equal(
+    (await request(prefix + "/attendance", token, { ...row, status: "late" }))
+      .status,
+    200,
+  );
+  assert.equal(
+    (await request(prefix + "/workspace", token)).data.attendance.length,
+    1,
+  );
+  const marks = {
+    classId: row.classId,
+    studentId: row.studentId,
+    exam: "Term 1",
+    subject: "Maths",
+    score: 85,
+    maxScore: 100,
+  };
+  assert.equal((await request(prefix + "/marks", token, marks)).status, 200);
+  assert.equal(
+    (await request(prefix + "/marks", token, { ...marks, score: 101 })).status,
+    400,
+  );
+  assert.equal(
+    (await request(prefix + "/notices", token, { title: "No", body: "No" }))
+      .status,
+    403,
+  );
+  assert.equal((await request("/users", token, {})).status, 403);
+});
+test("notices are filtered by audience and class", async () => {
+  const principal = await login("principal");
+  assert.equal(
+    (
+      await request("/schools/school-north/notices", principal, {
+        title: "Teacher only",
+        body: "Faculty meeting",
+        audience: "teacher",
+        classId: null,
+      })
+    ).status,
+    201,
+  );
+  const student = await login("student");
+  const r = await request("/schools/school-north/workspace", student);
+  assert.ok(!r.data.notices.some((n) => n.title === "Teacher only"));
+});
+test("school management cannot create leadership or cross-school memberships", async () => {
+  const token = await login("principal");
+  const body = {
+    name: "New admin",
+    email: "new@test.local",
+    password: "long-test-password",
+    role: "director",
+    orgId: "org-demo",
+    schoolIds: ["school-north"],
+    classIds: [],
+  };
+  assert.equal((await request("/users", token, body)).status, 403);
+  assert.equal(
+    (
+      await request("/users", token, {
+        ...body,
+        role: "staff",
+        schoolIds: ["school-west"],
+      })
+    ).status,
+    403,
+  );
+  assert.equal(
+    (
+      await request("/users", token, {
+        ...body,
+        role: "student",
+        classIds: ["school-west-10"],
+      })
+    ).status,
+    400,
+  );
+});
+test("logout revokes session", async () => {
+  const token = await login("teacher");
+  assert.equal((await request("/auth/logout", token, {})).status, 200);
+  assert.equal((await request("/me", token)).status, 401);
+});
+test("reset tokens are single use and invalidate active sessions", async () => {
+  const token = await login("student");
+  const reset = await request("/auth/forgot-password", null, {
+    email: "student@orbit.local",
+  });
+  const body = { token: reset.data.demoToken, password: "ChangedDemo123!" };
+  assert.equal((await request("/auth/reset-password", null, body)).status, 200);
+  assert.equal((await request("/me", token)).status, 401);
+  assert.equal((await request("/auth/reset-password", null, body)).status, 400);
+});
+test("recovery respects leadership hierarchy and student cannot issue tokens", async () => {
+  const principal = await login("principal");
+  assert.equal(
+    (await request("/users/user-director/recovery", principal, {})).status,
+    403,
+  );
+  const r = await request("/users/user-teacher/recovery", principal, {});
+  assert.equal(r.status, 200);
+  assert.equal(r.data.token.length, 64);
+  const teacher = await login("teacher");
+  assert.equal(
+    (await request("/users/user-student/recovery", teacher, {})).status,
+    403,
+  );
+});
+test("uploads enforce class assignment and safe formats, downloads require membership", async () => {
+  const token = await login("teacher");
+  async function upload(classId, contents) {
+    const form = new FormData();
+    form.append("classId", classId);
+    form.append("title", "Test worksheet");
+    form.append("type", "homework");
+    form.append("file", new Blob([contents]), "worksheet.pdf");
+    const r = await fetch(base + "/schools/school-north/uploads", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+      body: form,
+    });
+    return { status: r.status, data: await r.json() };
+  }
+  assert.equal((await upload("school-north-9", "%PDF-1.7\n")).status, 403);
+  assert.equal(
+    (await upload("school-north-10", "<script>unsafe</script>")).status,
+    400,
+  );
+  const result = await upload(
+    "school-north-10",
+    "%PDF-1.7\nSynthetic test fixture",
+  );
+  assert.equal(result.status, 201);
+  const file = await fetch(
+    base + `/schools/school-north/files/${result.data.fileId}`,
+    { headers: { Authorization: `Bearer ${token}` } },
+  );
+  assert.equal(file.status, 200);
+  assert.ok(file.headers.get("content-disposition").startsWith("attachment"));
+  assert.ok((await file.text()).startsWith("%PDF-"));
+  assert.equal(
+    (await request(`/schools/school-west/files/${result.data.fileId}`, token))
+      .status,
+    403,
+  );
+  assert.equal(
+    (await request(`/schools/school-north/files/${result.data.fileId}`)).status,
+    401,
+  );
+});
