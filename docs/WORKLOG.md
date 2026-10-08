@@ -52,3 +52,13 @@
 - Implemented audited account suspension/reactivation. Suspension revokes account sessions and reset tokens and blocks login/recovery/support entry. Management permissions retain school and leadership boundaries; owner/self suspension is blocked.
 - All 17 integration tests passed with expanded account-status checks. Browser verified the styled dropdown, suspension/reactivation and 390px page width without overflow. Saved `screenshots/schoolglass-dashboard.png`.
 - No paid services or dependencies added. Remaining account profile editing, invitation flows, durable sessions and other modules are still tracked separately.
+
+## 2026-10-08 — Readability, reliable dialogs and profile editing
+
+- Corrected overly transparent text surfaces and darkened secondary text. Kept decorative glass in navigation and background treatment; forms/report dialogs use stable opaque surfaces.
+- Removed the content entrance transform that affected fixed-position academic popups. Added a shared dialog scroll lock, focus trap, focus restoration and Escape handling. Backdrops are consistently dimmed without blur; only dialog content scrolls.
+- Added slow transform/opacity motion to decorative rings, stars, brand mark and small indicators. Reduced-motion preferences disable these; no text, table or popup moves continuously.
+- Added management-authorized name/contact profile editing, transactional audit entries and field whitelisting. Login email, roles and memberships cannot be injected; school/leadership boundaries and support restrictions remain enforced.
+- All 17 integration tests passed, including expanded profile validation and cross-school/privilege checks. Production build passed.
+- Browser verified profile save, Tab cycling to the close control, background overflow hidden while open and restored afterward, an unblurred overlay, opaque form background and viewport-wide academic backdrop. A 390px academic dialog stayed within viewport bounds with internal scrolling; Escape restored the workspace.
+- Saved `screenshots/readable-dialog.png` and refreshed the dashboard preview. Profile permissions/invitation flows and durable sessions remain tracked separately; no paid service added.

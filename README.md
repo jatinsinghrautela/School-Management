@@ -72,6 +72,10 @@ Original SVG/CSS assets and system fonts power the design. See [asset provenance
 
 The English working title is configured in `apps/web/src/brand.js`. Dropdowns use styled native pickers in supporting browsers, with a rounded native fallback. People includes Suspend/Reactivate controls: owners manage school accounts; school management can manage assigned teachers, students and staff. Suspension revokes sessions and recovery tokens and blocks login; reactivation requires a fresh login. Support sessions cannot change account status.
 
+People → Edit profile updates an authorized school account’s name and optional contact number. Login email, role and memberships are not editable through this form. Profile changes are audited; support sessions cannot perform them.
+
+Dialogs use a consistent unblurred dim backdrop and opaque readable surface. Background scrolling is locked while a dialog is open, keyboard focus stays inside, and Escape closes dialogs with a close control. Continuous motion is confined to decorative marks, rings and small indicators, with reduced-motion support.
+
 - The MySQL adapter stores JSON records with indexed type/school columns and school-locked academic transactions. Normalized tables, foreign keys, migrations and database-level academic uniqueness remain planned.
 - Sessions and reset tokens are held in API process memory. Server restart signs everyone out. Use a persistent session store before running multiple API instances.
 - Automated email reset delivery is not implemented. In either mode, an authorized administrator opens People → Recover account, verifies the user's identity, and privately provides the 15-minute token. The user opens Forgot password → I have a recovery token. Demo additionally exposes a token for self-testing. Do not represent this as an email integration.

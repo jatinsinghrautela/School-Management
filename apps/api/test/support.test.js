@@ -198,6 +198,23 @@ test("independent schools remain isolated and support sessions preserve role gat
       { active: false },
       403,
     );
+    const updated = await call(`/users/${student.id}/profile`, login.token, {
+      name: "Updated Student",
+      phone: "123456",
+      role: "owner",
+      email: "injected@test.local",
+    });
+    assert.equal(updated.name, "Updated Student");
+    assert.equal(updated.phone, "123456");
+    assert.equal(updated.role, "student");
+    assert.equal(updated.email, "ind-student@test.local");
+    await call(
+      `/users/${principal.id}/profile`,
+      login.token,
+      { name: "Forbidden" },
+      403,
+    );
+    await call(`/users/${student.id}/profile`, login.token, { name: "" }, 400);
     const other = await call("/auth/login", null, {
       email: "student@orbit.local",
       password: "OrbitDemo123!",
@@ -206,6 +223,12 @@ test("independent schools remain isolated and support sessions preserve role gat
       `/users/${other.user.id}/status`,
       login.token,
       { active: false },
+      403,
+    );
+    await call(
+      `/users/${other.user.id}/profile`,
+      login.token,
+      { name: "Cross school" },
       403,
     );
     assert.ok(

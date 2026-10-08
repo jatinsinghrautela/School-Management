@@ -50,7 +50,8 @@ Independent schools have no organization and retain separate explicit membership
 - [ ] Malware scanning, upload storage quotas/cleanup, homework submissions and feedback.
 - [ ] Timetable grid, substitution management, school calendar and events.
 - [x] Account suspension/reactivation with session revocation and audited authorization.
-- [ ] Account profile updates, invitations/first-login change and persistent sessions.
+- [x] Authorized school-account name/contact updates with transactional audit records.
+- [ ] Login-email changes, membership/role editing, invitations/first-login change and persistent sessions.
 - [ ] Password reset delivery using an administrator-provided SMTP server, rate limits, and recovery auditing.
 - [ ] Search, pagination, imports with preview/error reporting, export permissions.
 

@@ -26,6 +26,7 @@ import "./styles.css";
 import { Academics, ExamResults } from "./academics.jsx";
 import "./glass.css";
 import { BRAND_NAME } from "./brand.js";
+import { useDialogLock } from "./use-dialog-lock.js";
 document.title = `${BRAND_NAME} · School workspace`;
 const icons = {
   Overview: LayoutDashboard,
@@ -39,6 +40,7 @@ const icons = {
 };
 const today = () => new Date().toLocaleDateString("en-CA");
 function App() {
+  useDialogLock();
   const [token, setToken] = useState(
       sessionStorage.getItem("orbit-token") || "",
     ),
@@ -59,6 +61,25 @@ function App() {
   const [supportTarget, setSupportTarget] = useState(null);
   const [supportReason, setSupportReason] = useState("");
   const [supportAck, setSupportAck] = useState(false);
+  const [profileTarget, setProfileTarget] = useState(null);
+  async function updateProfile(e) {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+    try {
+      await api(`/users/${profileTarget.id}/profile`, {
+        name: profileTarget.name,
+        phone: profileTarget.phone || "",
+      });
+      setProfileTarget(null);
+      setMessage("Profile updated");
+      await refresh();
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
+  }
   async function startSupport(e) {
     e.preventDefault();
     try {
@@ -846,6 +867,23 @@ function App() {
                             .filter(Boolean)
                             .join(", ") || "School-wide",
                       <div className="account-status">
+                        {!support &&
+                          u.role !== "owner" &&
+                          (owner ||
+                            (manager &&
+                              ["teacher", "student", "staff"].includes(
+                                u.role,
+                              ))) && (
+                            <button
+                              className="secondary"
+                              onClick={() => {
+                                setProfileTarget({ ...u });
+                                setError("");
+                              }}
+                            >
+                              Edit profile
+                            </button>
+                          )}
                         <span
                           className={
                             "badge " + (u.active === false ? "warning" : "")
@@ -1040,6 +1078,76 @@ function App() {
           )}
         </div>
       </main>
+      {profileTarget && (
+        <div className="modal-backdrop">
+          <section
+            className="modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="profile-title"
+          >
+            <div className="panel-heading">
+              <h2 id="profile-title">Edit school account</h2>
+              <button
+                className="icon-button"
+                aria-label="Close profile dialog"
+                onClick={() => setProfileTarget(null)}
+              >
+                <X />
+              </button>
+            </div>
+            <form onSubmit={updateProfile}>
+              <p>
+                {profileTarget.email} · {profileTarget.role}
+              </p>
+              <label>
+                Full name
+                <input
+                  aria-label="Full name"
+                  required
+                  maxLength={200}
+                  value={profileTarget.name}
+                  onChange={(e) =>
+                    setProfileTarget({ ...profileTarget, name: e.target.value })
+                  }
+                />
+              </label>
+              <label>
+                Contact number (optional)
+                <input
+                  aria-label="Contact number (optional)"
+                  type="tel"
+                  maxLength={40}
+                  value={profileTarget.phone || ""}
+                  onChange={(e) =>
+                    setProfileTarget({
+                      ...profileTarget,
+                      phone: e.target.value,
+                    })
+                  }
+                />
+              </label>
+              {error && (
+                <p className="error" role="alert">
+                  {error}
+                </p>
+              )}
+              <div className="modal-actions">
+                <button
+                  type="button"
+                  className="secondary"
+                  onClick={() => setProfileTarget(null)}
+                >
+                  Cancel
+                </button>
+                <button className="primary" disabled={loading}>
+                  {loading ? "Saving…" : "Save profile"}
+                </button>
+              </div>
+            </form>
+          </section>
+        </div>
+      )}
       {supportTarget && (
         <div className="modal-backdrop">
           <section

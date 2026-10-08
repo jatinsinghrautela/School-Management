@@ -398,3 +398,177 @@ select:hover {
   font-size: 11px;
   padding: 7px 10px;
 }
+/* Readable glass: translucent decoration, stable surfaces beneath text. */
+.content {
+  animation: none !important;
+  transform: none !important;
+}
+.panel,
+.stat-card,
+.login-form {
+  background: linear-gradient(135deg, #fffffff0, #f2faf5e8);
+  border: 1px solid #ffffff;
+}
+.sidebar {
+  background: #eaf6eef0;
+}
+.topbar {
+  background: #f4faf5f2;
+}
+:is(.panel, .stat-card, .content, .modal)
+  :is(p, small, .label, .nav-label, .breadcrumb) {
+  color: #496257;
+}
+.stat-card strong,
+.panel h3,
+.panel h4,
+.page-heading h1 {
+  color: #173c2e;
+}
+.hero p {
+  color: #daeae3 !important;
+}
+.hero-pill {
+  color: #def6e9 !important;
+}
+.login-story p,
+.login-story small {
+  color: #deeee5 !important;
+}
+.modal-backdrop,
+.report-backdrop,
+.academic-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: #102d25a6 !important;
+  backdrop-filter: none !important;
+  overflow: hidden;
+  overscroll-behavior: contain;
+  padding: 20px;
+}
+.modal,
+.academic-dialog,
+.report-modal {
+  background: #f8fcf9 !important;
+  color: #173c2e;
+  max-height: calc(100dvh - 40px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border: 1px solid #d7e5dc;
+}
+.modal input,
+.modal textarea,
+.modal select {
+  background-color: #ffffff !important;
+  color: #173c2e;
+}
+select::picker(select) {
+  background: #f6fcf8 !important;
+  backdrop-filter: none !important;
+  color: #173c2e;
+}
+body:has(select:open) {
+  overflow: hidden;
+}
+/* Small decorative motion keeps idle screens alive without moving content or filters. */
+@keyframes quietOrbit {
+  to {
+    rotate: 360deg;
+  }
+}
+.ring-one {
+  animation: quietOrbit 60s linear infinite;
+}
+.ring-two {
+  animation: quietOrbit 85s linear infinite reverse;
+}
+.star-one {
+  animation: float 8s ease-in-out infinite;
+}
+.star-two {
+  animation: float 11s ease-in-out infinite reverse;
+}
+@keyframes breathe {
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.9;
+  }
+}
+.tiny-dot,
+.status-dot {
+  animation: breathe 5s ease-in-out infinite;
+}
+@media (max-width: 800px) {
+  .modal-backdrop,
+  .report-backdrop {
+    padding: 12px;
+  }
+  .modal,
+  .report-modal {
+    max-height: calc(100dvh - 24px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+@media print {
+  body {
+    overflow: visible !important;
+  }
+  .report-backdrop,
+  .report-modal {
+    max-height: none !important;
+    overflow: visible !important;
+    background: white !important;
+  }
+}
+html {
+  scrollbar-gutter: stable;
+}
+@keyframes markDrift {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-2px) rotate(3deg);
+  }
+}
+.brand-icon {
+  animation: markDrift 12s ease-in-out infinite;
+}
+.connected > span,
+.green-dot {
+  animation: breathe 5s ease-in-out infinite;
+}
+.topbar {
+  position: relative;
+}
+.topbar::after {
+  content: "";
+  position: absolute;
+  left: 24px;
+  right: 24px;
+  bottom: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #63ac8e, transparent);
+  animation: breathe 8s ease-in-out infinite;
+  pointer-events: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}

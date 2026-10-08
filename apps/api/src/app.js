@@ -359,6 +359,48 @@ export function createApp(store) {
       if (r.userId === target.id) resets.delete(key);
     res.json({ ok: true });
   });
+  app.post("/api/users/:userId/profile", auth, async (req, res) => {
+    const target = (await store.all("users")).find(
+      (u) => u.id === req.params.userId,
+    );
+    if (!target) return fail(res, 404, "Account not found");
+    const schools = await store.all("schools");
+    const allowed =
+      target.role !== "owner" &&
+      (req.user.role === "owner" ||
+        (managers.includes(req.user.role) &&
+          ["teacher", "student", "staff"].includes(target.role) &&
+          target.schoolIds.length > 0 &&
+          target.schoolIds.every((sid) =>
+            schools.some((s) => s.id === sid && canAccessSchool(req.user, s)),
+          )));
+    if (!allowed) return fail(res, 403, "You cannot edit this account");
+    const { name, phone = "" } = req.body;
+    if (!valid(name) || typeof phone !== "string" || phone.length > 40)
+      return fail(
+        res,
+        400,
+        "Provide a name and a contact number of at most 40 characters",
+      );
+    const result = await store.transaction(target.schoolIds[0], async (tx) => {
+      const current = (await tx.all("users")).find((u) => u.id === target.id);
+      const updated = await tx.put("users", {
+        ...current,
+        name: name.trim(),
+        phone: phone.trim(),
+      });
+      await tx.put("audit", {
+        id: id(),
+        actorId: req.user.id,
+        targetUserId: target.id,
+        action: "user.profile-updated",
+        schoolId: target.schoolIds[0],
+        createdAt: new Date().toISOString(),
+      });
+      return updated;
+    });
+    res.json(publicUser(result));
+  });
   app.post("/api/users", auth, async (req, res) => {
     const {
       name,

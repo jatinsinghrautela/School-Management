@@ -16,3 +16,7 @@ Blur is limited to navigation surfaces at 8px, and disabled on mobile. Cards use
 ## Updated working identity
 
 Schoolglass Desk is the current English title, replacing the earlier coined name after user feedback. The title is editable in `apps/web/src/brand.js`; the mark is original window geometry. No trademark clearance is claimed. Transparent cards now use gradients with approximately 15–40% white opacity, rather than the earlier near-opaque treatment. Dropdown popovers use a bounded blur only while open in supporting desktop browsers; the mobile fallback disables it.
+
+## Readability correction
+
+After user feedback, content cards were returned to predominantly opaque light surfaces and secondary text was darkened. Decorative glass remains in navigation/backgrounds. All dialogs and picker menus use opaque readable surfaces; the full-page dialog overlay dims without blur. Motion is restricted to small decorative transforms and opacity changes, with reduced-motion overrides. These choices replace the earlier low-opacity content-card treatment.
