@@ -8,6 +8,7 @@ import { existsSync } from "node:fs";
 import { mkdir, writeFile, unlink } from "node:fs/promises";
 import multer from "multer";
 import { createTimetableRouter } from "./timetable.js";
+import { createHomeworkRouter } from "./homework.js";
 import {
   createAcademicRouter,
   academicWorkspace,
@@ -538,6 +539,11 @@ export function createApp(store) {
             users.find((u) => u.id === r.teacherId)?.name || "Teacher",
         })),
       resources: await scoped("resources"),
+      submissions: ["student", "teacher", ...managers].includes(u.role)
+        ? (await scoped("submissions")).filter(
+            (r) => u.role !== "student" || r.studentId === u.id,
+          )
+        : [],
       notices: (await scoped("notices")).filter((n) => visibleNotice(u, n)),
     });
   });
@@ -672,7 +678,9 @@ export function createApp(store) {
       typeof description !== "string" ||
       description.length > 5000 ||
       typeof url !== "string" ||
-      (url && !/^https:\/\//i.test(url))
+      (url && !/^https:\/\//i.test(url)) ||
+      typeof dueDate !== "string" ||
+      (dueDate && !dateValid(dueDate))
     )
       return fail(res, 400, "Valid resource details and HTTPS link required");
     const row = await store.put("resources", {
@@ -707,7 +715,10 @@ export function createApp(store) {
         !req.file ||
         !valid(title) ||
         !["homework", "syllabus", "timetable", "material"].includes(type) ||
-        description.length > 5000
+        typeof description !== "string" ||
+        description.length > 5000 ||
+        typeof dueDate !== "string" ||
+        (dueDate && !dateValid(dueDate))
       )
         return fail(res, 400, "Choose a file and valid resource details");
       const b = req.file.buffer;
@@ -787,6 +798,7 @@ export function createApp(store) {
   });
   app.use("/api/schools/:schoolId", createAcademicRouter(store));
   app.use("/api/schools/:schoolId", createTimetableRouter(store));
+  app.use("/api/schools/:schoolId", createHomeworkRouter(store));
   app.use("/api", (req, res) => fail(res, 404, "API endpoint not found"));
   const webRoot = fileURLToPath(new URL("../../web/dist/", import.meta.url));
   if (existsSync(webRoot)) {

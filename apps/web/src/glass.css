@@ -634,3 +634,42 @@ html {
     align-items: stretch;
   }
 }
+.homework-button {
+  margin-top: 14px;
+}
+.homework-modal {
+  width: 680px;
+}
+.homework-body {
+  padding: 22px;
+  display: grid;
+  gap: 14px;
+}
+.submission-card {
+  padding: 16px;
+  border: 1px solid #d8e5dc;
+  border-radius: 14px;
+  background: white;
+}
+.submission-card h3 {
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+.submission-card p {
+  margin: 12px 0;
+}
+.answer-text,
+.teacher-feedback p {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.teacher-feedback {
+  padding: 12px;
+  margin: 12px 0;
+  background: #edf7f0;
+  border-left: 3px solid #49896e;
+  border-radius: 8px;
+}
+.teacher-feedback strong {
+  font-size: 12px;
+}

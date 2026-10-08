@@ -47,7 +47,8 @@ Independent schools have no organization and retain separate explicit membership
 - [x] Exam schedules, configurable grade bands, subject weighting, pass thresholds and draft/published results.
 - [x] Student report cards, manager publication, reasoned reopening, immutable versions and manager archive access.
 - [ ] Dedicated PDF export verification, school-specific templates and signatures. Browser print/Save as PDF layout is implemented.
-- [ ] Malware scanning, upload storage quotas/cleanup, homework submissions and feedback.
+- [x] Text homework submissions, own-attempt history, lateness tracking, teacher feedback and revision requests.
+- [ ] Private submission attachments, malware scanning, upload storage quotas and cleanup.
 - [x] Weekly class timetable, assigned-teacher validation, class/teacher/room overlap checks and audited editing/cancellation.
 - [ ] Date-specific substitutions, holidays, school calendar and events.
 - [x] Account suspension/reactivation with session revocation and audited authorization.

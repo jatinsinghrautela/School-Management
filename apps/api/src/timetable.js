@@ -7,7 +7,7 @@ const minute = (value) =>
     : NaN;
 export function createTimetableRouter(store) {
   const router = Router({ mergeParams: true });
-  router.use((req, res, next) =>
+  router.use("/timetable", (req, res, next) =>
     managers.includes(req.user.role)
       ? next()
       : res.status(403).json({ error: "School management access required" }),

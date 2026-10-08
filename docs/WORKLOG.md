@@ -71,3 +71,12 @@
 - All 18 integration tests and production build passed. Browser verification is recorded below. No dependency or paid service added.
 - Date-specific substitutions, holidays, cross-school conflict coordination and publication approval are separate remaining work.
 - Browser verified period creation with an assigned teacher and room, and a 390px timetable without horizontal overflow. Saved `screenshots/timetable.png`. Tests also explicitly cover cross-class teacher conflicts and case-insensitive room conflicts.
+
+## 2026-10-08 — Homework submissions and teacher feedback
+
+- Added text answers with preserved versions, own-submission visibility, teacher feedback history and revision requests. Reviewed work requires a teacher revision request before a new answer.
+- Added transactional submission/review audit records, latest-version review enforcement, school/class permissions and validated due dates. Lateness uses the displayed end-of-day UTC policy; late answers are accepted.
+- Restricted the timetable router guard to its own route prefix so downstream student/teacher routes work correctly.
+- All 19 integration tests and the production build passed. Tests cover spoofed student fields, peer-answer privacy, cross-school/class access, late status, feedback history and revision gating.
+- Browser verification covers student submission and teacher review; screenshots accompany this milestone. Text answers only: private student attachments, school timezone configuration, rubrics and reminders remain tracked work. No new dependency or paid integration added.
+- Browser verified a student answer and teacher revision request with visible feedback history. The 390px dialog had no page overflow and background scrolling remained locked. Saved `screenshots/homework-feedback.png`.

@@ -28,6 +28,7 @@ import "./glass.css";
 import { BRAND_NAME } from "./brand.js";
 import { useDialogLock } from "./use-dialog-lock.js";
 import { Timetable } from "./timetable.jsx";
+import { Homework } from "./homework.jsx";
 document.title = `${BRAND_NAME} · School workspace`;
 const icons = {
   Overview: LayoutDashboard,
@@ -1058,6 +1059,16 @@ function App() {
                         >
                           Open resource <ArrowUpRight size={16} />
                         </a>
+                      )}
+                      {r.type === "homework" && (
+                        <Homework
+                          resource={r}
+                          submissions={data.submissions || []}
+                          user={user}
+                          api={api}
+                          schoolId={sid}
+                          refresh={refresh}
+                        />
                       )}
                     </article>
                   ))}

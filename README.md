@@ -62,7 +62,7 @@ npm run build
 npm run db:check
 ```
 
-The 18 backend integration tests cover isolation, roles, recovery, uploads, atomic registers, academic configuration, publication, weighted grading, immutable report versions, independent schools and audited support sessions. The MySQL check verifies rollback and concurrent school transaction serialization.
+The 19 backend integration tests cover isolation, roles, recovery, uploads, atomic registers, academic configuration, publication, weighted grading, immutable report versions, independent schools, audited support sessions, timetable conflicts and homework review/revision permissions. The MySQL check verifies rollback and concurrent school transaction serialization.
 
 ## Boundaries
 
@@ -79,7 +79,7 @@ Dialogs use a consistent unblurred dim backdrop and opaque readable surface. Bac
 - The MySQL adapter stores JSON records with indexed type/school columns and school-locked academic transactions. Normalized tables, foreign keys, migrations and database-level academic uniqueness remain planned.
 - Sessions and reset tokens are held in API process memory. Server restart signs everyone out. Use a persistent session store before running multiple API instances.
 - Automated email reset delivery is not implemented. In either mode, an authorized administrator opens People → Recover account, verifies the user's identity, and privately provides the 15-minute token. The user opens Forgot password → I have a recovery token. Demo additionally exposes a token for self-testing. Do not represent this as an email integration.
-- Resources accept HTTPS links or PDF/PNG/JPEG uploads of up to 5 MB. File signatures are checked and downloads require school/class authorization. Files are stored under ignored `apps/api/data/uploads`; back up this directory with MySQL. Malware scanning, submissions, storage quotas and cleanup are planned. Files must never be served as public static assets. Ephemeral cloud storage is unsuitable for these uploads.
+- Resources accept HTTPS links or PDF/PNG/JPEG uploads of up to 5 MB. File signatures are checked and downloads require school/class authorization. Files are stored under ignored `apps/api/data/uploads`; back up this directory with MySQL. Malware scanning, student attachment submissions, storage quotas and cleanup are planned. Files must never be served as public static assets. Ephemeral cloud storage is unsuitable for these uploads.
 - Attendance and configured marks batches are atomic, with at most 200 entries per request. Subject assignments constrain teacher writes. Publication freezes weighted report snapshots; corrections require reopening and republishing. Terms, enrollment rollover, session attendance and dedicated PDF export remain planned.
 - There is no payment gateway, SMS, WhatsApp, paid AI service, push provider, or hosting subscription.
 - API binds to loopback by default. After `npm run build`, `npm start` serves the API and built React frontend at http://127.0.0.1:4000. Production deployment requires an HTTPS reverse proxy, origin policy, environment management, and an appropriate HOST value.
@@ -89,3 +89,9 @@ See [the plan](docs/PLAN.md), [architecture](docs/ARCHITECTURE.md), [free-cost s
 ## Timetable
 
 Timetable shows recurring weekly periods for academic-year classes. School management creates/edits periods with an assigned active teacher, weekday, time range and optional room. Same-year overlaps for a class, teacher or room are rejected atomically; adjacent periods are allowed. Students see only enrolled-class periods, teachers see assigned-class schedules. Cancellation retains an audit record. Conflict checks are school-scoped; cross-school travel, holidays, date-specific substitutions and period publishing remain planned.
+
+## Homework submissions
+
+Students open Learning → Submit homework to send a text answer (up to 10,000 characters). They see only their own attempts and feedback. Assigned-class teachers and school management open Review submissions, provide feedback, and choose Reviewed or Request revision. Every answer is stored as a new version; review history is appended. Teachers review only the latest attempt, and students need a revision request to resubmit reviewed work.
+
+Due dates are validated calendar dates and interpreted as end of day UTC. Late answers are accepted and flagged. School timezone settings, attachment submissions, rubrics/scoring, reminders and submission pagination remain planned. Existing teacher resource uploads remain available; student attachment upload is not part of this milestone.
