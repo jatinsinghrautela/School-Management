@@ -27,6 +27,7 @@ import { Academics, ExamResults } from "./academics.jsx";
 import "./glass.css";
 import { BRAND_NAME } from "./brand.js";
 import { useDialogLock } from "./use-dialog-lock.js";
+import { Timetable } from "./timetable.jsx";
 document.title = `${BRAND_NAME} · School workspace`;
 const icons = {
   Overview: LayoutDashboard,
@@ -37,6 +38,7 @@ const icons = {
   Learning: BookOpen,
   Notices: Megaphone,
   Academics: BookOpen,
+  Timetable: CalendarCheck,
 };
 const today = () => new Date().toLocaleDateString("en-CA");
 function App() {
@@ -214,6 +216,7 @@ function App() {
         "People",
         ...(editor ? ["Academics"] : []),
         "Attendance",
+        "Timetable",
         "Results",
         "Learning",
         "Notices",
@@ -780,7 +783,7 @@ function App() {
           {page !== "Overview" && (
             <>
               <div className="toolbar">
-                {!["Academics", "Results"].includes(page) && (
+                {!["Academics", "Results", "Timetable"].includes(page) && (
                   <label className="search">
                     <Search size={17} />
                     <input
@@ -971,6 +974,16 @@ function App() {
                   data={data}
                   api={api}
                   schoolId={sid}
+                  refresh={refresh}
+                  manager={manager}
+                />
+              )}
+              {page === "Timetable" && data && (
+                <Timetable
+                  key={sid}
+                  data={data}
+                  schoolId={sid}
+                  api={api}
                   refresh={refresh}
                   manager={manager}
                 />

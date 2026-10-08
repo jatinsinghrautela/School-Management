@@ -62,7 +62,7 @@ npm run build
 npm run db:check
 ```
 
-The 17 backend integration tests cover isolation, roles, recovery, uploads, atomic registers, academic configuration, publication, weighted grading, immutable report versions, independent schools and audited support sessions. The MySQL check verifies rollback and concurrent school transaction serialization.
+The 18 backend integration tests cover isolation, roles, recovery, uploads, atomic registers, academic configuration, publication, weighted grading, immutable report versions, independent schools and audited support sessions. The MySQL check verifies rollback and concurrent school transaction serialization.
 
 ## Boundaries
 
@@ -85,3 +85,7 @@ Dialogs use a consistent unblurred dim backdrop and opaque readable surface. Bac
 - API binds to loopback by default. After `npm run build`, `npm start` serves the API and built React frontend at http://127.0.0.1:4000. Production deployment requires an HTTPS reverse proxy, origin policy, environment management, and an appropriate HOST value.
 
 See [the plan](docs/PLAN.md), [architecture](docs/ARCHITECTURE.md), [free-cost strategy](docs/FREE-COST.md), and [work log](docs/WORKLOG.md).
+
+## Timetable
+
+Timetable shows recurring weekly periods for academic-year classes. School management creates/edits periods with an assigned active teacher, weekday, time range and optional room. Same-year overlaps for a class, teacher or room are rejected atomically; adjacent periods are allowed. Students see only enrolled-class periods, teachers see assigned-class schedules. Cancellation retains an audit record. Conflict checks are school-scoped; cross-school travel, holidays, date-specific substitutions and period publishing remain planned.

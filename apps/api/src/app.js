@@ -7,6 +7,7 @@ import { fileURLToPath } from "node:url";
 import { existsSync } from "node:fs";
 import { mkdir, writeFile, unlink } from "node:fs/promises";
 import multer from "multer";
+import { createTimetableRouter } from "./timetable.js";
 import {
   createAcademicRouter,
   academicWorkspace,
@@ -529,6 +530,13 @@ export function createApp(store) {
           (r.studentId === u.id && publishedExams.has(r.examId)),
       ),
       ...academics,
+      timetable: (await scoped("timetable"))
+        .filter((r) => !r.cancelled)
+        .map((r) => ({
+          ...r,
+          teacherName:
+            users.find((u) => u.id === r.teacherId)?.name || "Teacher",
+        })),
       resources: await scoped("resources"),
       notices: (await scoped("notices")).filter((n) => visibleNotice(u, n)),
     });
@@ -778,6 +786,7 @@ export function createApp(store) {
     res.status(201).json(row);
   });
   app.use("/api/schools/:schoolId", createAcademicRouter(store));
+  app.use("/api/schools/:schoolId", createTimetableRouter(store));
   app.use("/api", (req, res) => fail(res, 404, "API endpoint not found"));
   const webRoot = fileURLToPath(new URL("../../web/dist/", import.meta.url));
   if (existsSync(webRoot)) {

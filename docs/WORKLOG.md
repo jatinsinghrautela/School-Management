@@ -62,3 +62,12 @@
 - All 17 integration tests passed, including expanded profile validation and cross-school/privilege checks. Production build passed.
 - Browser verified profile save, Tab cycling to the close control, background overflow hidden while open and restored afterward, an unblurred overlay, opaque form background and viewport-wide academic backdrop. A 390px academic dialog stayed within viewport bounds with internal scrolling; Escape restored the workspace.
 - Saved `screenshots/readable-dialog.png` and refreshed the dashboard preview. Profile permissions/invitation flows and durable sessions remain tracked separately; no paid service added.
+
+## 2026-10-08 — Weekly timetable
+
+- Added year-linked recurring weekly periods and responsive daily schedule cards. Management can add, edit and cancel periods; readers remain class-scoped.
+- Added school-transaction checks for class, teacher and room overlaps, valid time ranges and active subject-teacher assignments. Concurrent conflicting saves produce one success and one conflict; adjacent periods are valid.
+- Teacher names are projected into authorized schedule records without exposing account contact details to students. Cancelled periods stay stored for history and are excluded from workspace views.
+- All 18 integration tests and production build passed. Browser verification is recorded below. No dependency or paid service added.
+- Date-specific substitutions, holidays, cross-school conflict coordination and publication approval are separate remaining work.
+- Browser verified period creation with an assigned teacher and room, and a 390px timetable without horizontal overflow. Saved `screenshots/timetable.png`. Tests also explicitly cover cross-class teacher conflicts and case-insensitive room conflicts.
