@@ -952,6 +952,9 @@ html {
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
+.attendance-corrections {
+  margin-top: 24px;
+}
 .attendance-corrections .correction-note {
   display: grid;
   gap: 8px;

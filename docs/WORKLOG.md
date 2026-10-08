@@ -139,3 +139,7 @@
 - Added the correction form, leadership review controls and pending/all/approved/rejected filters. Existing register statuses are read-only, and Mark all present only fills unrecorded students.
 - Updated authorization/holiday regressions and added correction tests for bypass attempts, injected fields, concurrent reviews, stale records, closure conflicts and historical visibility. All 28 tests and production build passed.
 - Browser verified teacher submission, unchanged attendance while pending, independent principal approval, updated register/dashboard and retained review history. Saved `docs/screenshots/attendance-correction-approval.png`; final form styling and disabled no-op register actions were also checked.
+
+## Attendance card spacing fix (2026-10-08)
+
+- Added 24px above the corrections card so it no longer touches the attendance history card. Browser measured the gap and saved `docs/screenshots/attendance-card-spacing.png`; production build passed.
