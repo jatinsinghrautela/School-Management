@@ -21,6 +21,16 @@ test("owner onboards an organization and principal; principal enrolls a student 
     });
     const result = await res.json();
     assert.ok(res.ok, JSON.stringify(result));
+    if (path === "/auth/login" && result.user.passwordChangeRequired) {
+      await call("/auth/change-password", result.token, {
+        currentPassword: body.password,
+        password: body.password + "Personal!",
+      });
+      return call(path, null, {
+        ...body,
+        password: body.password + "Personal!",
+      });
+    }
     return result;
   }
   try {

@@ -23,6 +23,16 @@ test("independent schools remain isolated and support sessions preserve role gat
     );
     const data = await res.json();
     assert.equal(res.status, status, JSON.stringify(data));
+    if (path === "/auth/login" && res.ok && data.user.passwordChangeRequired) {
+      await call("/auth/change-password", data.token, {
+        currentPassword: body.password,
+        password: body.password + "Personal!",
+      });
+      return call(path, null, {
+        ...body,
+        password: body.password + "Personal!",
+      });
+    }
     return data;
   }
   try {

@@ -16,6 +16,7 @@ export const collections = [
   "reports",
   "timetable",
   "submissions",
+  "securityTokens",
 ];
 export async function createStore(mode = process.env.DATA_MODE || "mysql") {
   if (!["mysql", "demo"].includes(mode))
@@ -71,7 +72,10 @@ export async function createStore(mode = process.env.DATA_MODE || "mysql") {
   }
   return {
     mode,
-    async transaction(schoolId, work) {
+    async userTransaction(userId, work) {
+      return this.transaction(userId, work, "users");
+    },
+    async transaction(schoolId, work, targetKind = "schools") {
       if (!pool) {
         const run = demoQueue.then(async () => {
           const draft = structuredClone(memory);
@@ -91,8 +95,8 @@ export async function createStore(mode = process.env.DATA_MODE || "mysql") {
       try {
         await connection.beginTransaction();
         const [rows] = await connection.execute(
-          "SELECT id FROM records WHERE id=? AND kind='schools' FOR UPDATE",
-          [schoolId],
+          "SELECT id FROM records WHERE id=? AND kind=? FOR UPDATE",
+          [schoolId, targetKind],
         );
         if (!rows.length)
           throw new Error("School transaction target is missing");

@@ -53,7 +53,9 @@ Independent schools have no organization and retain separate explicit membership
 - [ ] Date-specific substitutions, holidays, school calendar and events.
 - [x] Account suspension/reactivation with session revocation and audited authorization.
 - [x] Authorized school-account name/contact updates with transactional audit records.
-- [ ] Login-email changes, membership/role editing, invitations/first-login change and persistent sessions.
+- [x] Account-access milestone: persistent MySQL sessions/recovery, mandatory first-login password change, authenticated password updates and device-session revocation.
+- [x] Authorized role and school/class assignment editing, with teaching dependency and academic-history guards.
+- [ ] Login-email changes, emailed invitations, token cleanup and indexed authentication storage.
 - [ ] Password reset delivery using an administrator-provided SMTP server, rate limits, and recovery auditing.
 - [ ] Search, pagination, imports with preview/error reporting, export permissions.
 

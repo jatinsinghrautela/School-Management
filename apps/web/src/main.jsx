@@ -29,6 +29,8 @@ import { BRAND_NAME } from "./brand.js";
 import { useDialogLock } from "./use-dialog-lock.js";
 import { Timetable } from "./timetable.jsx";
 import { Homework } from "./homework.jsx";
+import { Security } from "./security.jsx";
+import { AccessEditor } from "./access-editor.jsx";
 document.title = `${BRAND_NAME} · School workspace`;
 const icons = {
   Overview: LayoutDashboard,
@@ -40,6 +42,7 @@ const icons = {
   Notices: Megaphone,
   Academics: BookOpen,
   Timetable: CalendarCheck,
+  Security: ShieldCheck,
 };
 const today = () => new Date().toLocaleDateString("en-CA");
 function App() {
@@ -65,6 +68,7 @@ function App() {
   const [supportReason, setSupportReason] = useState("");
   const [supportAck, setSupportAck] = useState(false);
   const [profileTarget, setProfileTarget] = useState(null);
+  const [accessTarget, setAccessTarget] = useState(null);
   async function updateProfile(e) {
     e.preventDefault();
     setLoading(true);
@@ -211,7 +215,7 @@ function App() {
     teacher = user?.role === "teacher",
     editor = manager || teacher;
   const nav = owner
-    ? ["Overview", "Schools", "People"]
+    ? ["Overview", "Schools", "People", "Security"]
     : [
         "Overview",
         "People",
@@ -221,6 +225,7 @@ function App() {
         "Results",
         "Learning",
         "Notices",
+        "Security",
       ];
   const school = schools.find((s) => s.id === sid),
     students = data?.users.filter((u) => u.role === "student") || [],
@@ -285,6 +290,27 @@ function App() {
         }}
         error={error}
       />
+    );
+  const passwordChanged = () => {
+    sessionStorage.removeItem("orbit-token");
+    sessionStorage.removeItem("orbit-owner-token");
+    setToken("");
+    setUser(null);
+    setData(null);
+    setSupport(null);
+    setError("");
+    setPage("Overview");
+  };
+  if (user.passwordChangeRequired && !support)
+    return (
+      <main className="password-gate-page">
+        <Security
+          api={api}
+          required
+          onChanged={passwordChanged}
+          logout={logout}
+        />
+      </main>
     );
   const notices = data?.notices || [],
     resources = data?.resources || [],
@@ -784,7 +810,9 @@ function App() {
           {page !== "Overview" && (
             <>
               <div className="toolbar">
-                {!["Academics", "Results", "Timetable"].includes(page) && (
+                {!["Academics", "Results", "Timetable", "Security"].includes(
+                  page,
+                ) && (
                   <label className="search">
                     <Search size={17} />
                     <input
@@ -871,6 +899,24 @@ function App() {
                             .filter(Boolean)
                             .join(", ") || "School-wide",
                       <div className="account-status">
+                        {!support &&
+                          u.id !== user.id &&
+                          u.role !== "owner" &&
+                          (owner ||
+                            (manager &&
+                              ["teacher", "student", "staff"].includes(
+                                u.role,
+                              ))) && (
+                            <button
+                              className="secondary"
+                              onClick={() => setAccessTarget(u)}
+                            >
+                              Edit access
+                            </button>
+                          )}
+                        {u.passwordChangeRequired && (
+                          <span className="badge warning">Setup required</span>
+                        )}
                         {!support &&
                           u.role !== "owner" &&
                           (owner ||
@@ -1028,6 +1074,13 @@ function App() {
                   )}
                 </>
               )}
+              {page === "Security" && (
+                <Security
+                  api={api}
+                  onChanged={passwordChanged}
+                  logout={logout}
+                />
+              )}
               {page === "Learning" && (
                 <div className="resource-grid">
                   {filtered(resources).map((r) => (
@@ -1102,6 +1155,17 @@ function App() {
           )}
         </div>
       </main>
+      {accessTarget && (
+        <AccessEditor
+          target={accessTarget}
+          owner={owner}
+          schools={schools}
+          classes={owner ? platform?.classes || [] : classes}
+          api={api}
+          close={() => setAccessTarget(null)}
+          refresh={refresh}
+        />
+      )}
       {profileTarget && (
         <div className="modal-backdrop">
           <section
@@ -2054,7 +2118,7 @@ function Editor({
               {field("email", "Email", "", "email")}
               {field(
                 "password",
-                "Initial password (12+ characters)",
+                "Temporary password (12+ characters)",
                 null,
                 "password",
               )}

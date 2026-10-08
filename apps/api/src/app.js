@@ -7,6 +7,7 @@ import { fileURLToPath } from "node:url";
 import { existsSync } from "node:fs";
 import { mkdir, writeFile, unlink } from "node:fs/promises";
 import multer from "multer";
+import { tokenRepository } from "./tokens.js";
 import { createTimetableRouter } from "./timetable.js";
 import { createHomeworkRouter } from "./homework.js";
 import {
@@ -26,8 +27,8 @@ import {
 const hash = (t) => createHash("sha256").update(t).digest("hex");
 export function createApp(store) {
   const app = express(),
-    sessions = new Map(),
-    resets = new Map();
+    sessions = tokenRepository(store, "session"),
+    resets = tokenRepository(store, "reset");
   app.use(
     helmet({
       contentSecurityPolicy: {
@@ -62,18 +63,41 @@ export function createApp(store) {
     });
   const auth = async (req, res, next) => {
     const token = req.headers.authorization?.replace(/^Bearer /, "");
-    const session = sessions.get(hash(token || ""));
+    const session = await sessions.get(hash(token || ""));
     if (!session || session.expires < Date.now()) {
-      if (session) sessions.delete(hash(token));
+      if (session) await sessions.delete(hash(token));
       return fail(res, 401, "Please sign in again");
     }
     req.user = (await store.all("users")).find((u) => u.id === session.userId);
     if (!req.user || req.user.active === false)
       return fail(res, 401, "Account unavailable");
+    if ((session.userVersion || 0) !== (req.user.authVersion || 0))
+      return fail(res, 401, "Please sign in again");
+    if (
+      req.user.passwordChangeRequired &&
+      !session.support &&
+      !["/api/me", "/api/auth/change-password", "/api/auth/logout"].includes(
+        req.path,
+      )
+    )
+      return fail(
+        res,
+        403,
+        "Change your temporary password before using the workspace",
+      );
     req.session = session;
     if (session.support) {
-      const parent = sessions.get(session.support.parentKey);
-      if (!parent || parent.expires < Date.now())
+      const parent = await sessions.get(session.support.parentKey);
+      const parentUser = (await store.all("users")).find(
+        (u) => u.id === parent?.userId,
+      );
+      if (
+        !parent ||
+        parent.expires < Date.now() ||
+        !parentUser ||
+        parentUser.active === false ||
+        (parent.userVersion || 0) !== (parentUser.authVersion || 0)
+      )
         return fail(res, 401, "Support session ended");
       if (
         req.method !== "GET" &&
@@ -141,8 +165,11 @@ export function createApp(store) {
     )
       return fail(res, 401, "Invalid email or password");
     const token = randomBytes(32).toString("hex");
-    sessions.set(hash(token), {
+    await sessions.set(hash(token), {
       userId: user.id,
+      userVersion: user.authVersion || 0,
+      createdAt: new Date().toISOString(),
+      device: (req.headers["user-agent"] || "Unknown device").slice(0, 160),
       expires: Date.now() + 8 * 60 * 60 * 1000,
     });
     res.json({ token, user: publicUser(user), mode: store.mode });
@@ -154,7 +181,7 @@ export function createApp(store) {
     let token;
     if (user && user.active !== false) {
       token = randomBytes(32).toString("hex");
-      resets.set(hash(token), {
+      await resets.set(hash(token), {
         userId: user.id,
         expires: Date.now() + 15 * 60 * 1000,
       });
@@ -166,25 +193,143 @@ export function createApp(store) {
     });
   });
   app.post("/api/auth/reset-password", async (req, res) => {
-    const record = resets.get(hash(req.body.token || ""));
+    const record = await resets.get(hash(req.body.token || ""));
     if (!record || record.expires < Date.now())
       return fail(res, 400, "Invalid or expired reset token");
     if (!valid(req.body.password, 200) || req.body.password.length < 12)
       return fail(res, 400, "Password must be at least 12 characters");
-    const user = (await store.all("users")).find((u) => u.id === record.userId);
-    if (!user || user.active === false)
-      return fail(res, 400, "Account unavailable");
-    await store.put("users", {
-      ...user,
-      passwordHash: await bcrypt.hash(req.body.password, 12),
-    });
-    resets.delete(hash(req.body.token));
-    for (const [k, v] of sessions) if (v.userId === user.id) sessions.delete(k);
+    const passwordHash = await bcrypt.hash(req.body.password, 12);
+    try {
+      await store.userTransaction(record.userId, async (tx) => {
+        const links = tokenRepository(tx, "reset"),
+          logins = tokenRepository(tx, "session");
+        const current = await links.get(hash(req.body.token));
+        if (!current || current.expires < Date.now())
+          throw Object.assign(new Error("Invalid or expired reset token"), {
+            status: 400,
+          });
+        const user = (await tx.all("users")).find(
+          (u) => u.id === record.userId,
+        );
+        if (!user || user.active === false)
+          throw Object.assign(new Error("Account unavailable"), {
+            status: 400,
+          });
+        await tx.put("users", {
+          ...user,
+          passwordHash,
+          passwordChangeRequired: false,
+          authVersion: (user.authVersion || 0) + 1,
+        });
+        for (const [key, row] of await links.entries())
+          if (row.userId === user.id) await links.delete(key);
+        for (const [key, row] of await logins.entries())
+          if (row.userId === user.id) await logins.delete(key);
+        await tx.put("audit", {
+          id: id(),
+          actorId: user.id,
+          action: "user.password-reset",
+          schoolId: user.schoolIds[0] || null,
+          createdAt: new Date().toISOString(),
+        });
+      });
+    } catch (e) {
+      if (e.status) return fail(res, e.status, e.message);
+      throw e;
+    }
     res.json({ message: "Password updated. Please sign in." });
   });
-  app.post("/api/auth/logout", auth, (req, res) => {
-    sessions.delete(hash(req.headers.authorization.replace(/^Bearer /, "")));
+  app.post("/api/auth/change-password", auth, async (req, res) => {
+    const { currentPassword, password } = req.body;
+    if (
+      !valid(currentPassword, 200) ||
+      !valid(password, 200) ||
+      password.length < 12 ||
+      password === currentPassword
+    )
+      return fail(
+        res,
+        400,
+        "Choose a different password of at least 12 characters",
+      );
+    try {
+      await store.userTransaction(req.user.id, async (tx) => {
+        const user = (await tx.all("users")).find((u) => u.id === req.user.id);
+        if (
+          !user ||
+          user.active === false ||
+          (user.authVersion || 0) !== (req.session.userVersion || 0) ||
+          !(await bcrypt.compare(currentPassword, user.passwordHash))
+        )
+          throw Object.assign(
+            new Error("Current password is incorrect or session changed"),
+            { status: 400 },
+          );
+        await tx.put("users", {
+          ...user,
+          passwordHash: await bcrypt.hash(password, 12),
+          passwordChangeRequired: false,
+          authVersion: (user.authVersion || 0) + 1,
+        });
+        for (const type of ["session", "reset"]) {
+          const repo = tokenRepository(tx, type);
+          for (const [key, row] of await repo.entries())
+            if (row.userId === user.id) await repo.delete(key);
+        }
+        await tx.put("audit", {
+          id: id(),
+          actorId: user.id,
+          action: "user.password-changed",
+          schoolId: user.schoolIds[0] || null,
+          createdAt: new Date().toISOString(),
+        });
+      });
+      res.json({ message: "Password changed. Sign in again on all devices." });
+    } catch (e) {
+      if (e.status) return fail(res, e.status, e.message);
+      throw e;
+    }
+  });
+  app.post("/api/auth/logout", auth, async (req, res) => {
+    await sessions.delete(
+      hash(req.headers.authorization.replace(/^Bearer /, "")),
+    );
     res.json({ ok: true });
+  });
+  app.get("/api/auth/sessions", auth, async (req, res) => {
+    const current = hash(req.headers.authorization.replace(/^Bearer /, ""));
+    res.json({
+      sessions: (await sessions.entries())
+        .filter(
+          ([, s]) =>
+            s.userId === req.user.id &&
+            !s.support &&
+            s.expires > Date.now() &&
+            (s.userVersion || 0) === (req.user.authVersion || 0),
+        )
+        .map(([key, s]) => ({
+          id: s.id,
+          device: s.device || "Unknown device",
+          createdAt: s.createdAt,
+          expires: s.expires,
+          current: key === current,
+        })),
+    });
+  });
+  app.post("/api/auth/revoke-others", auth, async (req, res) => {
+    const current = hash(req.headers.authorization.replace(/^Bearer /, ""));
+    let count = 0;
+    for (const [key, s] of await sessions.entries())
+      if (s.userId === req.user.id && key !== current) {
+        await sessions.delete(key);
+        count++;
+      }
+    await audit(
+      req.user,
+      "user.other-sessions-revoked",
+      req.user.schoolIds[0] || null,
+    );
+    res.json({ ok: true, count });
   });
   app.post("/api/users/:userId/recovery", auth, async (req, res) => {
     const target = (await store.all("users")).find(
@@ -205,7 +350,7 @@ export function createApp(store) {
         ));
     if (!permitted) return fail(res, 403, "You cannot recover this account");
     const token = randomBytes(32).toString("hex");
-    resets.set(hash(token), {
+    await resets.set(hash(token), {
       userId: target.id,
       expires: Date.now() + 15 * 60 * 1000,
     });
@@ -263,7 +408,12 @@ export function createApp(store) {
       schoolId: target.schoolIds[0] || null,
       createdAt: new Date().toISOString(),
     });
-    sessions.set(hash(token), { userId: target.id, expires, support });
+    await sessions.set(hash(token), {
+      userId: target.id,
+      userVersion: target.authVersion || 0,
+      expires,
+      support,
+    });
     res.json({ token, user: publicUser(target) });
   });
   app.post("/api/support/end", auth, async (req, res) => {
@@ -277,7 +427,9 @@ export function createApp(store) {
       schoolId: req.user.schoolIds[0] || null,
       createdAt: new Date().toISOString(),
     });
-    sessions.delete(hash(req.headers.authorization.replace(/^Bearer /, "")));
+    await sessions.delete(
+      hash(req.headers.authorization.replace(/^Bearer /, "")),
+    );
     res.json({ ok: true });
   });
   app.get("/api/platform", auth, owner, async (req, res) =>
@@ -285,6 +437,7 @@ export function createApp(store) {
       organizations: await store.all("organizations"),
       schools: await store.all("schools"),
       users: (await store.all("users")).map(publicUser),
+      classes: await store.all("classes"),
       audit: (await store.all("audit")).slice(-20).reverse(),
     }),
   );
@@ -345,7 +498,11 @@ export function createApp(store) {
       return fail(res, 403, "You cannot change this account status");
     await store.transaction(target.schoolIds[0], async (tx) => {
       const current = (await tx.all("users")).find((u) => u.id === target.id);
-      await tx.put("users", { ...current, active: req.body.active });
+      await tx.put("users", {
+        ...current,
+        active: req.body.active,
+        authVersion: (current.authVersion || 0) + 1,
+      });
       await tx.put("audit", {
         id: id(),
         actorId: req.user.id,
@@ -355,10 +512,10 @@ export function createApp(store) {
         createdAt: new Date().toISOString(),
       });
     });
-    for (const [key, s] of sessions)
-      if (s.userId === target.id) sessions.delete(key);
-    for (const [key, r] of resets)
-      if (r.userId === target.id) resets.delete(key);
+    for (const [key, s] of await sessions.entries())
+      if (s.userId === target.id) await sessions.delete(key);
+    for (const [key, r] of await resets.entries())
+      if (r.userId === target.id) await resets.delete(key);
     res.json({ ok: true });
   });
   app.post("/api/users/:userId/profile", auth, async (req, res) => {
@@ -402,6 +559,121 @@ export function createApp(store) {
       return updated;
     });
     res.json(publicUser(result));
+  });
+  app.post("/api/users/:userId/access", auth, async (req, res) => {
+    if (!(await store.all("users")).some((u) => u.id === req.params.userId))
+      return fail(res, 404, "Account not found");
+    const { role, schoolIds, classIds = [] } = req.body;
+    if (
+      !roles.includes(role) ||
+      !Array.isArray(schoolIds) ||
+      !schoolIds.length ||
+      !Array.isArray(classIds)
+    )
+      return fail(
+        res,
+        400,
+        "Choose a valid role, school access and class assignments",
+      );
+    try {
+      await store.userTransaction(req.params.userId, async (tx) => {
+        const target = (await tx.all("users")).find(
+          (u) => u.id === req.params.userId,
+        );
+        const reject = (status, message) => {
+          throw Object.assign(new Error(message), { status });
+        };
+        if (!target || target.role === "owner" || target.id === req.user.id)
+          reject(403, "Owner and own access cannot be edited here");
+        const schools = await tx.all("schools");
+        if (
+          req.user.role !== "owner" &&
+          (!managers.includes(req.user.role) ||
+            !["teacher", "student", "staff"].includes(target.role) ||
+            !["teacher", "student", "staff"].includes(role) ||
+            !target.schoolIds.every((sid) =>
+              schools.some((s) => s.id === sid && canAccessSchool(req.user, s)),
+            ))
+        )
+          reject(403, "You cannot edit this account’s access");
+        const selected = schoolIds.map((sid) =>
+          schools.find((s) => s.id === sid && canAccessSchool(req.user, s)),
+        );
+        if (
+          selected.some((s) => !s) ||
+          new Set(selected.map((s) => s.orgId || null)).size !== 1 ||
+          (!selected[0].orgId && new Set(schoolIds).size !== 1)
+        )
+          reject(
+            400,
+            "Choose schools in one organization or a single independent school",
+          );
+        const classes = await tx.all("classes");
+        if (
+          classIds.some(
+            (cid) =>
+              !classes.some(
+                (c) => c.id === cid && schoolIds.includes(c.schoolId),
+              ),
+          ) ||
+          (["teacher", "student"].includes(role) && !classIds.length)
+        )
+          reject(400, "Assign valid classes to teachers and students");
+        if (
+          (await tx.all("subjects")).some(
+            (s) =>
+              s.teacherIds.includes(target.id) &&
+              (role !== "teacher" || !classIds.includes(s.classId)),
+          )
+        )
+          reject(
+            409,
+            "Remove teaching assignments before changing this access",
+          );
+        if (
+          (await tx.all("timetable")).some(
+            (s) =>
+              !s.cancelled &&
+              s.teacherId === target.id &&
+              (role !== "teacher" || !classIds.includes(s.classId)),
+          )
+        )
+          reject(409, "Cancel teaching periods before changing this access");
+        for (const kind of ["attendance", "marks", "reports", "submissions"])
+          if (
+            (await tx.all(kind)).some(
+              (r) =>
+                r.studentId === target.id &&
+                (!classIds.includes(r.classId) ||
+                  !schoolIds.includes(r.schoolId)),
+            )
+          )
+            reject(
+              409,
+              "Enrollment rollover is required before removing access with academic history",
+            );
+        await tx.put("users", {
+          ...target,
+          role,
+          orgId: selected[0].orgId || null,
+          schoolIds: [...new Set(schoolIds)],
+          classIds: [...new Set(classIds)],
+          authVersion: (target.authVersion || 0) + 1,
+        });
+        await tx.put("audit", {
+          id: id(),
+          actorId: req.user.id,
+          targetUserId: target.id,
+          action: "user.access-updated",
+          schoolId: selected[0].id,
+          createdAt: new Date().toISOString(),
+        });
+      });
+      res.json({ ok: true });
+    } catch (e) {
+      if (e.status) return fail(res, e.status, e.message);
+      throw e;
+    }
   });
   app.post("/api/users", auth, async (req, res) => {
     const {
@@ -475,6 +747,8 @@ export function createApp(store) {
       name,
       email: email.toLowerCase(),
       passwordHash: await bcrypt.hash(password, 12),
+      passwordChangeRequired: true,
+      authVersion: 0,
       role,
       orgId: orgId || null,
       schoolIds: [...new Set(schoolIds)],

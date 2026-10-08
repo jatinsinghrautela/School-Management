@@ -86,3 +86,11 @@
 - Reserved a non-shrinking sidebar footer for the signed-in user and logout. Navigation scrolls independently instead of pushing account controls below the window.
 - Reduced decoration/header spacing for short windows and preserved full-size navigation buttons. Mobile drawers use the same viewport-height layout.
 - Browser verified at 1280×600: profile remained within the viewport, while navigation scrolled (272px viewport / 402px content). Saved `screenshots/sidebar-short-window.png`. Production build passed.
+
+## Account-access milestone (2026-10-08)
+
+- Completed durable hashed session/recovery storage, mandatory temporary-password replacement, authenticated password changes, session listing and sign-out of other sessions.
+- Added authorized role and school/class editing; authentication generations invalidate access after password, membership and status changes. Teaching dependencies and student academic history prevent unsafe reassignment.
+- Added integration coverage for restart behavior, onboarding gates, permission limits, revocation and concurrent single-use recovery. Real MySQL security verification passed with disposable fixture cleanup.
+- Phase 2 remains in progress: normalized SQL, enrollment rollover, calendar, imports/exports and email delivery remain separate work. No paid service or dependency added.
+- Validation: 20 integration tests passed; production build passed; browser checks confirmed Security controls and the account access dialog. MySQL restart/revocation checks passed.
