@@ -159,6 +159,12 @@ export function SchoolCalendar({ data, schoolId, api, refresh, manager }) {
         {entries.map((e) => (
           <article key={e.id} className="calendar-entry">
             <div>
+              {e.source === "year-calendar-excel" && (
+                <p>
+                  From yearly Excel upload · a later upload can replace this
+                  entry
+                </p>
+              )}
               <span className={`calendar-pill ${e.kind}`}>
                 {e.kind}
                 {e.cancelled ? " · Cancelled" : ""}

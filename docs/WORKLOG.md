@@ -108,3 +108,11 @@
 - Diagnosed an empty cached Vite entry module after a file write; the saved source and production bundle remained intact.
 - Invalidated the stale module and configured the development watcher to wait for writes to settle before reloading.
 - Browser verified login rendering after recovery; production build passed.
+
+## Yearly calendar Excel milestone (2026-10-08)
+
+- Added default Sunday holidays and all/second-and-fourth/second-only/fourth-only/no Saturday options before template download on Timetable.
+- Added formatted full-year .xlsx workbooks, management-only upload validation and review previews; application is atomic, audited, school-scoped and repeatable, preserving manual calendar entries.
+- Added leap-year, weekend occurrence, workbook round-trip, wrong-school, missing/duplicate-date, formula, stale/expired preview and concurrent application coverage. All 24 tests passed; production build passed.
+- ExcelJS is a free backend runtime dependency, with a patched UUID override; npm audit reports zero known vulnerabilities. Holidays still do not change attendance or weekly class periods.
+- Browser verification completed: template download with 2nd/4th Saturdays and Sundays off, full 365-date upload preview and successful application of 76 synthetic holidays. Workbook layout rendered and checked with the bundled spreadsheet tool.

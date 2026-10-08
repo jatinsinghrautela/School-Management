@@ -4,7 +4,9 @@ Checked 8 October 2026. No paid dependency, external AI API, payment service, SM
 
 ## Reliable zero-new-investment development
 
-Run React, Node, MySQL Community and Git on an existing computer. The software is free; hardware, electricity and existing connectivity are assumed. Docker Desktop is optional and its commercial licensing eligibility must be checked by organizations; use MySQL Community directly if needed. Fonts currently load from Google Fonts with local sans-serif fallback; self-host licensed font files for fully offline use.
+Run React, Node, MySQL Community and Git on an existing computer. The software is free; hardware, electricity and existing connectivity are assumed. Docker Desktop is optional and its commercial licensing eligibility must be checked by organizations; use MySQL Community directly if needed. The interface uses system fonts and original SVG assets.
+
+Yearly calendar workbooks use the free MIT-licensed [ExcelJS runtime](https://github.com/exceljs/exceljs). No external spreadsheet API or Microsoft subscription is required; free LibreOffice can edit the `.xlsx` template. ExcelJS runs in Node, keeping spreadsheet code out of the browser bundle. A pinned UUID override supplies its patched transitive dependency.
 
 ## Hosting reality
 

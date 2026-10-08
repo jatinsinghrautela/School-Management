@@ -150,7 +150,9 @@ function App() {
         setPage("Overview");
         setUser(null);
       }
-      throw new Error(result.error || "Request failed");
+      throw new Error(
+        [result.error || "Request failed", ...(result.errors || [])].join("\n"),
+      );
     }
     return result;
   }

@@ -61,6 +61,9 @@ export function createCalendarRouter(store) {
         )
           reject(404, "Active calendar entry not found");
         const row = await tx.put("calendar", {
+          ...(entryId
+            ? (await tx.all("calendar")).find((e) => e.id === entryId)
+            : {}),
           id: entryId || id(),
           schoolId: req.school.id,
           title: title.trim(),

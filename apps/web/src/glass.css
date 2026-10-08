@@ -873,6 +873,81 @@ html {
 .calendar-entry button {
   margin: 5px;
 }
+
+.calendar-excel {
+  margin-bottom: 28px;
+  border: 1px solid #c9ddd3;
+  border-radius: 18px;
+  background: #ffffffe0;
+  overflow: hidden;
+}
+.calendar-excel .panel-heading {
+  padding: 20px;
+}
+.calendar-excel-body {
+  padding: 0 20px 24px;
+}
+.calendar-excel-controls {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+.calendar-excel-controls label,
+.calendar-excel-upload label {
+  display: grid;
+  gap: 8px;
+}
+.calendar-excel-controls input:not([type="checkbox"]),
+.calendar-excel-controls select {
+  padding: 10px;
+  border: 1px solid #b8cdc6;
+  border-radius: 10px;
+  background: #fff;
+  color: #173e34;
+  font: inherit;
+}
+.calendar-excel-controls .weekend-checkbox {
+  display: flex;
+  align-items: center;
+}
+.calendar-excel-upload {
+  display: flex;
+  align-items: end;
+  flex-wrap: wrap;
+  gap: 20px;
+  margin: 22px 0;
+}
+.calendar-excel p {
+  line-height: 1.6;
+}
+.calendar-excel .error {
+  white-space: pre-wrap;
+}
+.calendar-excel-message {
+  color: #185a50;
+  font-weight: 600;
+}
+.calendar-import-preview {
+  border-top: 1px solid #c9ddd3;
+  padding-top: 20px;
+}
+.calendar-import-preview button {
+  margin: 16px 12px 0 0;
+}
+.calendar-preview-table {
+  max-height: 360px;
+  overflow: auto;
+  border: 1px solid #c9ddd3;
+  border-radius: 12px;
+}
+.calendar-preview-table th {
+  position: sticky;
+  top: 0;
+  background: #e6f1ec;
+  z-index: 1;
+}
 .calendar-description {
   white-space: pre-wrap;
   overflow-wrap: anywhere;
