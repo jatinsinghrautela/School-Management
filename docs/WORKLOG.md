@@ -80,3 +80,9 @@
 - All 19 integration tests and the production build passed. Tests cover spoofed student fields, peer-answer privacy, cross-school/class access, late status, feedback history and revision gating.
 - Browser verification covers student submission and teacher review; screenshots accompany this milestone. Text answers only: private student attachments, school timezone configuration, rubrics and reminders remain tracked work. No new dependency or paid integration added.
 - Browser verified a student answer and teacher revision request with visible feedback history. The 390px dialog had no page overflow and background scrolling remained locked. Saved `screenshots/homework-feedback.png`.
+
+## 2026-10-08 — Sidebar account visibility
+
+- Reserved a non-shrinking sidebar footer for the signed-in user and logout. Navigation scrolls independently instead of pushing account controls below the window.
+- Reduced decoration/header spacing for short windows and preserved full-size navigation buttons. Mobile drawers use the same viewport-height layout.
+- Browser verified at 1280×600: profile remained within the viewport, while navigation scrolled (272px viewport / 402px content). Saved `screenshots/sidebar-short-window.png`. Production build passed.

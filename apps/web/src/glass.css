@@ -673,3 +673,69 @@ html {
 .teacher-feedback strong {
   font-size: 12px;
 }
+/* Keep account controls inside the viewport; only navigation may scroll. */
+.sidebar {
+  height: 100dvh;
+  overflow: hidden;
+  padding-bottom: 0;
+}
+.sidebar > .brand,
+.sidebar > .nav-label,
+.sidebar > .school-badge {
+  flex-shrink: 0;
+}
+.sidebar > nav {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  padding-bottom: 8px;
+}
+.sidebar-bottom {
+  flex: 0 0 auto;
+  margin-top: 0;
+  background: #eaf6ee;
+}
+.sidebar-bottom .connected {
+  margin: 12px 10px;
+}
+.profile {
+  align-items: center;
+  min-height: 70px;
+}
+.profile > div {
+  min-width: 0;
+}
+.profile strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.profile .avatar,
+.profile button {
+  flex-shrink: 0;
+}
+.profile button {
+  min-width: 36px;
+  min-height: 36px;
+}
+@media (max-height: 650px) {
+  .sidebar {
+    padding-top: 16px;
+  }
+  .sidebar-bottom .connected {
+    display: none;
+  }
+  .sidebar .school-badge {
+    margin-top: 16px;
+    margin-bottom: 12px;
+  }
+  .sidebar > .nav-label {
+    margin-top: 10px;
+    margin-bottom: 10px;
+  }
+}
+.sidebar > nav > .nav-item {
+  flex-shrink: 0;
+}
