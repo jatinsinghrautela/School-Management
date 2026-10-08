@@ -102,3 +102,9 @@
 - 21 integration tests passed, including impossible dates, reversed ranges, unauthorized writes, cross-school/class access, audience filtering, editing and cancellation history. Production build passed.
 - Calendar holidays do not yet change attendance or timetable rules. Substitutions, session attendance and the remaining Phase 2 items are still open. No paid services or dependencies added.
 - Browser validation: created and edited a demo event, confirmed its October 15–16 range in the grid and agenda, and corrected a shared empty-state CSS rule that expanded leading blank days.
+
+## Development blank-screen fix (2026-10-08)
+
+- Diagnosed an empty cached Vite entry module after a file write; the saved source and production bundle remained intact.
+- Invalidated the stale module and configured the development watcher to wait for writes to settle before reloading.
+- Browser verified login rendering after recovery; production build passed.
