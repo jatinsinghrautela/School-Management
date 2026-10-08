@@ -5,6 +5,7 @@ export const collections = [
   "users",
   "classes",
   "attendance",
+  "attendanceCorrections",
   "marks",
   "resources",
   "notices",

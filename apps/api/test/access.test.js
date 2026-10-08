@@ -106,7 +106,7 @@ test("teacher writes assigned-class marks and attendance; cannot escalate privil
   assert.equal(
     (await request(prefix + "/attendance", token, { ...row, status: "late" }))
       .status,
-    200,
+    409,
   );
   assert.equal(
     (await request(prefix + "/workspace", token)).data.attendance.length,

@@ -44,7 +44,8 @@ Independent schools have no organization and retain separate explicit membership
 - [ ] Terms, enrollment history and year promotion.
 - [x] Atomic attendance and configured exam marks batches.
 - [x] Holiday-aware attendance: transactional write guards, closure reasons, retained history and holiday exclusion from dashboard percentages.
-- [ ] Session-wise attendance and correction approvals.
+- [x] Attendance correction requests with reasons, independent leadership approval/rejection, stale-record checks and audited history.
+- [ ] Session-wise attendance.
 - [x] Exam schedules, configurable grade bands, subject weighting, pass thresholds and draft/published results.
 - [x] Student report cards, manager publication, reasoned reopening, immutable versions and manager archive access.
 - [ ] Dedicated PDF export verification, school-specific templates and signatures. Browser print/Save as PDF layout is implemented.

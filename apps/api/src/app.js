@@ -5,6 +5,10 @@ import {
   requireAttendanceDay,
 } from "./calendar.js";
 import { createCalendarImportRouter } from "./calendar-import.js";
+import {
+  createAttendanceCorrectionRouter,
+  requireAttendanceCorrection,
+} from "./attendance-corrections.js";
 import express from "express";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
@@ -814,6 +818,11 @@ export function createApp(store) {
             holidayTitles: holidays.map((e) => e.title),
           };
         }),
+      attendanceCorrections: ["teacher", ...managers].includes(u.role)
+        ? (await scoped("attendanceCorrections")).filter(
+            (r) => managers.includes(u.role) || r.requestedBy === u.id,
+          )
+        : [],
       marks: (await scoped("marks")).filter(
         (r) =>
           u.role !== "student" ||
@@ -915,6 +924,10 @@ export function createApp(store) {
                 ? r.date === b.date
                 : r.exam === b.exam && r.subject === b.subject),
           );
+          if (kind === "attendance") {
+            requireAttendanceCorrection(old, b.status);
+            if (old) return old;
+          }
           const row = {
             id:
               old?.id ||
@@ -1096,6 +1109,7 @@ export function createApp(store) {
     res.status(201).json(row);
   });
   app.use("/api/schools/:schoolId", createAcademicRouter(store));
+  app.use("/api/schools/:schoolId", createAttendanceCorrectionRouter(store));
   app.use("/api/schools/:schoolId", createTimetableRouter(store));
   app.use("/api/schools/:schoolId", createCalendarRouter(store));
   app.use("/api/schools/:schoolId", createCalendarImportRouter(store));

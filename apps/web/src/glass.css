@@ -952,6 +952,32 @@ html {
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
+.attendance-corrections .correction-note {
+  display: grid;
+  gap: 8px;
+  padding: 0 22px 20px;
+  color: #38554b;
+  font-size: 13px;
+}
+.attendance-corrections textarea {
+  width: 100%;
+  min-height: 96px;
+  resize: vertical;
+  padding: 12px;
+  border: 1px solid #b8cdc6;
+  border-radius: 12px;
+  background: #fff;
+  color: #173e34;
+  font: inherit;
+}
+.attendance-corrections .correction-date {
+  white-space: nowrap;
+}
+.attendance-corrections > form > h4,
+.attendance-corrections > form > p,
+.attendance-corrections > p {
+  margin: 16px 22px;
+}
 .calendar-form {
   display: grid;
   gap: 16px;

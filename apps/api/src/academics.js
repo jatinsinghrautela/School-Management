@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { requireAttendanceDay } from "./calendar.js";
+import { requireAttendanceCorrection } from "./attendance-corrections.js";
 import { createHash } from "node:crypto";
 import { id, managers, canSeeClass } from "./domain.js";
 
@@ -502,6 +503,8 @@ export function createAcademicRouter(store) {
               a.studentId === entry.studentId &&
               a.date === date,
           );
+          requireAttendanceCorrection(old, entry.status);
+          if (old) continue;
           await tx.put("attendance", {
             id:
               old?.id ||

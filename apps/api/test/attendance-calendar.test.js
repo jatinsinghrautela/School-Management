@@ -119,11 +119,10 @@ test("attendance respects active school holidays on both write paths, retains hi
     );
     assert.equal(
       (
-        await call(
-          school + "/attendance/batch",
-          tokens.teacher,
-          batch("2026-10-08"),
-        )
+        await call(school + "/attendance/batch", tokens.teacher, {
+          ...batch("2026-10-08"),
+          entries: [{ studentId: record.studentId, status: "present" }],
+        })
       ).status,
       200,
     );

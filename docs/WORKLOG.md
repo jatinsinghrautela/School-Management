@@ -131,3 +131,11 @@
 - Added holiday notices and disabled saves in the register and single-record dialog. Historical rows are retained and labelled; dashboard percentages exclude records on active holidays and restore eligibility when closures are cancelled or edited.
 - Added regression coverage for both write paths, date boundaries, atomic rejection without audit/record writes, role/tenant scope, imported closures and cancellation. All 27 tests and production build passed. The initial sandbox test run lacked localhost access; the authorized rerun passed.
 - Browser verified both forms on a synthetic demo closure and re-enabled controls on a school day. Saved `docs/screenshots/attendance-calendar-rules.png`; behavior and remaining attendance work are described in ATTENDANCE.md.
+
+## Attendance correction approvals (2026-10-08)
+
+- Added reasoned requests and independent leadership approval/rejection. Both direct attendance write paths now reject changes to saved statuses; unchanged saves stay idempotent and batch failures roll back atomically.
+- Added one-pending-request guards, role/class/school visibility, self-review prevention, stale-record and holiday checks, retained request/review history and transactional audit records.
+- Added the correction form, leadership review controls and pending/all/approved/rejected filters. Existing register statuses are read-only, and Mark all present only fills unrecorded students.
+- Updated authorization/holiday regressions and added correction tests for bypass attempts, injected fields, concurrent reviews, stale records, closure conflicts and historical visibility. All 28 tests and production build passed.
+- Browser verified teacher submission, unchanged attendance while pending, independent principal approval, updated register/dashboard and retained review history. Saved `docs/screenshots/attendance-correction-approval.png`; final form styling and disabled no-op register actions were also checked.

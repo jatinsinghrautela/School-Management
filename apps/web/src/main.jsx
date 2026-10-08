@@ -32,6 +32,7 @@ import { Timetable } from "./timetable.jsx";
 import { Homework } from "./homework.jsx";
 import { Security } from "./security.jsx";
 import { AccessEditor } from "./access-editor.jsx";
+import { AttendanceCorrections } from "./attendance-corrections.jsx";
 document.title = `${BRAND_NAME} · School workspace`;
 const icons = {
   Overview: LayoutDashboard,
@@ -1037,6 +1038,17 @@ function App() {
                   ])}
                 />
               )}
+              {page === "Attendance" && editor && data && (
+                <AttendanceCorrections
+                  key={"corrections-" + sid}
+                  data={data}
+                  api={api}
+                  schoolId={sid}
+                  refresh={refresh}
+                  manager={manager}
+                  userId={user.id}
+                />
+              )}
               {page === "Academics" && data && (
                 <Academics
                   key={sid}
@@ -1416,7 +1428,9 @@ function RecordGrid({
         throw new Error(
           "Attendance is closed on this school holiday. Update the Calendar first.",
         );
-      const selected = roster.filter((s) => value(s) !== "");
+      const selected = roster.filter(
+        (s) => value(s) !== "" && (kind !== "attendance" || !existing(s)),
+      );
       if (!selected.length)
         throw new Error("Enter at least one record before saving.");
       if (kind === "attendance") {
@@ -1464,7 +1478,9 @@ function RecordGrid({
           </h3>
           <p>
             Enter records directly in the table. Blank entries are left
-            unchanged.
+            unchanged.{" "}
+            {kind === "attendance" &&
+              "Saved statuses are locked; use Attendance corrections below to request a change."}
           </p>
         </div>
       </div>
@@ -1556,7 +1572,7 @@ function RecordGrid({
                     {kind === "attendance" ? (
                       <select
                         aria-label={`Attendance for ${s.name}`}
-                        disabled={closed || busy}
+                        disabled={closed || busy || !!existing(s)}
                         value={value(s)}
                         onChange={(e) =>
                           setValues({ ...values, [s.id]: e.target.value })
@@ -1604,10 +1620,14 @@ function RecordGrid({
             <button
               type="button"
               className="secondary"
-              disabled={busy || closed || !roster.length}
+              disabled={busy || closed || !roster.some((s) => !existing(s))}
               onClick={() =>
                 setValues(
-                  Object.fromEntries(roster.map((s) => [s.id, "present"])),
+                  Object.fromEntries(
+                    roster
+                      .filter((s) => !existing(s))
+                      .map((s) => [s.id, "present"]),
+                  ),
                 )
               }
             >
@@ -1616,7 +1636,12 @@ function RecordGrid({
           )}
           <button
             className="primary"
-            disabled={busy || closed || !roster.length}
+            disabled={
+              busy ||
+              closed ||
+              !roster.length ||
+              (kind === "attendance" && !roster.some((s) => !existing(s)))
+            }
           >
             {busy ? "Saving…" : "Save register"}
             <Check size={15} />
