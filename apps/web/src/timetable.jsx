@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { X, Plus } from "./glyphs.jsx";
-import { CalendarExcel } from "./calendar-excel.jsx";
 const days = [
   "Monday",
   "Tuesday",
@@ -74,9 +73,6 @@ export function Timetable({ data, schoolId, api, refresh, manager }) {
   }
   return (
     <section className="timetable-workspace">
-      {manager && (
-        <CalendarExcel schoolId={schoolId} api={api} refresh={refresh} />
-      )}
       <div className="panel-heading">
         <div>
           <h3>Weekly class schedule</h3>

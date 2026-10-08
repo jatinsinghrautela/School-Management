@@ -1,6 +1,8 @@
 import ExcelJS from "exceljs";
 import { createHash } from "node:crypto";
 import { inflateRawSync } from "node:zlib";
+import { holidayPreferences, publicHolidayDates } from "./public-holidays.js";
+import { india2026Source } from "./india-holidays-2026.js";
 export const saturdayOptions = [
   "none",
   "all",
@@ -30,10 +32,16 @@ export function preferences(input) {
     !saturdayOptions.includes(input.saturdayOff)
   )
     reject("Choose a year from 2000–2100 and valid weekend preferences");
-  return { year, sundayOff: input.sundayOff, saturdayOff: input.saturdayOff };
+  return {
+    year,
+    sundayOff: input.sundayOff,
+    saturdayOff: input.saturdayOff,
+    ...holidayPreferences(input),
+  };
 }
 export function yearRows(prefs) {
   const rows = [];
+  const holidays = publicHolidayDates(prefs);
   for (
     let d = new Date(Date.UTC(prefs.year, 0, 1));
     d.getUTCFullYear() === prefs.year;
@@ -48,12 +56,21 @@ export function yearRows(prefs) {
           (prefs.saturdayOff === "second-fourth" && [2, 4].includes(nth)) ||
           (prefs.saturdayOff === "second" && nth === 2) ||
           (prefs.saturdayOff === "fourth" && nth === 4)));
+    const date = d.toISOString().slice(0, 10),
+      names = holidays.get(date) || [],
+      publicOff = prefs.publicHolidays && names.length;
     rows.push({
-      date: d.toISOString().slice(0, 10),
+      date,
       day: days[weekday],
-      status: off ? "Holiday" : "Working",
-      title: off ? `${days[weekday]} holiday` : "",
-      description: "",
+      status: off || publicOff ? "Holiday" : "Working",
+      title: publicOff
+        ? names.join(" / ").slice(0, 120)
+        : off
+          ? `${days[weekday]} holiday`
+          : "",
+      description: names.length
+        ? `Public holiday reference (${[prefs.country, prefs.state, prefs.region].filter(Boolean).join("/")}): ${names.join(" / ")}. ${prefs.publicHolidays ? "Included as a holiday." : "Public-holiday days off excluded; weekend rules still apply."} Review government and school circulars.`
+        : "",
     });
   }
   return rows;
@@ -156,7 +173,7 @@ export async function calendarWorkbook(school, prefs) {
     ["Year", prefs.year],
     ["Sundays off", prefs.sundayOff ? "yes" : "no"],
     ["Saturdays off", prefs.saturdayOff],
-    ["Template version", "1"],
+    ["Template version", "2"],
   ])
     settings.addRow(row);
   settings.getColumn(1).font = { bold: true, color: { argb: "FF185A50" } };
@@ -175,6 +192,36 @@ export async function calendarWorkbook(school, prefs) {
   settings.getColumn(2).alignment = { wrapText: true };
   settings.getRow(7).height = 38;
   settings.getRow(8).height = 38;
+  settings.addRow([
+    "Public holidays",
+    prefs.publicHolidays ? "include" : "exclude",
+  ]);
+  settings.addRow(["Country", prefs.country || ""]);
+  settings.addRow(["State", prefs.state || ""]);
+  settings.addRow(["Region", prefs.region || ""]);
+  settings.addRow([
+    "Holiday data source",
+    "date-holidays: https://github.com/commenthol/date-holidays",
+  ]);
+  settings.addRow([
+    "Holiday data license",
+    "CC BY-SA 3.0: https://creativecommons.org/licenses/by-sa/3.0/",
+  ]);
+  settings.addRow([
+    "Country attribution",
+    prefs.country
+      ? `https://github.com/commenthol/date-holidays/blob/master/data/countries/${prefs.country}.yaml`
+      : "No public holiday data selected",
+  ]);
+  settings.addRow([
+    "Review dates",
+    "Dataset may omit regional or newly announced holidays. Confirm school/government circulars and edit date rows as needed.",
+  ]);
+  for (let n = 13; n <= 16; n++) settings.getRow(n).height = 42;
+  if (prefs.country === "IN" && prefs.year === 2026) {
+    settings.addRow(["India 2026 gazetted source", india2026Source]);
+    settings.getRow(17).height = 42;
+  }
   return Buffer.from(await workbook.xlsx.writeBuffer());
 }
 // Bound the ZIP directory before decompression; reject ZIP64, embedded macros and huge expanded files.
@@ -265,7 +312,7 @@ export async function readCalendarWorkbook(buffer, schoolId) {
     !settings ||
     !sheet ||
     settings.getCell("B1").value !== schoolId ||
-    String(settings.getCell("B5").value) !== "1"
+    !["1", "2"].includes(String(settings.getCell("B5").value))
   )
     reject("Use a calendar template downloaded for this school");
   const sunday = settings.getCell("B3").value;
@@ -275,7 +322,20 @@ export async function readCalendarWorkbook(buffer, schoolId) {
     year: settings.getCell("B2").value,
     sundayOff: sunday === "yes",
     saturdayOff: settings.getCell("B4").value,
+    ...(String(settings.getCell("B5").value) === "2"
+      ? {
+          publicHolidays: settings.getCell("B9").value === "include",
+          country: settings.getCell("B10").value || "",
+          state: settings.getCell("B11").value || "",
+          region: settings.getCell("B12").value || "",
+        }
+      : {}),
   });
+  if (
+    String(settings.getCell("B5").value) === "2" &&
+    !["include", "exclude"].includes(settings.getCell("B9").value)
+  )
+    reject("Invalid public holiday preference in Settings");
   if (sheet.columnCount > 5 || sheet.rowCount > 372)
     reject("Keep the original calendar columns and date rows");
   const expected = yearRows(prefs),

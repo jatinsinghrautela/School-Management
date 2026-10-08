@@ -52,6 +52,7 @@ Independent schools have no organization and retain separate explicit membership
 - [x] Weekly class timetable, assigned-teacher validation, class/teacher/room overlap checks and audited editing/cancellation.
 - [x] School calendar: multi-day events, school-wide holidays, class/role audiences, audited editing and reasoned cancellation.
 - [x] Yearly calendar Excel templates with Sunday/Saturday holiday preferences, full-year validation, review previews and atomic audited imports that preserve manual entries.
+- [x] Yearly planning lives on Calendar, with country/state/region public-holiday references and Include/Exclude preferences; India 2026 includes verified central gazetted dates.
 - [ ] Date-specific timetable substitutions and holiday-aware attendance rules.
 - [x] Account suspension/reactivation with session revocation and audited authorization.
 - [x] Authorized school-account name/contact updates with transactional audit records.

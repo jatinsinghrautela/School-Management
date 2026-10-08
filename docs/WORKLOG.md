@@ -116,3 +116,11 @@
 - Added leap-year, weekend occurrence, workbook round-trip, wrong-school, missing/duplicate-date, formula, stale/expired preview and concurrent application coverage. All 24 tests passed; production build passed.
 - ExcelJS is a free backend runtime dependency, with a patched UUID override; npm audit reports zero known vulnerabilities. Holidays still do not change attendance or weekly class periods.
 - Browser verification completed: template download with 2nd/4th Saturdays and Sundays off, full 365-date upload preview and successful application of 76 synthetic holidays. Workbook layout rendered and checked with the bundled spreadsheet tool.
+
+## Calendar location and public holidays (2026-10-08)
+
+- Moved yearly Excel planning from Timetable to Calendar.
+- Added Include/Exclude public-holiday preference and country/state/region selection, offline holiday generation and retained reference names when days off are excluded.
+- Added verified India 2026 central gazetted dates after identifying gaps in the bundled dataset, with source/license attribution in Settings and the interface. Other-year/regional coverage limits are documented and shown to administrators.
+- Kept legacy workbook imports compatible; added location validation, regional rules, substitute dates and include/exclude tests. 26 tests and production build passed; dependency audit reports zero known vulnerabilities.
+- Browser verified the relocated Calendar tools, Karnataka selection, Include/Exclude dropdown and successful template download; saved `docs/screenshots/calendar-public-holidays.png`.

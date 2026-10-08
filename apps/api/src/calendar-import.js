@@ -3,6 +3,11 @@ import multer from "multer";
 import rateLimit from "express-rate-limit";
 import { id, managers } from "./domain.js";
 import {
+  holidayCountries,
+  holidayStates,
+  holidayRegions,
+} from "./public-holidays.js";
+import {
   calendarWorkbook,
   preferences,
   readCalendarWorkbook,
@@ -60,6 +65,22 @@ export function createCalendarImportRouter(store) {
     "/calendar-excel",
     rateLimit({ windowMs: 15 * 60 * 1000, limit: 30 }),
   );
+  router.get("/calendar-excel/locations", (req, res) => {
+    const country = req.query.country || "",
+      state = req.query.state || "";
+    if (
+      typeof country !== "string" ||
+      typeof state !== "string" ||
+      (country && !Object.hasOwn(holidayCountries(), country)) ||
+      (state && !Object.hasOwn(holidayStates(country), state))
+    )
+      return res.status(400).json({ error: "Unsupported holiday location" });
+    res.json({
+      countries: holidayCountries(),
+      states: country ? holidayStates(country) : {},
+      regions: state ? holidayRegions(country, state) : {},
+    });
+  });
   const failure = (error, res, next) =>
     error.status
       ? res

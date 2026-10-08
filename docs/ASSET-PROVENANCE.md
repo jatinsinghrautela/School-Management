@@ -20,3 +20,7 @@ Schoolglass Desk is the current English title, replacing the earlier coined name
 ## Readability correction
 
 After user feedback, content cards were returned to predominantly opaque light surfaces and secondary text was darkened. Decorative glass remains in navigation/backgrounds. All dialogs and picker menus use opaque readable surfaces; the full-page dialog overlay dims without blur. Motion is restricted to small decorative transforms and opacity changes, with reduced-motion overrides. These choices replace the earlier low-opacity content-card treatment.
+
+## Public-holiday references
+
+Holiday data is factual external reference data, not AI-generated artwork. date-holidays uses ISC-licensed code and CC BY-SA 3.0 data; attribution/license links and selected-country source links appear in the workbook Settings and interface. See CALENDAR-EXCEL.md for the India 2026 government source and coverage limits. Original branding and artwork remain project-generated.

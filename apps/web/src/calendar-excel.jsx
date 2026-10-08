@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 const saturdayChoices = [
   ["none", "No Saturdays off"],
   ["all", "All Saturdays off"],
@@ -11,13 +11,45 @@ export function CalendarExcel({ schoolId, api, refresh }) {
       year: new Date().getFullYear(),
       sundayOff: true,
       saturdayOff: "none",
+      publicHolidays: true,
+      country: "IN",
+      state: "",
+      region: "",
     }),
     [preview, setPreview] = useState(null),
     [file, setFile] = useState(null),
     [error, setError] = useState(""),
     [message, setMessage] = useState(""),
     [busy, setBusy] = useState(false),
-    [expanded, setExpanded] = useState(false);
+    [expanded, setExpanded] = useState(false),
+    [locations, setLocations] = useState({
+      countries: {},
+      states: {},
+      regions: {},
+    }),
+    [locationsLoading, setLocationsLoading] = useState(false);
+  useEffect(() => {
+    if (!expanded) return;
+    let active = true;
+    setLocationsLoading(true);
+    api(
+      `/schools/${schoolId}/calendar-excel/locations?country=${encodeURIComponent(prefs.country)}&state=${encodeURIComponent(prefs.state)}`,
+    )
+      .then((r) => {
+        if (active) setLocations(r);
+      })
+      .catch((e) => {
+        if (active) setError(e.message);
+      })
+      .finally(() => {
+        if (active) setLocationsLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [expanded, schoolId, prefs.country, prefs.state]);
+  const options = (map) =>
+    Object.entries(map).sort((a, b) => a[1].localeCompare(b[1]));
   async function download() {
     setBusy(true);
     setError("");
@@ -78,7 +110,7 @@ export function CalendarExcel({ schoolId, api, refresh }) {
       });
       setPreview(null);
       setMessage(
-        `Year calendar updated: ${result.created} added, ${result.updated} edited, ${result.cancelled} cancelled. Open Calendar to view the dates.`,
+        `Year calendar updated: ${result.created} added, ${result.updated} edited, ${result.cancelled} cancelled. The dates are shown below.`,
       );
       await refresh();
     } catch (e) {
@@ -145,16 +177,134 @@ export function CalendarExcel({ schoolId, api, refresh }) {
               />{" "}
               All Sundays are holidays
             </label>
+            <label>
+              Public holidays
+              <select
+                aria-label="Public holidays"
+                value={prefs.publicHolidays ? "include" : "exclude"}
+                onChange={(e) =>
+                  setPrefs({
+                    ...prefs,
+                    publicHolidays: e.target.value === "include",
+                  })
+                }
+              >
+                <option value="include">
+                  Include public holidays as days off
+                </option>
+                <option value="exclude">
+                  Exclude public holidays as days off
+                </option>
+              </select>
+            </label>
+            <label>
+              Holiday country
+              <select
+                aria-label="Holiday country"
+                disabled={locationsLoading}
+                value={prefs.country}
+                onChange={(e) => {
+                  setLocations({ ...locations, states: {}, regions: {} });
+                  setPrefs({
+                    ...prefs,
+                    country: e.target.value,
+                    state: "",
+                    region: "",
+                  });
+                }}
+              >
+                {options(locations.countries).map(([code, name]) => (
+                  <option key={code} value={code}>
+                    {name}
+                  </option>
+                ))}
+              </select>
+            </label>
+            {Object.keys(locations.states).length > 0 && (
+              <label>
+                Holiday state / province
+                <select
+                  aria-label="Holiday state / province"
+                  disabled={locationsLoading}
+                  value={prefs.state}
+                  onChange={(e) => {
+                    setLocations({ ...locations, regions: {} });
+                    setPrefs({ ...prefs, state: e.target.value, region: "" });
+                  }}
+                >
+                  <option value="">Country-level holidays only</option>
+                  {options(locations.states).map(([code, name]) => (
+                    <option key={code} value={code}>
+                      {name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            )}
+            {Object.keys(locations.regions).length > 0 && (
+              <label>
+                Holiday region
+                <select
+                  aria-label="Holiday region"
+                  value={prefs.region}
+                  onChange={(e) =>
+                    setPrefs({ ...prefs, region: e.target.value })
+                  }
+                >
+                  <option value="">All state-level holidays</option>
+                  {options(locations.regions).map(([code, name]) => (
+                    <option key={code} value={code}>
+                      {name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            )}
           </div>
-          <button className="primary" disabled={busy} onClick={download}>
+          <button
+            className="primary"
+            disabled={
+              busy || locationsLoading || !locations.countries[prefs.country]
+            }
+            onClick={download}
+          >
             Download formatted Excel template
           </button>
           <p>
             The template includes every date for the selected calendar year with
-            your weekend choices prefilled. Edit Status, Title and Details.
-            Working dates do not create calendar entries. Existing manual
-            entries and weekly class periods are preserved.
+            your weekend and public-holiday choices prefilled. Excluded public
+            holidays remain identified in Details; weekend rules still apply.
+            Review regional and newly announced dates against school/government
+            circulars. Edit Status, Title and Details. Working dates do not
+            create calendar entries. Existing manual entries and weekly class
+            periods are preserved.
           </p>
+          <p>
+            Holiday references:{" "}
+            <a
+              href="https://github.com/commenthol/date-holidays"
+              target="_blank"
+              rel="noreferrer"
+            >
+              date-holidays
+            </a>{" "}
+            ·{" "}
+            <a
+              href="https://creativecommons.org/licenses/by-sa/3.0/"
+              target="_blank"
+              rel="noreferrer"
+            >
+              CC BY-SA 3.0 data
+            </a>
+            . Attribution is also included in the workbook.
+          </p>
+          {prefs.country === "IN" && (
+            <p>
+              India 2026 includes a verified central gazetted holiday list.
+              Other years use the bundled dataset and may need additional
+              festival or local holiday dates.
+            </p>
+          )}
           <form onSubmit={upload} className="calendar-excel-upload">
             <label>
               Completed calendar workbook

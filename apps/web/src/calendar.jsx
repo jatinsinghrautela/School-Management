@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { X } from "./glyphs.jsx";
+import { CalendarExcel } from "./calendar-excel.jsx";
 const blank = (date) => ({
   title: "",
   description: "",
@@ -68,6 +69,9 @@ export function SchoolCalendar({ data, schoolId, api, refresh, manager }) {
   }
   return (
     <section className="school-calendar">
+      {manager && (
+        <CalendarExcel schoolId={schoolId} api={api} refresh={refresh} />
+      )}
       <div className="calendar-toolbar">
         <div>
           <h2>School calendar</h2>

@@ -121,6 +121,14 @@ test("year import previews and applies atomically, preserves manual entries, pre
       teacher = await login("teacher");
     const prefix = "/schools/school-north/calendar-excel";
     const prefs = { year: 2026, sundayOff: true, saturdayOff: "second-fourth" };
+    const locations = await call(
+      `${prefix}/locations?country=IN&state=KA`,
+      principal,
+    );
+    assert.ok(locations.countries.IN);
+    assert.ok(locations.states.KA);
+    await call(`${prefix}/locations?country=IN`, teacher, null, 403);
+    await call(`${prefix}/locations?country=XX`, principal, null, 400);
     await call(`${prefix}/template`, teacher, prefs, 403);
     await call(
       "/schools/school-west/calendar-excel/template",
