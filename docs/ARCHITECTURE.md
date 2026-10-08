@@ -41,15 +41,19 @@ Passwords use bcrypt. Session tokens are 32 random bytes and stored by SHA-256 d
 
 Mutations validate school/class membership and key fields. Responses use JSON and 400/401/403/404/409/413/500 status codes. Development uses a local same-origin Vite proxy; the API also serves the built React app after a build. Mobile will need documented origin/transport configuration and secure token storage.
 
-## Planned relational schema
+## Relational schema and migration
 
 organizations → schools → academic_years → classes/sections; users → memberships → school/role assignments; enrollments link students to class/year; teacher_assignments link subjects/classes/teachers. Attendance has a unique (school, enrollment, date, session) constraint. Exams have publication state; marks have a unique (exam, enrollment, subject) constraint. Resources own private file keys, notices own recipients/read receipts, guardians have explicit student links. Foreign keys and transaction-safe writes are essential before operational launch.
 
-The current `records` table is an MVP JSON persistence layer with id primary key and kind/school index, not this final schema. Reads are filtered in the application; replace broad collection reads with indexed tenant-scoped SQL and pagination in Phase 2.
+MySQL startup now runs a serialized versioned migration into `sg_*` tables. Core accounts/academics use typed columns; user-school, user-class and subject-teacher assignments use junction tables. Composite foreign keys enforce school consistency for academic references. Unique email, attendance session identities and configured marks, plus date/status/score checks, protect writes. JSON extensions retain immutable report snapshots and optional metadata. The legacy `records` table is retained unchanged after backfill and is no longer the live store. Back up MySQL before upgrading and run only one application version during migration; automatic rollback to the old application would omit new writes.
+
+Authentication reads use indexed ID/email/token digest lookups. Academic/workspace collection reads use school indexes before role filtering. The directory API supports bounded pages and search; shared tables display 20-row pages. Some secondary collections still use application-filtered reads and the workspace bootstrap is not a large-district streaming API. Broader query optimization remains release/scaling work.
 
 ## Academic transactions and publication
 
 Academic configuration, register batches and publication use a dedicated MySQL connection and transaction. A school record lock (`SELECT ... FOR UPDATE`) serializes competing academic writes; audit entries commit with the change. Stable register IDs make repeated saves update the same record. Demo mode uses a queued transaction adapter with rollback.
+
+Transactions use READ COMMITTED so a promotion that waits for user row locks can reread the latest credential generation rather than an older repeatable-read snapshot. Promotion locks its roster in stable user-ID order before applying changes. Credential/profile/status updates use user row locks; audit and token school metadata do not add a reverse school-row lock dependency.
 
 Students receive only published exams and their own published marks. Publishing requires a complete roster and freezes weighted report snapshots. Reopening withdraws student access until republished, requires a reason and preserves earlier versions. Only management can retrieve archive history. Historical unconfigured marks are retained for staff review.
 

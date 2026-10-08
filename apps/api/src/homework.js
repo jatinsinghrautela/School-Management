@@ -17,18 +17,42 @@ export function createHomeworkRouter(store) {
     try {
       if (req.user.role !== "student")
         fail(403, "Only students submit homework");
-      const { answer } = req.body;
+      const { answer, attachmentId = null } = req.body;
       if (typeof answer !== "string" || !answer.trim() || answer.length > 10000)
         fail(400, "Write an answer of 1–10000 characters");
       const result = await store.transaction(req.school.id, async (tx) => {
+        const current = (await tx.all("users")).find(
+          (u) => u.id === req.user.id,
+        );
+        if (
+          !current ||
+          current.active === false ||
+          current.role !== "student" ||
+          (current.authVersion || 0) !== (req.user.authVersion || 0)
+        )
+          fail(409, "Enrollment changed; sign in again");
         const resource = (await tx.all("resources")).find(
           (r) =>
             r.id === req.params.resourceId &&
             r.schoolId === req.school.id &&
             r.type === "homework",
         );
-        if (!resource || !canSeeClass(req.user, resource.classId))
+        if (!resource || !canSeeClass(current, resource.classId))
           fail(404, "Homework not found");
+        const attachment = attachmentId
+          ? (await tx.all("files")).find(
+              (f) =>
+                f.id === attachmentId &&
+                !f.deleted &&
+                f.staged &&
+                f.scanStatus === "clean" &&
+                f.schoolId === req.school.id &&
+                f.studentId === req.user.id &&
+                f.resourceId === resource.id,
+            )
+          : null;
+        if (attachmentId && !attachment)
+          fail(400, "Choose your own scanned attachment for this homework");
         const attempts = (await tx.all("submissions"))
           .filter(
             (s) => s.resourceId === resource.id && s.studentId === req.user.id,
@@ -45,12 +69,20 @@ export function createHomeworkRouter(store) {
           studentId: req.user.id,
           studentName: req.user.name,
           answer: answer.trim(),
+          attachmentId: attachment?.id || null,
+          attachmentName: attachment?.name || null,
           version: (attempts[0]?.version || 0) + 1,
           status: "submitted",
           submittedAt: now,
           late: !!resource.dueDate && now.slice(0, 10) > resource.dueDate,
           reviews: [],
         });
+        if (attachment)
+          await tx.put("files", {
+            ...attachment,
+            staged: false,
+            submissionId: row.id,
+          });
         await audit(tx, req, "homework.submitted");
         return row;
       });

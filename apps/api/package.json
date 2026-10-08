@@ -9,7 +9,8 @@
     "db:init": "node src/init-db.js",
     "db:check": "node src/check-transactions.js",
     "test": "node --test test/*.test.js",
-    "db:security": "node src/check-security.js"
+    "db:security": "node src/check-security.js",
+    "db:relational": "node src/check-relational.js"
   },
   "dependencies": {
     "bcryptjs": "^3.0.2",
@@ -19,6 +20,8 @@
     "express-rate-limit": "^8.1.0",
     "helmet": "^8.1.0",
     "multer": "^2.4.0",
-    "mysql2": "^3.14.0"
+    "mysql2": "^3.14.0",
+    "nodemailer": "^10.0.16",
+    "pdfkit": "^0.20.2"
   }
 }

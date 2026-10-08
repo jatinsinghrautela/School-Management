@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { AcademicLifecycle } from "./academic-lifecycle.jsx";
 import "./academics.css";
 import {
   Plus,
@@ -71,6 +72,13 @@ export function Academics({ data, api, schoolId, refresh, manager }) {
           {error}
         </div>
       )}
+      <AcademicLifecycle
+        data={data}
+        api={api}
+        schoolId={schoolId}
+        refresh={refresh}
+        manager={manager}
+      />
       <div className="academic-columns">
         <section className="panel">
           <div className="panel-heading">
@@ -1025,6 +1033,26 @@ export function ExamResults({ data, api, schoolId, refresh, user, manager }) {
       )}
       {report && (
         <ReportCard
+          download={async (r) => {
+            try {
+              const file = await api(
+                `/schools/${schoolId}/reports/${r.examId}/${r.studentId}/pdf?version=${r.version}`,
+              );
+              const bytes = Uint8Array.from(atob(file.base64), (c) =>
+                c.charCodeAt(0),
+              );
+              const url = URL.createObjectURL(
+                new Blob([bytes], { type: "application/pdf" }),
+              );
+              const link = document.createElement("a");
+              link.href = url;
+              link.download = file.filename;
+              link.click();
+              URL.revokeObjectURL(url);
+            } catch (e) {
+              setError(e.message);
+            }
+          }}
           report={report}
           history={history}
           select={setReport}
@@ -1090,7 +1118,7 @@ export function ExamResults({ data, api, schoolId, refresh, user, manager }) {
   );
 }
 
-function ReportCard({ report: r, close, history = [], select }) {
+function ReportCard({ report: r, close, history = [], select, download }) {
   return (
     <div className="modal-backdrop report-backdrop">
       <section
@@ -1100,6 +1128,9 @@ function ReportCard({ report: r, close, history = [], select }) {
         aria-labelledby="report-title"
       >
         <div className="report-actions">
+          <button className="primary" onClick={() => download(r)}>
+            Download PDF
+          </button>
           {history.length > 0 && (
             <select
               aria-label="Report version"

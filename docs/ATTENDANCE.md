@@ -20,4 +20,4 @@ Existing attendance is never deleted when a holiday is added. The history displa
 
 Only applied calendar entries close attendance. Downloading a template or uploading an unconfirmed preview has no effect. Sunday/Saturday preferences become closures after applying the yearly calendar, rather than being silently imposed on schools without a calendar.
 
-Session attendance, expected-day reports and date-specific timetable substitutions remain planned. Use synthetic data until the release checks in PLAN.md are complete.
+Daily and school-defined sessions now have separate register identities for the same student/class/date. Management can add or deactivate sessions under Academics. Deactivation preserves existing records and correction history. Session labels are included in history and exports; exports retain historical holiday records with a School day flag. Dashboard percentages count recorded eligible entries, including sessions; they are not an inferred whole-day or expected-day attendance rate. Dated timetable substitutions are implemented. Use synthetic data until the release checks in PLAN.md are complete.

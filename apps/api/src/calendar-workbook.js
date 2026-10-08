@@ -225,7 +225,7 @@ export async function calendarWorkbook(school, prefs) {
   return Buffer.from(await workbook.xlsx.writeBuffer());
 }
 // Bound the ZIP directory before decompression; reject ZIP64, embedded macros and huge expanded files.
-function boundedZip(buffer) {
+export function boundedZip(buffer) {
   let end = -1;
   for (let i = buffer.length - 22; i >= Math.max(0, buffer.length - 65557); i--)
     if (buffer.readUInt32LE(i) === 0x06054b50) {

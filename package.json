@@ -15,7 +15,8 @@
     "db:check": "npm run db:check -w apps/api",
     "start": "npm run start -w apps/api",
     "format": "prettier --write apps docs README.md package.json compose.yaml .github/workflows/ci.yml",
-    "db:security": "npm run db:security -w apps/api"
+    "db:security": "npm run db:security -w apps/api",
+    "db:relational": "npm run db:relational -w apps/api"
   },
   "devDependencies": {
     "concurrently": "^9.2.0",
@@ -23,7 +24,9 @@
   },
   "dependencies": {
     "date-holidays": "^3.37.0",
-    "exceljs": "4.4.0"
+    "exceljs": "4.4.0",
+    "nodemailer": "^10.0.16",
+    "pdfkit": "^0.20.2"
   },
   "overrides": {
     "shell-quote": "1.12.0",

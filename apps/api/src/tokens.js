@@ -7,6 +7,7 @@ export function tokenRepository(store, type) {
     );
   return {
     async get(key) {
+      if (store.findToken) return store.findToken(type, key);
       return (await rows()).find((r) => r.tokenHash === key);
     },
     async set(key, value) {

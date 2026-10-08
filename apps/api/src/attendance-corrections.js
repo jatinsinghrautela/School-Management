@@ -75,6 +75,7 @@ export function createAttendanceCorrectionRouter(store) {
           attendanceId: record.id,
           classId: record.classId,
           studentId: record.studentId,
+          sessionId: record.sessionId || null,
           date: record.date,
           beforeStatus: record.status,
           beforeUpdatedAt: record.updatedAt || null,

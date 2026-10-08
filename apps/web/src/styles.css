@@ -1424,6 +1424,7 @@ td:first-child {
 }
 
 .record-grid {
+  margin-top: 24px;
   margin-bottom: 22px;
 }
 .register-controls {

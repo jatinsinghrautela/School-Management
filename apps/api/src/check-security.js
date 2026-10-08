@@ -89,8 +89,12 @@ try {
     database: process.env.MYSQL_DATABASE || "orbit_school",
   });
   try {
+    await connection.execute("DELETE FROM sg_security_tokens WHERE user_id=?", [
+      userId,
+    ]);
     for (const fixtureId of ids)
-      await connection.execute("DELETE FROM records WHERE id=?", [fixtureId]);
+      await connection.execute("DELETE FROM sg_audit WHERE id=?", [fixtureId]);
+    await connection.execute("DELETE FROM sg_users WHERE id=?", [userId]);
   } finally {
     await connection.end();
   }

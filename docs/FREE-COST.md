@@ -15,7 +15,7 @@ Free managed hosting is quota-based and can change. Do not add a credit card, en
 - [Cloudflare Pages limits](https://developers.cloudflare.com/pages/platform/limits/): useful for a static React frontend on a provider subdomain. It does not itself supply a conventional Node server plus MySQL.
 - [Render free services](https://render.com/docs/free): free web services sleep after 15 minutes without inbound traffic; the filesystem is ephemeral. Free PostgreSQL expires, and PostgreSQL is not MySQL. Do not run persistent MySQL on ephemeral free storage.
 - Existing infrastructure may host Node/MySQL, but publicly exposing a personal computer is a separate security and availability decision.
-- Use built-in print-to-PDF and in-app notices initially. SMS, WhatsApp, email delivery and push must be selected only after checking real free limits and long-term availability. No service is currently integrated.
+- PDFKit generates report PDFs locally. Nodemailer uses an optional existing school SMTP mailbox; ClamAV scans uploads on the same machine. No hosted email or scanning subscription is connected. Email and uploads stay disabled until configured. Existing infrastructure availability and operating costs belong to the school; no promise of unlimited free SMTP is made. SMS, WhatsApp and push remain future work.
 
 Recommended path: local development → local synthetic-data pilot → choose hosting after measuring usage and checking available free offers. Keep deployment optional and avoid promising a production SLA on a free tier.
 

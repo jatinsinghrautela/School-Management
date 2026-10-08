@@ -28,6 +28,8 @@ export function AttendanceCorrections({
     data.users.find((u) => u.id === id)?.name || "Student";
   const className = (id) =>
     data.classes.find((c) => c.id === id)?.name || "Class";
+  const sessionName = (id) =>
+    data.attendanceSessions?.find((s) => s.id === id)?.name || "Daily";
   async function submit(e, reviewing = false) {
     e.preventDefault();
     setBusy(true);
@@ -100,8 +102,8 @@ export function AttendanceCorrections({
                       )
                     }
                   >
-                    {r.date} · {student(r.studentId)} · {className(r.classId)} ·{" "}
-                    {r.status}
+                    {r.date} · {sessionName(r.sessionId)} ·{" "}
+                    {student(r.studentId)} · {className(r.classId)} · {r.status}
                     {r.excludedFromAttendance ? " · holiday" : ""}
                   </option>
                 ))}
@@ -191,6 +193,8 @@ export function AttendanceCorrections({
                     {student(r.studentId)}
                     <br />
                     <span className="correction-date">{r.date}</span>
+                    <br />
+                    {sessionName(r.sessionId)}
                     <br />
                     {className(r.classId)}
                   </td>

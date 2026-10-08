@@ -208,11 +208,19 @@ test("independent schools remain isolated and support sessions preserve role gat
       { active: false },
       403,
     );
+    await call(
+      `/users/${student.id}/profile`,
+      login.token,
+      {
+        name: "Updated Student",
+        email: "injected@test.local",
+      },
+      400,
+    );
     const updated = await call(`/users/${student.id}/profile`, login.token, {
       name: "Updated Student",
       phone: "123456",
       role: "owner",
-      email: "injected@test.local",
     });
     assert.equal(updated.name, "Updated Student");
     assert.equal(updated.phone, "123456");

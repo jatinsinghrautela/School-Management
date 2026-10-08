@@ -7,8 +7,10 @@ export function Homework({
   api,
   schoolId,
   refresh,
+  download,
 }) {
   const [open, setOpen] = useState(false),
+    [attachment, setAttachment] = useState(null),
     [answer, setAnswer] = useState(""),
     [review, setReview] = useState(null),
     [feedback, setFeedback] = useState(""),
@@ -27,13 +29,25 @@ export function Homework({
     setBusy(true);
     setError("");
     try {
+      let attachmentId = null;
+      if (student && attachment) {
+        const body = new FormData();
+        body.append("file", attachment);
+        attachmentId = (
+          await api(
+            `/schools/${schoolId}/homework/${resource.id}/attachment`,
+            body,
+          )
+        ).attachmentId;
+      }
       await api(
         student
           ? `/schools/${schoolId}/homework/${resource.id}/submit`
           : `/schools/${schoolId}/homework/submissions/${review.id}/review`,
-        student ? { answer } : { feedback, status },
+        student ? { answer, attachmentId } : { feedback, status },
       );
       setAnswer("");
+      setAttachment(null);
       setReview(null);
       setFeedback("");
       await refresh();
@@ -99,6 +113,19 @@ export function Homework({
                     {s.late ? " · Late" : ""}
                   </small>
                   <p className="answer-text">{s.answer}</p>
+                  {s.attachmentId && (
+                    <button
+                      className="secondary"
+                      onClick={() =>
+                        download({
+                          fileId: s.attachmentId,
+                          fileName: s.attachmentName,
+                        })
+                      }
+                    >
+                      Download private attachment
+                    </button>
+                  )}
                   {s.reviews.map((r) => (
                     <div className="teacher-feedback" key={r.id}>
                       <strong>
@@ -131,16 +158,34 @@ export function Homework({
               (teacher && review)) && (
               <form onSubmit={save}>
                 {student ? (
-                  <label>
-                    Your answer
-                    <textarea
-                      aria-label="Homework answer"
-                      required
-                      maxLength={10000}
-                      value={answer}
-                      onChange={(e) => setAnswer(e.target.value)}
-                    />
-                  </label>
+                  <>
+                    <label>
+                      Your answer
+                      <textarea
+                        aria-label="Homework answer"
+                        required
+                        maxLength={10000}
+                        value={answer}
+                        onChange={(e) => setAnswer(e.target.value)}
+                      />
+                    </label>
+                    <label>
+                      Private attachment (optional, PDF/PNG/JPEG, 5 MB)
+                      <input
+                        aria-label="Homework attachment"
+                        type="file"
+                        disabled={data.capabilities?.uploads === false}
+                        accept=".pdf,.png,.jpg,.jpeg"
+                        onChange={(e) =>
+                          setAttachment(e.target.files[0] || null)
+                        }
+                      />
+                    </label>
+                    <p>
+                      Uploads require the school's configured malware scanner
+                      and available storage quota.
+                    </p>
+                  </>
                 ) : (
                   <>
                     <p>

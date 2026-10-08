@@ -39,30 +39,32 @@ Independent schools have no organization and retain separate explicit membership
 
 ## Phase 2: Complete core academics
 
-- [ ] Normalize MySQL schema with constraints and migrations. School-locked transactions and stable register IDs are implemented in the current adapter.
+- [x] Versioned MySQL migration into separate tables, typed core academic/account fields, membership junctions, unique registers, mark/date checks and school-scoped foreign keys. Immutable snapshots and optional metadata retain JSON extensions; the old records table remains a backup.
 - [x] Academic years, current-year selection, grades, sections, subjects and editable teacher subject assignments.
-- [ ] Terms, enrollment history and year promotion.
+- [x] Terms, enrollment history and reviewed year promotion with stale-preview checks and student session invalidation.
 - [x] Atomic attendance and configured exam marks batches.
 - [x] Holiday-aware attendance: transactional write guards, closure reasons, retained history and holiday exclusion from dashboard percentages.
 - [x] Attendance correction requests with reasons, independent leadership approval/rejection, stale-record checks and audited history.
-- [ ] Session-wise attendance.
+- [x] Session-wise attendance alongside Daily, with independent register identities and session labels in correction history and Excel exports.
 - [x] Exam schedules, configurable grade bands, subject weighting, pass thresholds and draft/published results.
 - [x] Student report cards, manager publication, reasoned reopening, immutable versions and manager archive access.
-- [ ] Dedicated PDF export verification, school-specific templates and signatures. Browser print/Save as PDF layout is implemented.
+- [x] Dedicated PDF exports with verified multi-page layout, school template settings and snapshot-preserved typed teacher/principal sign-off names. These are printed sign-offs, not cryptographic signatures.
 - [x] Text homework submissions, own-attempt history, lateness tracking, teacher feedback and revision requests.
-- [ ] Private submission attachments, malware scanning, upload storage quotas and cleanup.
+- [x] Private submission attachments, fail-closed local ClamAV integration, school/student quotas and staged/orphan cleanup. Uploads remain disabled until ClamAV is configured, as requested.
 - [x] Weekly class timetable, assigned-teacher validation, class/teacher/room overlap checks and audited editing/cancellation.
 - [x] School calendar: multi-day events, school-wide holidays, class/role audiences, audited editing and reasoned cancellation.
 - [x] Yearly calendar Excel templates with Sunday/Saturday holiday preferences, full-year validation, review previews and atomic audited imports that preserve manual entries.
 - [x] Yearly planning lives on Calendar, with country/state/region public-holiday references and Include/Exclude preferences; India 2026 includes verified central gazetted dates.
-- [ ] Date-specific timetable substitutions and holiday-aware timetable display.
+- [x] Date-specific timetable substitutions, conflict checks, audited cancellation and holiday-aware dated timetable display.
 - [x] Account suspension/reactivation with session revocation and audited authorization.
 - [x] Authorized school-account name/contact updates with transactional audit records.
 - [x] Account-access milestone: persistent MySQL sessions/recovery, mandatory first-login password change, authenticated password updates and device-session revocation.
 - [x] Authorized role and school/class assignment editing, with teaching dependency and academic-history guards.
-- [ ] Login-email changes, emailed invitations, token cleanup and indexed authentication storage.
-- [ ] Password reset delivery using an administrator-provided SMTP server, rate limits, and recovery auditing.
-- [ ] Search, pagination, imports with preview/error reporting, export permissions.
+- [x] Reasoned login-email changes, emailed invitations, periodic token cleanup and indexed user/token lookup. Email changes revoke recovery links and sessions.
+- [x] Configurable TLS SMTP recovery delivery, rate limits and delivery-failure auditing/revocation. Email remains disabled until school-provided SMTP is configured, as requested; assisted recovery remains available.
+- [x] Search and paginated tables/directory API, reviewed Excel people imports with row errors and single-use previews, and permission-scoped attendance/directory/results exports.
+
+Phase 2 implementation is complete. SMTP and ClamAV adapters are intentionally unconfigured; their real infrastructure acceptance checks happen after configuration. Release hardening and production deployment remain Phase 4 work. See PHASE-2.md for setup and operating details.
 
 ## Phase 3: School operations
 

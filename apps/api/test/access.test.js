@@ -8,7 +8,7 @@ let store, server, base;
 before(async () => {
   store = await createStore("demo");
   await seed(store);
-  server = createApp(store).listen(0, "127.0.0.1");
+  server = createApp(store, { scanner: async () => {} }).listen(0, "127.0.0.1");
   await new Promise((resolve) => server.once("listening", resolve));
   base = `http://127.0.0.1:${server.address().port}/api`;
 });

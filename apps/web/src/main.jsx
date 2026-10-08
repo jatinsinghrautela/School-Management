@@ -33,6 +33,7 @@ import { Homework } from "./homework.jsx";
 import { Security } from "./security.jsx";
 import { AccessEditor } from "./access-editor.jsx";
 import { AttendanceCorrections } from "./attendance-corrections.jsx";
+import { DataTools } from "./data-tools.jsx";
 document.title = `${BRAND_NAME} · School workspace`;
 const icons = {
   Overview: LayoutDashboard,
@@ -80,6 +81,8 @@ function App() {
       await api(`/users/${profileTarget.id}/profile`, {
         name: profileTarget.name,
         phone: profileTarget.phone || "",
+        email: profileTarget.email,
+        emailReason: profileTarget.emailReason || "",
       });
       setProfileTarget(null);
       setMessage("Profile updated");
@@ -998,6 +1001,49 @@ function App() {
                   )}
                 />
               )}
+              {page === "People" && manager && data && (
+                <DataTools
+                  kind="directory"
+                  api={api}
+                  schoolId={sid}
+                  refresh={refresh}
+                  manager={manager}
+                />
+              )}
+              {page === "Results" &&
+                data &&
+                [
+                  "student",
+                  "teacher",
+                  "director",
+                  "admin",
+                  "principal",
+                ].includes(user.role) && (
+                  <DataTools
+                    kind="results"
+                    api={api}
+                    schoolId={sid}
+                    refresh={refresh}
+                    manager={manager}
+                  />
+                )}
+              {page === "Attendance" &&
+                data &&
+                [
+                  "student",
+                  "teacher",
+                  "director",
+                  "admin",
+                  "principal",
+                ].includes(user.role) && (
+                  <DataTools
+                    kind="attendance"
+                    api={api}
+                    schoolId={sid}
+                    refresh={refresh}
+                    manager={manager}
+                  />
+                )}
               {page === "Attendance" && editor && data && (
                 <RecordGrid
                   key={"attendance-" + sid}
@@ -1006,6 +1052,7 @@ function App() {
                   students={students}
                   records={attendance}
                   calendar={data.calendar}
+                  sessions={data.attendanceSessions}
                   api={api}
                   schoolId={sid}
                   refresh={refresh}
@@ -1017,6 +1064,7 @@ function App() {
                     "Student",
                     "Class",
                     "Date",
+                    "Session",
                     "Status",
                     "Calendar eligibility",
                   ]}
@@ -1025,6 +1073,8 @@ function App() {
                       "Student",
                     classes.find((c) => c.id === a.classId)?.name,
                     a.date,
+                    data.attendanceSessions?.find((s) => s.id === a.sessionId)
+                      ?.name || "Daily",
                     <span
                       className={
                         "badge " + (a.status === "absent" ? "warning" : "")
@@ -1159,6 +1209,7 @@ function App() {
                       )}
                       {r.type === "homework" && (
                         <Homework
+                          download={download}
                           resource={r}
                           submissions={data.submissions || []}
                           user={user}
@@ -1232,6 +1283,36 @@ function App() {
               <p>
                 {profileTarget.email} · {profileTarget.role}
               </p>
+              <label>
+                Login email
+                <input
+                  type="email"
+                  aria-label="Login email"
+                  required
+                  maxLength={200}
+                  value={profileTarget.email}
+                  onChange={(e) =>
+                    setProfileTarget({
+                      ...profileTarget,
+                      email: e.target.value,
+                    })
+                  }
+                />
+              </label>
+              <label>
+                Email change reason (required if changed)
+                <input
+                  aria-label="Email change reason"
+                  maxLength={500}
+                  value={profileTarget.emailReason || ""}
+                  onChange={(e) =>
+                    setProfileTarget({
+                      ...profileTarget,
+                      emailReason: e.target.value,
+                    })
+                  }
+                />
+              </label>
               <label>
                 Full name
                 <input
@@ -1357,6 +1438,7 @@ function App() {
             classes={classes}
             students={students}
             calendar={data?.calendar || []}
+            capabilities={data?.capabilities || {}}
           />
         )
       )}
@@ -1377,12 +1459,14 @@ function RecordGrid({
   students,
   records,
   calendar = [],
+  sessions = [],
   api,
   schoolId,
   refresh,
 }) {
   const [classId, setClassId] = useState(classes[0]?.id || ""),
     [date, setDate] = useState(today()),
+    [sessionId, setSessionId] = useState(""),
     [exam, setExam] = useState(""),
     [subject, setSubject] = useState(""),
     [maxScore, setMaxScore] = useState("100"),
@@ -1407,7 +1491,7 @@ function RecordGrid({
         r.classId === classId &&
         r.studentId === s.id &&
         (kind === "attendance"
-          ? r.date === date
+          ? r.date === date && (r.sessionId || "") === sessionId
           : r.exam === exam && r.subject === subject),
     );
   const value = (s) =>
@@ -1417,7 +1501,7 @@ function RecordGrid({
   useEffect(() => {
     setValues({});
     setFeedback("");
-  }, [classId, date, exam, subject]);
+  }, [classId, date, exam, subject, sessionId]);
   async function submit(e) {
     e.preventDefault();
     setBusy(true);
@@ -1437,6 +1521,7 @@ function RecordGrid({
         const result = await api(`/schools/${schoolId}/attendance/batch`, {
           classId,
           date,
+          sessionId: sessionId || null,
           entries: selected.map((s) => ({ studentId: s.id, status: value(s) })),
         });
         saved = result.saved;
@@ -1503,16 +1588,35 @@ function RecordGrid({
             </select>
           </label>
           {kind === "attendance" ? (
-            <label>
-              Date
-              <input
-                aria-label="Register date"
-                required
-                type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-              />
-            </label>
+            <>
+              <label>
+                Date
+                <input
+                  aria-label="Register date"
+                  required
+                  type="date"
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                />
+              </label>
+              <label>
+                Session
+                <select
+                  aria-label="Register session"
+                  value={sessionId}
+                  onChange={(e) => setSessionId(e.target.value)}
+                >
+                  <option value="">Daily</option>
+                  {sessions
+                    .filter((s) => s.active)
+                    .map((s) => (
+                      <option key={s.id} value={s.id}>
+                        {s.name}
+                      </option>
+                    ))}
+                </select>
+              </label>
+            </>
           ) : (
             <>
               <label>
@@ -1652,6 +1756,10 @@ function RecordGrid({
   );
 }
 function Table({ columns, rows }) {
+  const [page, setPage] = useState(1),
+    pageSize = 20,
+    totalPages = Math.max(1, Math.ceil(rows.length / pageSize));
+  useEffect(() => setPage(1), [rows.length]);
   return (
     <div className="panel table-wrap">
       <table>
@@ -1663,16 +1771,43 @@ function Table({ columns, rows }) {
           </tr>
         </thead>
         <tbody>
-          {rows.map((r, i) => (
-            <tr key={i}>
-              {r.map((c, j) => (
-                <td key={j}>{c}</td>
-              ))}
-            </tr>
-          ))}
+          {rows
+            .slice(
+              (Math.min(page, totalPages) - 1) * pageSize,
+              Math.min(page, totalPages) * pageSize,
+            )
+            .map((r, i) => (
+              <tr key={i}>
+                {r.map((c, j) => (
+                  <td key={j}>{c}</td>
+                ))}
+              </tr>
+            ))}
         </tbody>
       </table>
       {!rows.length && <Empty text="No records to display yet." />}
+      {totalPages > 1 && (
+        <div className="register-footer">
+          <span>
+            {rows.length} records · Page {Math.min(page, totalPages)} of{" "}
+            {totalPages}
+          </span>
+          <button
+            className="secondary"
+            disabled={page <= 1}
+            onClick={() => setPage((p) => p - 1)}
+          >
+            Previous page
+          </button>
+          <button
+            className="secondary"
+            disabled={page >= totalPages}
+            onClick={() => setPage((p) => p + 1)}
+          >
+            Next page
+          </button>
+        </div>
+      )}
     </div>
   );
 }
@@ -1720,10 +1855,12 @@ function ResultSummary({ marks, users }) {
   );
 }
 function Login({ api, onLogin, error }) {
-  const [view, setView] = useState("login"),
+  const linkedToken =
+    new URLSearchParams(window.location.hash.slice(1)).get("reset") || "";
+  const [view, setView] = useState(linkedToken ? "reset" : "login"),
     [email, setEmail] = useState(""),
     [password, setPassword] = useState(""),
-    [resetToken, setResetToken] = useState(""),
+    [resetToken, setResetToken] = useState(linkedToken),
     [localError, setError] = useState(""),
     [message, setMessage] = useState(""),
     [busy, setBusy] = useState(false);
@@ -1749,6 +1886,8 @@ function Login({ api, onLogin, error }) {
         setMessage(r.message);
         setView("login");
         setPassword("");
+        setResetToken("");
+        window.history.replaceState(null, "", window.location.pathname);
       }
     } catch (e) {
       setError(e.message);
@@ -1924,6 +2063,7 @@ function Login({ api, onLogin, error }) {
   );
 }
 function Recovery({ api, users = [], close }) {
+  const [delivery, setDelivery] = useState("manual");
   const [userId, setUserId] = useState(""),
     [result, setResult] = useState(null),
     [error, setError] = useState(""),
@@ -1933,7 +2073,12 @@ function Recovery({ api, users = [], close }) {
     setBusy(true);
     setError("");
     try {
-      setResult(await api(`/users/${userId}/recovery`, {}));
+      setResult(
+        await api(`/users/${userId}/recovery`, {
+          delivery: delivery === "manual" ? "manual" : "email",
+          invitation: delivery === "invitation",
+        }),
+      );
     } catch (e) {
       setError(e.message);
     } finally {
@@ -1982,6 +2127,21 @@ function Recovery({ api, users = [], close }) {
               ))}
             </select>
           </label>
+          <label>
+            Delivery
+            <select
+              aria-label="Recovery delivery"
+              value={delivery}
+              onChange={(e) => {
+                setDelivery(e.target.value);
+                setResult(null);
+              }}
+            >
+              <option value="manual">Private assisted recovery token</option>
+              <option value="email">Email password reset</option>
+              <option value="invitation">Email account invitation</option>
+            </select>
+          </label>
           {error && (
             <div className="alert" role="alert">
               {error}
@@ -1990,15 +2150,17 @@ function Recovery({ api, users = [], close }) {
           {result && (
             <>
               <div className="success">{result.message}</div>
-              <label>
-                Recovery token
-                <input
-                  aria-label="Issued recovery token"
-                  value={result.token}
-                  readOnly
-                  onFocus={(e) => e.target.select()}
-                />
-              </label>
+              {result.token && (
+                <label>
+                  Recovery token
+                  <input
+                    aria-label="Issued recovery token"
+                    value={result.token}
+                    readOnly
+                    onFocus={(e) => e.target.select()}
+                  />
+                </label>
+              )}
             </>
           )}
           <div className="modal-actions">
@@ -2026,6 +2188,7 @@ function Editor({
   classes,
   students,
   calendar = [],
+  capabilities = {},
 }) {
   const [file, setFile] = useState(null);
   const [form, setForm] = useState({
@@ -2344,10 +2507,18 @@ function Editor({
                 <input
                   aria-label="Resource file"
                   type="file"
+                  disabled={capabilities.uploads === false}
                   accept=".pdf,.png,.jpg,.jpeg"
                   onChange={(e) => setFile(e.target.files[0] || null)}
                 />
               </label>
+              {capabilities.uploads === false && (
+                <p>
+                  File uploads are unavailable until your platform administrator
+                  configures the malware scanner. You can still add instructions
+                  or a resource link.
+                </p>
+              )}
             </>
           )}
           {type === "notice" && (

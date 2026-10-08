@@ -71,6 +71,18 @@ export function createTimetableRouter(store) {
           );
         const entries = await tx.all("timetable");
         if (
+          (await tx.all("substitutions")).some(
+            (s) =>
+              s.schoolId === req.school.id &&
+              !s.cancelled &&
+              s.date >= new Date().toISOString().slice(0, 10),
+          )
+        )
+          reject(
+            409,
+            "Review and cancel future substitutions before changing weekly periods",
+          );
+        if (
           entryId &&
           !entries.some(
             (e) =>
@@ -135,6 +147,15 @@ export function createTimetableRouter(store) {
           throw Object.assign(new Error("Schedule entry not found"), {
             status: 404,
           });
+        if (
+          (await tx.all("substitutions")).some(
+            (s) => s.entryId === entry.id && !s.cancelled,
+          )
+        )
+          throw Object.assign(
+            new Error("Cancel this period's substitutions first"),
+            { status: 409 },
+          );
         await tx.put("timetable", { ...entry, cancelled: true });
         await tx.put("audit", {
           id: id(),

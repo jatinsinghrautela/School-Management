@@ -1,6 +1,8 @@
 import { Router } from "express";
 import { requireAttendanceDay } from "./calendar.js";
 import { requireAttendanceCorrection } from "./attendance-corrections.js";
+import { attendanceSession } from "./attendance-sessions.js";
+import { reportPdf } from "./report-pdf.js";
 import { createHash } from "node:crypto";
 import { id, managers, canSeeClass } from "./domain.js";
 
@@ -20,7 +22,7 @@ export const dateValid = (value) =>
 const stableId = (...parts) =>
   createHash("sha256").update(JSON.stringify(parts)).digest("hex").slice(0, 36);
 const scoped = async (store, kind, sid) =>
-  (await store.all(kind)).filter((r) => r.schoolId === sid);
+  (await store.all(kind, sid)).filter((r) => r.schoolId === sid);
 const management = (user) => managers.includes(user.role);
 const audit = (store, user, sid, action) =>
   store.put("audit", {
@@ -36,6 +38,13 @@ export async function academicWorkspace(store, user, schoolId) {
     canSeeClass(user, c.id),
   );
   const allowed = new Set(classes.map((c) => c.id));
+  const ownExams = new Set(
+    user.role === "student"
+      ? (await scoped(store, "reports", schoolId))
+          .filter((r) => r.studentId === user.id)
+          .map((r) => r.examId)
+      : [],
+  );
   return {
     academicYears: await scoped(store, "academicYears", schoolId),
     subjects: (await scoped(store, "subjects", schoolId)).filter((s) =>
@@ -43,7 +52,7 @@ export async function academicWorkspace(store, user, schoolId) {
     ),
     exams: (await scoped(store, "exams", schoolId)).filter(
       (e) =>
-        allowed.has(e.classId) &&
+        (allowed.has(e.classId) || ownExams.has(e.id)) &&
         (user.role !== "student" || e.status === "published"),
     ),
   };
@@ -72,7 +81,17 @@ export function createAcademicRouter(store) {
     const exam = (await scoped(tx, "exams", req.school.id)).find(
       (e) => e.id === examId,
     );
-    assert(exam && canSeeClass(req.user, exam.classId), 404, "Exam not found");
+    const ownReport =
+      req.user.role === "student" &&
+      exam?.status === "published" &&
+      (await scoped(tx, "reports", req.school.id)).some(
+        (r) => r.examId === exam.id && r.studentId === req.user.id,
+      );
+    assert(
+      exam && (canSeeClass(req.user, exam.classId) || ownReport),
+      404,
+      "Exam not found",
+    );
     return exam;
   };
   const requireManager = (req) =>
@@ -119,6 +138,42 @@ export function createAcademicRouter(store) {
         return row;
       });
       res.status(201).json(row);
+    }),
+  );
+  router.post(
+    "/academics/report-settings",
+    route(async (req, res) => {
+      requireManager(req);
+      const {
+        heading = "Academic report card",
+        accent = "#176455",
+        principal = "",
+        classTeacher = "",
+      } = req.body;
+      assert(
+        typeof heading === "string" &&
+          heading.trim() &&
+          heading.length <= 100 &&
+          /^#[0-9a-fA-F]{6}$/.test(accent) &&
+          [principal, classTeacher].every(
+            (v) => typeof v === "string" && v.length <= 100,
+          ),
+        400,
+        "Provide a report heading, hex accent and sign-off names of at most 100 characters",
+      );
+      const row = await transact(req, async (tx) => {
+        const row = await tx.put("reportSettings", {
+          id: stableId("report-settings", req.school.id),
+          schoolId: req.school.id,
+          heading: heading.trim(),
+          accent,
+          principal,
+          classTeacher,
+        });
+        await audit(tx, req.user, req.school.id, "report-settings.saved");
+        return row;
+      });
+      res.json(row);
     }),
   );
   router.post(
@@ -466,7 +521,7 @@ export function createAcademicRouter(store) {
     "/attendance/batch",
     route(async (req, res) => {
       requireTeacher(req);
-      const { classId, date, entries } = req.body;
+      const { classId, date, entries, sessionId = null } = req.body;
       assert(
         dateValid(date) &&
           objectRows(entries) &&
@@ -479,6 +534,7 @@ export function createAcademicRouter(store) {
       const result = await transact(req, async (tx) => {
         await classFor(tx, req, classId);
         await requireAttendanceDay(tx, req.school.id, date);
+        await attendanceSession(tx, req.school.id, sessionId);
         const users = await tx.all("users"),
           existing = await scoped(tx, "attendance", req.school.id);
         assert(
@@ -501,7 +557,8 @@ export function createAcademicRouter(store) {
             (a) =>
               a.classId === classId &&
               a.studentId === entry.studentId &&
-              a.date === date,
+              a.date === date &&
+              (a.sessionId || null) === sessionId,
           );
           requireAttendanceCorrection(old, entry.status);
           if (old) continue;
@@ -514,10 +571,12 @@ export function createAcademicRouter(store) {
                 classId,
                 date,
                 entry.studentId,
+                ...(sessionId ? [sessionId] : []),
               ),
             schoolId: req.school.id,
             classId,
             date,
+            sessionId,
             studentId: entry.studentId,
             status: entry.status,
             updatedAt: new Date().toISOString(),
@@ -615,6 +674,8 @@ export function createAcademicRouter(store) {
             passed,
             publishedAt,
             publishedBy: req.user.name,
+            reportStyle:
+              (await scoped(tx, "reportSettings", req.school.id))[0] || {},
           });
         }
         await tx.put("exams", {
@@ -693,6 +754,45 @@ export function createAcademicRouter(store) {
           ...r,
           archived: exam.status !== "published" || r.version !== exam.version,
         })),
+      });
+    }),
+  );
+  router.get(
+    "/reports/:examId/:studentId/pdf",
+    route(async (req, res) => {
+      assert(
+        management(req.user) || ["teacher", "student"].includes(req.user.role),
+        403,
+        "Report access denied",
+      );
+      const exam = await examFor(store, req, req.params.examId);
+      const version =
+        req.query.version === undefined
+          ? exam.version
+          : Number(req.query.version);
+      assert(
+        Number.isInteger(version) && version > 0,
+        400,
+        "Choose a report version",
+      );
+      assert(
+        (management(req.user) ||
+          (exam.status === "published" && version === exam.version)) &&
+          (req.user.role !== "student" || req.params.studentId === req.user.id),
+        403,
+        "Only an approved accessible report can be exported",
+      );
+      const r = (await scoped(store, "reports", req.school.id)).find(
+        (r) =>
+          r.examId === exam.id &&
+          r.studentId === req.params.studentId &&
+          r.version === version,
+      );
+      assert(r, 404, "Report not found");
+      const b = await reportPdf(r);
+      res.json({
+        filename: `report-${r.version}.pdf`,
+        base64: b.toString("base64"),
       });
     }),
   );

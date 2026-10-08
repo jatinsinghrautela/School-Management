@@ -8,6 +8,8 @@ A multi-school workspace built with React, Node.js, and MySQL. One API serves th
 
 An evolving web implementation with grouped or independent school onboarding, role-based accounts, audited owner support sessions, multi-school switching, academic setup, atomic attendance/marks registers, published weighted report cards, learning resources, assisted password recovery, notices and dashboards. There is no public registration. Production readiness and remaining modules are tracked in the plan.
 
+Phase 2 core academics is implemented, including terms, reviewed promotions/enrollment history, session attendance, PDF report templates, dated timetable substitutions, private attachments, people imports/exports and configurable recovery email. Read [Phase 2 setup and operating details](docs/PHASE-2.md). SMTP delivery and uploads are safely disabled until SMTP and local ClamAV are configured.
+
 ## Requirements
 
 - Node.js 22.12+ (Node 24 recommended), npm, Git.
@@ -47,7 +49,7 @@ Demo emails: `owner@orbit.local`, `director@orbit.local`, `principal@orbit.local
 3. Configure an exam schedule, subject maximum marks, weights, pass thresholds and grade bands. The defaults are editable examples.
 4. Teachers save their assigned subject registers in Results. Each batch succeeds completely or rolls back.
 5. Management publishes once every enrolled student has every required subject score. Students see only their own published report.
-6. Management can reopen with a reason and republish a new version. Earlier snapshots remain available to management. Reports include a browser print/Save as PDF layout; standalone PDF export remains planned.
+6. Management can reopen with a reason and republish a new version. Earlier snapshots remain available to management. Reports support browser printing and dedicated PDF download, using publication snapshots of school template settings and typed sign-off names.
 
 Demo mode includes a draft Midterm assessment. Historical unconfigured marks remain available to staff for review.
 
@@ -58,6 +60,7 @@ Demo mode includes a draft Midterm assessment. Historical unconfigured marks rem
 ```powershell
 npm test
 npm run build
+npm run db:relational
 # Requires configured MySQL; removes its disposable test fixtures.
 npm run db:check
 ```
@@ -72,15 +75,15 @@ Original SVG/CSS assets and system fonts power the design. See [asset provenance
 
 The English working title is configured in `apps/web/src/brand.js`. Dropdowns use styled native pickers in supporting browsers, with a rounded native fallback. People includes Suspend/Reactivate controls: owners manage school accounts; school management can manage assigned teachers, students and staff. Suspension revokes sessions and recovery tokens and blocks login; reactivation requires a fresh login. Support sessions cannot change account status.
 
-People → Edit profile updates an authorized school account’s name and optional contact number. Login email, role and memberships are not editable through this form. Profile changes are audited; support sessions cannot perform them.
+People → Edit profile updates an authorized school account’s name, contact number and login email. Email changes need a reason and invalidate sessions/recovery links. Role and membership edits use the separate access workflow. Profile changes are audited; support sessions cannot perform them.
 
 Dialogs use a consistent unblurred dim backdrop and opaque readable surface. Background scrolling is locked while a dialog is open, keyboard focus stays inside, and Escape closes dialogs with a close control. Continuous motion is confined to decorative marks, rings and small indicators, with reduced-motion support.
 
-- The MySQL adapter stores JSON records with indexed type/school columns and school-locked academic transactions. Normalized tables, foreign keys, migrations and database-level academic uniqueness remain planned.
+- MySQL uses versioned relational tables with typed account/academic columns, membership junctions, scoped foreign keys and register uniqueness. Snapshots/optional metadata use JSON extensions. Startup backfills the legacy records table without deleting it. Back up before upgrading; read PHASE-2.md for migration details.
 - Sessions and single-use reset tokens persist as hashed records in MySQL and survive API restarts. Demo storage remains ephemeral. Token cleanup, indexed authentication queries and hardened browser token storage remain production work.
-- Automated email reset delivery is not implemented. In either mode, an authorized administrator opens People → Recover account, verifies the user's identity, and privately provides the 15-minute token. The user opens Forgot password → I have a recovery token. Demo additionally exposes a token for self-testing. Do not represent this as an email integration.
-- Resources accept HTTPS links or PDF/PNG/JPEG uploads of up to 5 MB. File signatures are checked and downloads require school/class authorization. Files are stored under ignored `apps/api/data/uploads`; back up this directory with MySQL. Malware scanning, student attachment submissions, storage quotas and cleanup are planned. Files must never be served as public static assets. Ephemeral cloud storage is unsuitable for these uploads.
-- Attendance and configured marks batches are atomic, with at most 200 entries per request. Subject assignments constrain teacher writes. Publication freezes weighted report snapshots; corrections require reopening and republishing. Terms, enrollment rollover, session attendance and dedicated PDF export remain planned.
+- Optional TLS SMTP supports emailed reset/invitation links. Delivery stays disabled until configured. An authorized administrator can still verify the user's identity and privately provide a 15-minute assisted token through People → Recover account. The user opens Forgot password → I have a recovery token. Demo additionally exposes a self-test token.
+- Resources accept HTTPS links. PDF/PNG/JPEG uploads of up to 5 MB require configured local ClamAV scanning and storage quota. Missing/failed scanning rejects uploads. Students can attach private files to homework; teachers see them after submission. Files live under ignored `apps/api/data/uploads`; back up this directory with MySQL. Scheduled cleanup removes expired staged/orphan uploads, preserving bound submissions. Files must never be served as public static assets.
+- Attendance and configured marks batches are atomic, with at most 200 entries per request. Subject assignments constrain teacher writes. Publication freezes weighted report snapshots; result corrections require reopening and republishing. Terms, reviewed year promotion, session attendance and dedicated PDF export are implemented.
 - There is no payment gateway, SMS, WhatsApp, paid AI service, push provider, or hosting subscription.
 - API binds to loopback by default. After `npm run build`, `npm start` serves the API and built React frontend at http://127.0.0.1:4000. Production deployment requires an HTTPS reverse proxy, origin policy, environment management, and an appropriate HOST value.
 
@@ -88,10 +91,10 @@ See [the plan](docs/PLAN.md), [architecture](docs/ARCHITECTURE.md), [free-cost s
 
 ## Timetable
 
-Timetable shows recurring weekly periods for academic-year classes. School management creates/edits periods with an assigned active teacher, weekday, time range and optional room. Same-year overlaps for a class, teacher or room are rejected atomically; adjacent periods are allowed. Students see only enrolled-class periods, teachers see assigned-class schedules. Cancellation retains an audit record. Conflict checks are school-scoped; cross-school travel, holidays, date-specific substitutions and period publishing remain planned.
+Timetable shows recurring weekly periods and a dated view for academic-year classes. School management creates/edits periods with assigned active teachers, weekday, time range and optional room. Class/teacher/room overlaps are rejected; adjacent periods are allowed. The dated view respects school holidays and supports audited substitutions with teacher conflict checks. Cancel affected substitutions before editing the weekly schedule. Cross-school travel and period publishing remain future work.
 
 ## Homework submissions
 
 Students open Learning → Submit homework to send a text answer (up to 10,000 characters). They see only their own attempts and feedback. Assigned-class teachers and school management open Review submissions, provide feedback, and choose Reviewed or Request revision. Every answer is stored as a new version; review history is appended. Teachers review only the latest attempt, and students need a revision request to resubmit reviewed work.
 
-Due dates are validated calendar dates and interpreted as end of day UTC. Late answers are accepted and flagged. School timezone settings, attachment submissions, rubrics/scoring, reminders and submission pagination remain planned. Existing teacher resource uploads remain available; student attachment upload is not part of this milestone.
+Due dates are validated calendar dates and interpreted as end of day UTC. Late answers are accepted and flagged. Private scanned attachment submissions are implemented, subject to configuration and quotas. School timezone settings, rubrics/scoring, reminders and submission pagination remain future work.

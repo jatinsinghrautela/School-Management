@@ -5,6 +5,15 @@ import {
   requireAttendanceDay,
 } from "./calendar.js";
 import { createCalendarImportRouter } from "./calendar-import.js";
+import { createProgressionRouter } from "./progression.js";
+import { createDataToolsRouter } from "./data-tools.js";
+import { configuredMailer } from "./mail.js";
+import { scanBuffer, uploadType, checkQuota } from "./upload-security.js";
+import { createSubstitutionRouter } from "./substitutions.js";
+import {
+  attendanceSession,
+  createAttendanceSessionRouter,
+} from "./attendance-sessions.js";
 import {
   createAttendanceCorrectionRouter,
   requireAttendanceCorrection,
@@ -36,7 +45,10 @@ import {
   visibleNotice,
 } from "./domain.js";
 const hash = (t) => createHash("sha256").update(t).digest("hex");
-export function createApp(store) {
+export function createApp(
+  store,
+  { mailer = configuredMailer(), scanner = scanBuffer } = {},
+) {
   const app = express(),
     sessions = tokenRepository(store, "session"),
     resets = tokenRepository(store, "reset");
@@ -79,7 +91,7 @@ export function createApp(store) {
       if (session) await sessions.delete(hash(token));
       return fail(res, 401, "Please sign in again");
     }
-    req.user = (await store.all("users")).find((u) => u.id === session.userId);
+    req.user = await store.findUser("id", session.userId);
     if (!req.user || req.user.active === false)
       return fail(res, 401, "Account unavailable");
     if ((session.userVersion || 0) !== (req.user.authVersion || 0))
@@ -99,9 +111,7 @@ export function createApp(store) {
     req.session = session;
     if (session.support) {
       const parent = await sessions.get(session.support.parentKey);
-      const parentUser = (await store.all("users")).find(
-        (u) => u.id === parent?.userId,
-      );
+      const parentUser = await store.findUser("id", parent?.userId);
       if (
         !parent ||
         parent.expires < Date.now() ||
@@ -166,9 +176,7 @@ export function createApp(store) {
     const { email, password } = req.body;
     if (!valid(email) || !valid(password, 200))
       return fail(res, 400, "Email and password required");
-    const user = (await store.all("users")).find(
-      (u) => u.email.toLowerCase() === email.toLowerCase(),
-    );
+    const user = await store.findUser("email", email.toLowerCase());
     if (
       !user ||
       user.active === false ||
@@ -186,16 +194,37 @@ export function createApp(store) {
     res.json({ token, user: publicUser(user), mode: store.mode });
   });
   app.post("/api/auth/forgot-password", async (req, res) => {
-    const user = (await store.all("users")).find(
-      (u) => u.email === req.body.email,
+    const user = await store.findUser(
+      "email",
+      typeof req.body.email === "string"
+        ? req.body.email.toLowerCase()
+        : undefined,
     );
     let token;
     if (user && user.active !== false) {
       token = randomBytes(32).toString("hex");
       await resets.set(hash(token), {
         userId: user.id,
+        userVersion: user.authVersion || 0,
         expires: Date.now() + 15 * 60 * 1000,
       });
+      if (mailer) {
+        try {
+          await mailer(user, token);
+          await audit(
+            user,
+            "user.recovery-email-sent",
+            user.schoolIds[0] || null,
+          );
+        } catch {
+          await resets.delete(hash(token));
+          await audit(
+            user,
+            "user.recovery-email-failed",
+            user.schoolIds[0] || null,
+          );
+        }
+      }
     }
     res.json({
       message:
@@ -222,7 +251,11 @@ export function createApp(store) {
         const user = (await tx.all("users")).find(
           (u) => u.id === record.userId,
         );
-        if (!user || user.active === false)
+        if (
+          !user ||
+          user.active === false ||
+          (current.userVersion || 0) !== (user.authVersion || 0)
+        )
           throw Object.assign(new Error("Account unavailable"), {
             status: 400,
           });
@@ -342,36 +375,82 @@ export function createApp(store) {
     );
     res.json({ ok: true, count });
   });
-  app.post("/api/users/:userId/recovery", auth, async (req, res) => {
-    const target = (await store.all("users")).find(
-      (u) => u.id === req.params.userId,
-    );
-    if (!target) return fail(res, 404, "Account not found");
-    if (target.active === false)
-      return fail(res, 400, "Reactivate the account before issuing recovery");
-    const schools = await store.all("schools");
-    const permitted =
-      req.user.role === "owner" ||
-      (managers.includes(req.user.role) &&
-        ["teacher", "student", "staff"].includes(target.role) &&
-        (target.orgId || null) === (req.user.orgId || null) &&
-        target.schoolIds.length > 0 &&
-        target.schoolIds.every((sid) =>
-          schools.some((s) => s.id === sid && canAccessSchool(req.user, s)),
-        ));
-    if (!permitted) return fail(res, 403, "You cannot recover this account");
-    const token = randomBytes(32).toString("hex");
-    await resets.set(hash(token), {
-      userId: target.id,
-      expires: Date.now() + 15 * 60 * 1000,
-    });
-    await audit(req.user, "user.recovery-issued", target.schoolIds[0] || null);
-    res.json({
-      token,
-      message:
-        "This token expires in 15 minutes. Share privately with the verified account holder.",
-    });
-  });
+  app.post(
+    "/api/users/:userId/recovery",
+    auth,
+    rateLimit({
+      windowMs: 15 * 60 * 1000,
+      limit: 30,
+      standardHeaders: "draft-8",
+      legacyHeaders: false,
+    }),
+    async (req, res) => {
+      const target = (await store.all("users")).find(
+        (u) => u.id === req.params.userId,
+      );
+      if (!target) return fail(res, 404, "Account not found");
+      if (target.active === false)
+        return fail(res, 400, "Reactivate the account before issuing recovery");
+      const schools = await store.all("schools");
+      const permitted =
+        req.user.role === "owner" ||
+        (managers.includes(req.user.role) &&
+          ["teacher", "student", "staff"].includes(target.role) &&
+          (target.orgId || null) === (req.user.orgId || null) &&
+          target.schoolIds.length > 0 &&
+          target.schoolIds.every((sid) =>
+            schools.some((s) => s.id === sid && canAccessSchool(req.user, s)),
+          ));
+      if (!permitted) return fail(res, 403, "You cannot recover this account");
+      if (req.body.delivery === "email" && !mailer)
+        return fail(
+          res,
+          503,
+          "Configure SMTP before sending email. Assisted recovery remains available.",
+        );
+      const token = randomBytes(32).toString("hex");
+      await resets.set(hash(token), {
+        userId: target.id,
+        userVersion: target.authVersion || 0,
+        expires: Date.now() + 15 * 60 * 1000,
+      });
+      await audit(
+        req.user,
+        "user.recovery-issued",
+        target.schoolIds[0] || null,
+      );
+      if (req.body.delivery === "email") {
+        try {
+          await mailer(target, token, req.body.invitation === true);
+          await audit(
+            req.user,
+            "user.invitation-or-recovery-email-sent",
+            target.schoolIds[0] || null,
+          );
+          return res.json({
+            message: "Account link emailed. It expires in 15 minutes.",
+          });
+        } catch {
+          await resets.delete(hash(token));
+          await audit(
+            req.user,
+            "user.recovery-email-failed",
+            target.schoolIds[0] || null,
+          );
+          return fail(
+            res,
+            503,
+            "Email delivery failed; check your SMTP configuration.",
+          );
+        }
+      }
+      res.json({
+        token,
+        message:
+          "This token expires in 15 minutes. Share privately with the verified account holder.",
+      });
+    },
+  );
   app.get("/api/me", auth, async (req, res) =>
     res.json({
       user: publicUser(req.user),
@@ -507,7 +586,7 @@ export function createApp(store) {
         ));
     if (!allowed)
       return fail(res, 403, "You cannot change this account status");
-    await store.transaction(target.schoolIds[0], async (tx) => {
+    await store.userTransaction(target.id, async (tx) => {
       const current = (await tx.all("users")).find((u) => u.id === target.id);
       await tx.put("users", {
         ...current,
@@ -545,30 +624,79 @@ export function createApp(store) {
             schools.some((s) => s.id === sid && canAccessSchool(req.user, s)),
           )));
     if (!allowed) return fail(res, 403, "You cannot edit this account");
-    const { name, phone = "" } = req.body;
+    const {
+      name,
+      phone = "",
+      email = target.email,
+      emailReason = "",
+    } = req.body;
     if (!valid(name) || typeof phone !== "string" || phone.length > 40)
       return fail(
         res,
         400,
         "Provide a name and a contact number of at most 40 characters",
       );
-    const result = await store.transaction(target.schoolIds[0], async (tx) => {
-      const current = (await tx.all("users")).find((u) => u.id === target.id);
-      const updated = await tx.put("users", {
-        ...current,
-        name: name.trim(),
-        phone: phone.trim(),
+    if (
+      typeof emailReason !== "string" ||
+      emailReason.length > 500 ||
+      typeof email !== "string" ||
+      email.length > 200 ||
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ||
+      (email.toLowerCase() !== target.email.toLowerCase() &&
+        emailReason.trim().length < 5)
+    )
+      return fail(
+        res,
+        400,
+        "Provide a valid login email and a reason of 5–500 characters when changing it",
+      );
+    const result = await store
+      .userTransaction(target.id, async (tx) => {
+        const current = (await tx.all("users")).find((u) => u.id === target.id);
+        if (
+          (await tx.all("users")).some(
+            (u) =>
+              u.id !== current.id &&
+              u.email.toLowerCase() === email.toLowerCase(),
+          )
+        )
+          throw Object.assign(new Error("Login email is already in use"), {
+            status: 409,
+          });
+        const updated = await tx.put("users", {
+          ...current,
+          name: name.trim(),
+          phone: phone.trim(),
+          email: email.toLowerCase(),
+          authVersion:
+            (current.authVersion || 0) +
+            (current.email.toLowerCase() !== email.toLowerCase() ? 1 : 0),
+        });
+        if (current.email.toLowerCase() !== email.toLowerCase()) {
+          for (const token of await tx.all("securityTokens"))
+            if (token.userId === current.id && !token.revoked)
+              await tx.put("securityTokens", { ...token, revoked: true });
+        }
+        await tx.put("audit", {
+          id: id(),
+          actorId: req.user.id,
+          targetUserId: target.id,
+          action: "user.profile-updated",
+          emailChanged: current.email.toLowerCase() !== email.toLowerCase(),
+          emailReason: emailReason.trim(),
+          schoolId: target.schoolIds[0],
+          createdAt: new Date().toISOString(),
+        });
+        return updated;
+      })
+      .catch((error) => {
+        if (error.status === 409) {
+          fail(res, 409, error.message);
+          return null;
+        }
+        throw error;
       });
-      await tx.put("audit", {
-        id: id(),
-        actorId: req.user.id,
-        targetUserId: target.id,
-        action: "user.profile-updated",
-        schoolId: target.schoolIds[0],
-        createdAt: new Date().toISOString(),
-      });
-      return updated;
-    });
+    if (!result) return;
     res.json(publicUser(result));
   });
   app.post("/api/users/:userId/access", auth, async (req, res) => {
@@ -753,19 +881,43 @@ export function createApp(store) {
       )
     )
       return fail(res, 409, "Email already exists");
-    const user = await store.put("users", {
-      id: id(),
-      name,
-      email: email.toLowerCase(),
-      passwordHash: await bcrypt.hash(password, 12),
-      passwordChangeRequired: true,
-      authVersion: 0,
-      role,
-      orgId: orgId || null,
-      schoolIds: [...new Set(schoolIds)],
-      classIds: [...new Set(classIds)],
+    const passwordHash = await bcrypt.hash(password, 12);
+    const user = await store.transaction(schoolIds[0], async (tx) => {
+      const created = await tx.put("users", {
+        id: id(),
+        name,
+        email: email.toLowerCase(),
+        passwordHash,
+        passwordChangeRequired: true,
+        authVersion: 0,
+        role,
+        orgId: orgId || null,
+        schoolIds: [...new Set(schoolIds)],
+        classIds: [...new Set(classIds)],
+      });
+      if (created.role === "student")
+        for (const classId of created.classIds) {
+          const cls = classes.find((c) => c.id === classId);
+          await tx.put("enrollments", {
+            id: id(),
+            schoolId: cls.schoolId,
+            studentId: created.id,
+            classId,
+            className: cls.name,
+            academicYearId: cls.academicYearId,
+            status: "active",
+            startedOn: new Date().toISOString().slice(0, 10),
+          });
+        }
+      await tx.put("audit", {
+        id: id(),
+        actorId: req.user.id,
+        action: "user.created",
+        schoolId: schoolIds[0],
+        createdAt: new Date().toISOString(),
+      });
+      return created;
     });
-    await audit(req.user, "user.created", schoolIds[0]);
     res.status(201).json(publicUser(user));
   });
   app.use("/api/schools/:schoolId", auth, async (req, res, next) => {
@@ -781,7 +933,7 @@ export function createApp(store) {
     const sid = req.params.schoolId,
       u = req.user;
     const scoped = async (k) =>
-      (await store.all(k)).filter(
+      (await store.all(k, sid)).filter(
         (r) => r.schoolId === sid && (!r.classId || canSeeClass(u, r.classId)),
       );
     const users = (await store.all("users")).filter((r) =>
@@ -794,6 +946,10 @@ export function createApp(store) {
     );
     res.json({
       school: req.school,
+      capabilities: {
+        emailDelivery: !!mailer,
+        uploads: scanner !== scanBuffer || !!process.env.CLAMAV_COMMAND,
+      },
       classes: (await scoped("classes")).filter((c) => canSeeClass(u, c.id)),
       users: users
         .filter((r) =>
@@ -823,6 +979,12 @@ export function createApp(store) {
             (r) => managers.includes(u.role) || r.requestedBy === u.id,
           )
         : [],
+      attendanceSessions: await scoped("attendanceSessions"),
+      reportSettings: (await scoped("reportSettings"))[0] || null,
+      terms: await scoped("terms"),
+      enrollments: (await scoped("enrollments")).filter(
+        (e) => u.role !== "student" || e.studentId === u.id,
+      ),
       marks: (await scoped("marks")).filter(
         (r) =>
           u.role !== "student" ||
@@ -913,6 +1075,8 @@ export function createApp(store) {
         const row = await store.transaction(req.school.id, async (tx) => {
           if (kind === "attendance")
             await requireAttendanceDay(tx, req.school.id, b.date);
+          if (kind === "attendance")
+            await attendanceSession(tx, req.school.id, b.sessionId ?? null);
           const rows = await tx.all(kind);
           const old = rows.find(
             (r) =>
@@ -921,7 +1085,8 @@ export function createApp(store) {
               r.studentId === b.studentId &&
               !r.examId &&
               (kind === "attendance"
-                ? r.date === b.date
+                ? r.date === b.date &&
+                  (r.sessionId || null) === (b.sessionId || null)
                 : r.exam === b.exam && r.subject === b.subject),
           );
           if (kind === "attendance") {
@@ -940,6 +1105,7 @@ export function createApp(store) {
                         b.classId,
                         b.date,
                         b.studentId,
+                        ...(b.sessionId ? [b.sessionId] : []),
                       ]),
                     )
                     .digest("hex")
@@ -949,7 +1115,11 @@ export function createApp(store) {
             classId: b.classId,
             studentId: b.studentId,
             ...(kind === "attendance"
-              ? { date: b.date, status: b.status }
+              ? {
+                  date: b.date,
+                  status: b.status,
+                  sessionId: b.sessionId || null,
+                }
               : {
                   exam: b.exam,
                   subject: b.subject,
@@ -970,7 +1140,8 @@ export function createApp(store) {
         });
         res.json(row);
       } catch (error) {
-        if (error.status === 409) return fail(res, 409, error.message);
+        if ([400, 409].includes(error.status))
+          return fail(res, error.status, error.message);
         throw error;
       }
     });
@@ -1041,6 +1212,11 @@ export function createApp(store) {
       const jpeg = b[0] === 255 && b[1] === 216 && b[2] === 255;
       if (!pdf && !png && !jpeg)
         return fail(res, 400, "Only PDF, PNG and JPEG files are supported");
+      try {
+        await scanner(b);
+      } catch (e) {
+        return fail(res, e.status || 503, e.message);
+      }
       const fileId = id();
       const name =
         req.file.originalname.replace(/[^a-zA-Z0-9._ -]/g, "_").slice(0, 120) ||
@@ -1048,31 +1224,44 @@ export function createApp(store) {
       await mkdir(uploadRoot, { recursive: true });
       await writeFile(uploadRoot + fileId, b, { flag: "wx" });
       try {
-        await store.put("files", {
-          id: fileId,
-          schoolId: req.school.id,
-          classId,
-          name,
-          mime: pdf ? "application/pdf" : png ? "image/png" : "image/jpeg",
-          size: b.length,
+        const row = await store.transaction(req.school.id, async (tx) => {
+          await checkQuota(tx, req.school.id, null, b.length);
+          await tx.put("files", {
+            id: fileId,
+            schoolId: req.school.id,
+            classId,
+            name,
+            mime: pdf ? "application/pdf" : png ? "image/png" : "image/jpeg",
+            size: b.length,
+            createdAt: new Date().toISOString(),
+            scanStatus: "clean",
+          });
+          const row = await tx.put("resources", {
+            id: id(),
+            schoolId: req.school.id,
+            classId,
+            title,
+            type,
+            description,
+            dueDate,
+            fileId,
+            fileName: name,
+            url: "",
+            createdAt: new Date().toISOString(),
+          });
+          await tx.put("audit", {
+            id: id(),
+            actorId: req.user.id,
+            schoolId: req.school.id,
+            action: "resource.uploaded",
+            createdAt: new Date().toISOString(),
+          });
+          return row;
         });
-        const row = await store.put("resources", {
-          id: id(),
-          schoolId: req.school.id,
-          classId,
-          title,
-          type,
-          description,
-          dueDate,
-          fileId,
-          fileName: name,
-          url: "",
-          createdAt: new Date().toISOString(),
-        });
-        await audit(req.user, "resource.uploaded", req.school.id);
         res.status(201).json(row);
       } catch (e) {
         await unlink(uploadRoot + fileId).catch(() => {});
+        if (e.status) return fail(res, e.status, e.message);
         throw e;
       }
     },
@@ -1081,12 +1270,94 @@ export function createApp(store) {
     const file = (await store.all("files")).find(
       (f) => f.id === req.params.fileId && f.schoolId === req.school.id,
     );
-    if (!file || !canSeeClass(req.user, file.classId))
+    if (
+      !file ||
+      file.deleted ||
+      (file.staged && file.studentId !== req.user.id) ||
+      (file.studentId &&
+        !["student", "teacher", ...managers].includes(req.user.role)) ||
+      !canSeeClass(req.user, file.classId) ||
+      (file.studentId &&
+        req.user.role === "student" &&
+        file.studentId !== req.user.id)
+    )
       return fail(res, 404, "File not found");
     res.setHeader("Cache-Control", "private, no-store");
     res.setHeader("Content-Type", file.mime);
     res.download(uploadRoot + file.id, file.name);
   });
+  app.post(
+    "/api/schools/:schoolId/homework/:resourceId/attachment",
+    upload.single("file"),
+    async (req, res) => {
+      if (req.user.role !== "student")
+        return fail(res, 403, "Only students upload submission attachments");
+      const resource = (await store.all("resources")).find(
+        (r) =>
+          r.id === req.params.resourceId &&
+          r.schoolId === req.school.id &&
+          r.type === "homework" &&
+          canSeeClass(req.user, r.classId),
+      );
+      if (!resource || !req.file)
+        return fail(res, 400, "Choose your homework and a PDF or image");
+      const fileId = id();
+      let written = false;
+      try {
+        const mime = uploadType(req.file.buffer);
+        await scanner(req.file.buffer);
+        await mkdir(uploadRoot, { recursive: true });
+        await writeFile(uploadRoot + fileId, req.file.buffer, { flag: "wx" });
+        written = true;
+        const row = await store.transaction(req.school.id, async (tx) => {
+          await checkQuota(tx, req.school.id, req.user.id, req.file.size);
+          const current = (await tx.all("users")).find(
+            (u) => u.id === req.user.id,
+          );
+          if (
+            !current ||
+            current.active === false ||
+            current.role !== "student" ||
+            (current.authVersion || 0) !== (req.user.authVersion || 0) ||
+            !canSeeClass(current, resource.classId)
+          )
+            throw Object.assign(
+              new Error("Enrollment changed; sign in again"),
+              { status: 409 },
+            );
+          await tx.put("audit", {
+            id: id(),
+            actorId: req.user.id,
+            schoolId: req.school.id,
+            action: "homework.attachment-staged",
+            fileId,
+            createdAt: new Date().toISOString(),
+          });
+          return tx.put("files", {
+            id: fileId,
+            schoolId: req.school.id,
+            classId: resource.classId,
+            resourceId: resource.id,
+            studentId: req.user.id,
+            name:
+              req.file.originalname
+                .replace(/[^a-zA-Z0-9._ -]/g, "_")
+                .slice(0, 120) || "attachment",
+            mime,
+            size: req.file.size,
+            scanStatus: "clean",
+            staged: true,
+            createdAt: new Date().toISOString(),
+          });
+        });
+        res.status(201).json({ attachmentId: row.id, name: row.name });
+      } catch (e) {
+        if (written) await unlink(uploadRoot + fileId).catch(() => {});
+        if (e.status) return fail(res, e.status, e.message);
+        throw e;
+      }
+    },
+  );
   app.post("/api/schools/:schoolId/notices", manage, async (req, res) => {
     const { title, body, audience = "all", classId = null } = req.body;
     if (
@@ -1109,6 +1380,10 @@ export function createApp(store) {
     res.status(201).json(row);
   });
   app.use("/api/schools/:schoolId", createAcademicRouter(store));
+  app.use("/api/schools/:schoolId", createProgressionRouter(store));
+  app.use("/api/schools/:schoolId", createDataToolsRouter(store));
+  app.use("/api/schools/:schoolId", createSubstitutionRouter(store));
+  app.use("/api/schools/:schoolId", createAttendanceSessionRouter(store));
   app.use("/api/schools/:schoolId", createAttendanceCorrectionRouter(store));
   app.use("/api/schools/:schoolId", createTimetableRouter(store));
   app.use("/api/schools/:schoolId", createCalendarRouter(store));

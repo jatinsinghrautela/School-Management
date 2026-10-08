@@ -143,3 +143,15 @@
 ## Attendance card spacing fix (2026-10-08)
 
 - Added 24px above the corrections card so it no longer touches the attendance history card. Browser measured the gap and saved `docs/screenshots/attendance-card-spacing.png`; production build passed.
+
+## Complete Phase 2 implementation (2026-10-08)
+
+- Added versioned relational migration, typed core tables, membership junctions, unique registers, mark/date checks and school-scoped foreign keys. Legacy records remain a backup. Indexed auth reads and READ COMMITTED transactions preserve concurrent credential generations during reviewed promotion.
+- Added terms, initial enrollment history, single-use roster previews/promotions, Daily plus configurable attendance sessions, and preservation of own approved historical report access after promotion.
+- Added snapshot-based PDF downloads, school report heading/accent/typed sign-offs, repeated headers and page footers. Generated and visually reviewed a synthetic 32-subject three-page PDF; no real school data used.
+- Added dated holiday-aware timetable and audited substitute assignment/cancellation with teacher conflict checks and private reason filtering.
+- Added private homework attachments, local fail-closed ClamAV adapter, upload quotas, bound-submission downloads and periodic staged/orphan/token/preview cleanup. User requested configuration and safe disabled states; real scanning remains unconfigured and file inputs are disabled.
+- Added reasoned login-email edits, recovery token generation guards, configurable TLS SMTP invitations/reset delivery, delivery-failure revocation/audits and recovery issuance limits. Tests used a fixture mailer; no external email was sent. Real SMTP remains unconfigured.
+- Added role-scoped directory search/pagination, shared 20-row tables, reviewed Excel people import with row errors/single-use apply and permission-scoped attendance/directory/results exports. Imported users require private activation and do not share a default password.
+- Validation: 37 tests passed, production build passed, MySQL transaction/security/relational checks passed, including duplicate-email non-overwrite, cross-school references and rereading a concurrent user generation after row locking. Browser confirmed academic controls, session creation and saved Morning attendance, resource upload disabled state, card spacing and no console errors. Evidence: phase-two-academics.png, phase-two-attendance.png and phase-two-preview.png.
+- Updated PLAN, architecture, cost policy, attendance guide, README and PHASE-2 setup/operations documentation. Phase 4 production readiness remains separate.

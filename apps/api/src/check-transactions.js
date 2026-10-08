@@ -57,11 +57,11 @@ try {
     database: process.env.MYSQL_DATABASE || "orbit_school",
   });
   try {
-    await cleanup.execute("DELETE FROM records WHERE id IN (?,?,?)", [
-      schoolId,
+    await cleanup.execute("DELETE FROM sg_audit WHERE id IN (?,?)", [
       markerId,
       rollbackId,
     ]);
+    await cleanup.execute("DELETE FROM sg_schools WHERE id=?", [schoolId]);
   } finally {
     await cleanup.end();
   }
