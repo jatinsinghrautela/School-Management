@@ -94,3 +94,11 @@
 - Added integration coverage for restart behavior, onboarding gates, permission limits, revocation and concurrent single-use recovery. Real MySQL security verification passed with disposable fixture cleanup.
 - Phase 2 remains in progress: normalized SQL, enrollment rollover, calendar, imports/exports and email delivery remain separate work. No paid service or dependency added.
 - Validation: 20 integration tests passed; production build passed; browser checks confirmed Security controls and the account access dialog. MySQL restart/revocation checks passed.
+
+## School calendar milestone (2026-10-08)
+
+- Added school calendar navigation, a monthly grid and agenda, all-day multi-day events, school-wide holidays and class/role targeting.
+- Added management editing and cancellation with a retained reason and transactional audit writes. Students/teachers receive only entries allowed by their class and role; school access remains enforced by the API.
+- 21 integration tests passed, including impossible dates, reversed ranges, unauthorized writes, cross-school/class access, audience filtering, editing and cancellation history. Production build passed.
+- Calendar holidays do not yet change attendance or timetable rules. Substitutions, session attendance and the remaining Phase 2 items are still open. No paid services or dependencies added.
+- Browser validation: created and edited a demo event, confirmed its October 15–16 range in the grid and agenda, and corrected a shared empty-state CSS rule that expanded leading blank days.

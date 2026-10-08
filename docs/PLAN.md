@@ -50,7 +50,8 @@ Independent schools have no organization and retain separate explicit membership
 - [x] Text homework submissions, own-attempt history, lateness tracking, teacher feedback and revision requests.
 - [ ] Private submission attachments, malware scanning, upload storage quotas and cleanup.
 - [x] Weekly class timetable, assigned-teacher validation, class/teacher/room overlap checks and audited editing/cancellation.
-- [ ] Date-specific substitutions, holidays, school calendar and events.
+- [x] School calendar: multi-day events, school-wide holidays, class/role audiences, audited editing and reasoned cancellation.
+- [ ] Date-specific timetable substitutions and holiday-aware attendance rules.
 - [x] Account suspension/reactivation with session revocation and audited authorization.
 - [x] Authorized school-account name/contact updates with transactional audit records.
 - [x] Account-access milestone: persistent MySQL sessions/recovery, mandatory first-login password change, authenticated password updates and device-session revocation.

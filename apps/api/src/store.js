@@ -17,6 +17,7 @@ export const collections = [
   "timetable",
   "submissions",
   "securityTokens",
+  "calendar",
 ];
 export async function createStore(mode = process.env.DATA_MODE || "mysql") {
   if (!["mysql", "demo"].includes(mode))

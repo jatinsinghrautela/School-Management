@@ -1,3 +1,4 @@
+import { createCalendarRouter, visibleCalendar } from "./calendar.js";
 import express from "express";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
@@ -818,6 +819,9 @@ export function createApp(store) {
             (r) => u.role !== "student" || r.studentId === u.id,
           )
         : [],
+      calendar: (await scoped("calendar")).filter(
+        (e) => managers.includes(u.role) || visibleCalendar(u, e),
+      ),
       notices: (await scoped("notices")).filter((n) => visibleNotice(u, n)),
     });
   });
@@ -1072,6 +1076,7 @@ export function createApp(store) {
   });
   app.use("/api/schools/:schoolId", createAcademicRouter(store));
   app.use("/api/schools/:schoolId", createTimetableRouter(store));
+  app.use("/api/schools/:schoolId", createCalendarRouter(store));
   app.use("/api/schools/:schoolId", createHomeworkRouter(store));
   app.use("/api", (req, res) => fail(res, 404, "API endpoint not found"));
   const webRoot = fileURLToPath(new URL("../../web/dist/", import.meta.url));

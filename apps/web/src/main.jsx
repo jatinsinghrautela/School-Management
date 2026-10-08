@@ -1,3 +1,4 @@
+import { SchoolCalendar } from "./calendar.jsx";
 import React, { useEffect, useState, useRef } from "react";
 import { createRoot } from "react-dom/client";
 import {
@@ -42,6 +43,7 @@ const icons = {
   Notices: Megaphone,
   Academics: BookOpen,
   Timetable: CalendarCheck,
+  Calendar: CalendarCheck,
   Security: ShieldCheck,
 };
 const today = () => new Date().toLocaleDateString("en-CA");
@@ -222,6 +224,7 @@ function App() {
         ...(editor ? ["Academics"] : []),
         "Attendance",
         "Timetable",
+        "Calendar",
         "Results",
         "Learning",
         "Notices",
@@ -810,9 +813,14 @@ function App() {
           {page !== "Overview" && (
             <>
               <div className="toolbar">
-                {!["Academics", "Results", "Timetable", "Security"].includes(
-                  page,
-                ) && (
+                {![
+                  "Academics",
+                  "Results",
+                  "Timetable",
+                  "Calendar",
+                  "Calendar",
+                  "Security",
+                ].includes(page) && (
                   <label className="search">
                     <Search size={17} />
                     <input
@@ -1027,6 +1035,16 @@ function App() {
               )}
               {page === "Timetable" && data && (
                 <Timetable
+                  key={sid}
+                  data={data}
+                  schoolId={sid}
+                  api={api}
+                  refresh={refresh}
+                  manager={manager}
+                />
+              )}
+              {page === "Calendar" && data && (
+                <SchoolCalendar
                   key={sid}
                   data={data}
                   schoolId={sid}
