@@ -34,11 +34,14 @@ Organizations group schools. Access is explicit membership, never just an organi
 
 ## Phase 2: Complete core academics
 
-- [ ] Normalize MySQL schema with constraints, migrations and transaction-safe upserts.
-- [ ] Academic years, terms, grades, sections, subjects and teacher subject assignments.
-- [ ] Transactional bulk register API; holidays, session-wise attendance and history corrections.
-- [ ] Exam schedules, configurable grading and weighting, draft/published results.
-- [ ] Student-wise aggregate report cards, official PDF layout, approval and archival.
+- [ ] Normalize MySQL schema with constraints and migrations. School-locked transactions and stable register IDs are implemented in the current adapter.
+- [x] Academic years, current-year selection, grades, sections, subjects and editable teacher subject assignments.
+- [ ] Terms, enrollment history and year promotion.
+- [x] Atomic attendance and configured exam marks batches.
+- [ ] Holidays, session-wise attendance and correction approvals.
+- [x] Exam schedules, configurable grade bands, subject weighting, pass thresholds and draft/published results.
+- [x] Student report cards, manager publication, reasoned reopening, immutable versions and manager archive access.
+- [ ] Dedicated PDF export verification, school-specific templates and signatures. Browser print/Save as PDF layout is implemented.
 - [ ] Malware scanning, upload storage quotas/cleanup, homework submissions and feedback.
 - [ ] Timetable grid, substitution management, school calendar and events.
 - [ ] Account updates, deactivation, invitations/first-login change and persistent sessions.

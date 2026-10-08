@@ -8,6 +8,11 @@ import { existsSync } from "node:fs";
 import { mkdir, writeFile, unlink } from "node:fs/promises";
 import multer from "multer";
 import {
+  createAcademicRouter,
+  academicWorkspace,
+  dateValid,
+} from "./academics.js";
+import {
   id,
   managers,
   roles,
@@ -308,6 +313,10 @@ export function createApp(store) {
     const users = (await store.all("users")).filter((r) =>
       r.schoolIds.includes(sid),
     );
+    const academics = await academicWorkspace(store, u, sid);
+    const publishedExams = new Set(
+      academics.exams.filter((e) => e.status === "published").map((e) => e.id),
+    );
     res.json({
       school: req.school,
       classes: (await scoped("classes")).filter((c) => canSeeClass(u, c.id)),
@@ -328,8 +337,11 @@ export function createApp(store) {
         (r) => u.role !== "student" || r.studentId === u.id,
       ),
       marks: (await scoped("marks")).filter(
-        (r) => u.role !== "student" || r.studentId === u.id,
+        (r) =>
+          u.role !== "student" ||
+          (r.studentId === u.id && publishedExams.has(r.examId)),
       ),
+      ...academics,
       resources: await scoped("resources"),
       notices: (await scoped("notices")).filter((n) => visibleNotice(u, n)),
     });
@@ -368,7 +380,7 @@ export function createApp(store) {
       if (!student) return fail(res, 400, "Invalid student");
       if (
         kind === "attendance" &&
-        (!/^\d{4}-\d{2}-\d{2}$/.test(b.date) ||
+        (!dateValid(b.date) ||
           !["present", "absent", "late", "excused"].includes(b.status))
       )
         return fail(res, 400, "Valid date and attendance status required");
@@ -385,33 +397,68 @@ export function createApp(store) {
           b.score > b.maxScore)
       )
         return fail(res, 400, "Valid exam, subject and score required");
-      const rows = await store.all(kind);
-      const old = rows.find(
-        (r) =>
-          r.schoolId === req.school.id &&
-          r.classId === b.classId &&
-          r.studentId === b.studentId &&
-          (kind === "attendance"
-            ? r.date === b.date
-            : r.exam === b.exam && r.subject === b.subject),
-      );
-      const row = {
-        id: old?.id || id(),
-        schoolId: req.school.id,
-        classId: b.classId,
-        studentId: b.studentId,
-        ...(kind === "attendance"
-          ? { date: b.date, status: b.status }
-          : {
-              exam: b.exam,
-              subject: b.subject,
-              score: b.score,
-              maxScore: b.maxScore,
-            }),
-        updatedAt: new Date().toISOString(),
-      };
-      await store.put(kind, row);
-      await audit(req.user, `${kind}.saved`, req.school.id);
+      if (
+        kind === "marks" &&
+        (await store.all("exams")).some(
+          (e) =>
+            e.schoolId === req.school.id &&
+            e.classId === b.classId &&
+            e.name.toLowerCase() === b.exam.toLowerCase(),
+        )
+      )
+        return fail(res, 409, "Use the configured exam register for this exam");
+      const row = await store.transaction(req.school.id, async (tx) => {
+        const rows = await tx.all(kind);
+        const old = rows.find(
+          (r) =>
+            r.schoolId === req.school.id &&
+            r.classId === b.classId &&
+            r.studentId === b.studentId &&
+            !r.examId &&
+            (kind === "attendance"
+              ? r.date === b.date
+              : r.exam === b.exam && r.subject === b.subject),
+        );
+        const row = {
+          id:
+            old?.id ||
+            (kind === "attendance"
+              ? createHash("sha256")
+                  .update(
+                    JSON.stringify([
+                      "attendance",
+                      req.school.id,
+                      b.classId,
+                      b.date,
+                      b.studentId,
+                    ]),
+                  )
+                  .digest("hex")
+                  .slice(0, 36)
+              : id()),
+          schoolId: req.school.id,
+          classId: b.classId,
+          studentId: b.studentId,
+          ...(kind === "attendance"
+            ? { date: b.date, status: b.status }
+            : {
+                exam: b.exam,
+                subject: b.subject,
+                score: b.score,
+                maxScore: b.maxScore,
+              }),
+          updatedAt: new Date().toISOString(),
+        };
+        await tx.put(kind, row);
+        await tx.put("audit", {
+          id: id(),
+          actorId: req.user.id,
+          action: `${kind}.saved`,
+          schoolId: req.school.id,
+          createdAt: new Date().toISOString(),
+        });
+        return row;
+      });
       res.json(row);
     });
   app.post("/api/schools/:schoolId/resources", teach, async (req, res) => {
@@ -543,6 +590,7 @@ export function createApp(store) {
     await audit(req.user, "notice.published", req.school.id);
     res.status(201).json(row);
   });
+  app.use("/api/schools/:schoolId", createAcademicRouter(store));
   app.use("/api", (req, res) => fail(res, 404, "API endpoint not found"));
   const webRoot = fileURLToPath(new URL("../../web/dist/", import.meta.url));
   if (existsSync(webRoot)) {
@@ -560,18 +608,16 @@ export function createApp(store) {
         : [400, 413].includes(err.status)
           ? err.status
           : 500;
-    res
-      .status(status)
-      .json({
-        error:
-          err instanceof multer.MulterError
-            ? "Upload rejected. Maximum one file, 5 MB."
-            : status === 400
-              ? "Invalid JSON request."
-              : status === 413
-                ? "Request exceeds the size limit."
-                : "The request could not be completed.",
-      });
+    res.status(status).json({
+      error:
+        err instanceof multer.MulterError
+          ? "Upload rejected. Maximum one file, 5 MB."
+          : status === 400
+            ? "Invalid JSON request."
+            : status === 413
+              ? "Request exceeds the size limit."
+              : "The request could not be completed.",
+    });
   });
   return app;
 }

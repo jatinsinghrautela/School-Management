@@ -12,6 +12,7 @@
     "build": "npm run build -w apps/web",
     "test": "npm run test -w apps/api",
     "db:init": "npm run db:init -w apps/api",
+    "db:check": "npm run db:check -w apps/api",
     "start": "npm run start -w apps/api",
     "format": "prettier --write apps docs README.md package.json compose.yaml .github/workflows/ci.yml"
   },

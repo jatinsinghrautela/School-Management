@@ -46,3 +46,23 @@ Mutations validate school/class membership and key fields. Responses use JSON an
 organizations → schools → academic_years → classes/sections; users → memberships → school/role assignments; enrollments link students to class/year; teacher_assignments link subjects/classes/teachers. Attendance has a unique (school, enrollment, date, session) constraint. Exams have publication state; marks have a unique (exam, enrollment, subject) constraint. Resources own private file keys, notices own recipients/read receipts, guardians have explicit student links. Foreign keys and transaction-safe writes are essential before operational launch.
 
 The current `records` table is an MVP JSON persistence layer with id primary key and kind/school index, not this final schema. Reads are filtered in the application; replace broad collection reads with indexed tenant-scoped SQL and pagination in Phase 2.
+
+## Academic transactions and publication
+
+Academic configuration, register batches and publication use a dedicated MySQL connection and transaction. A school record lock (`SELECT ... FOR UPDATE`) serializes competing academic writes; audit entries commit with the change. Stable register IDs make repeated saves update the same record. Demo mode uses a queued transaction adapter with rollback.
+
+Students receive only published exams and their own published marks. Publishing requires a complete roster and freezes weighted report snapshots. Reopening withdraws student access until republished, requires a reason and preserves earlier versions. Only management can retrieve archive history. Historical unconfigured marks are retained for staff review.
+
+Routes under `/api/schools/:schoolId`:
+
+| Route                                                                                     | Purpose                                                       |
+| ----------------------------------------------------------------------------------------- | ------------------------------------------------------------- |
+| POST `/academics/years`, `/academics/years/:yearId/activate`                              | Create and select academic years                              |
+| POST `/academics/classes`, `/academics/subjects`, `/academics/subjects/:subjectId/assign` | Configure classes and subject teachers                        |
+| POST `/exams`                                                                             | Configure schedules, weights, pass thresholds and grade bands |
+| POST `/attendance/batch`, `/exams/:id/marks/batch`                                        | Atomic validated registers                                    |
+| POST `/exams/:id/publish`, `/exams/:id/reopen`                                            | Management-controlled versioned publication                   |
+| GET `/reports/:examId/:studentId`                                                         | Authorized current published report                           |
+| GET `/reports/:examId/:studentId/history`                                                 | Management-only immutable report history                      |
+
+Terms, enrollment rollover and normalized academic SQL migrations remain planned.

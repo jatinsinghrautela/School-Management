@@ -23,6 +23,7 @@ import {
   Activity,
 } from "lucide-react";
 import "./styles.css";
+import { Academics, ExamResults } from "./academics.jsx";
 const icons = {
   Overview: LayoutDashboard,
   Schools: Building2,
@@ -31,6 +32,7 @@ const icons = {
   Results: GraduationCap,
   Learning: BookOpen,
   Notices: Megaphone,
+  Academics: BookOpen,
 };
 const today = () => new Date().toLocaleDateString("en-CA");
 function App() {
@@ -140,7 +142,15 @@ function App() {
     editor = manager || teacher;
   const nav = owner
     ? ["Overview", "Schools", "People"]
-    : ["Overview", "People", "Attendance", "Results", "Learning", "Notices"];
+    : [
+        "Overview",
+        "People",
+        ...(editor ? ["Academics"] : []),
+        "Attendance",
+        "Results",
+        "Learning",
+        "Notices",
+      ];
   const school = schools.find((s) => s.id === sid),
     students = data?.users.filter((u) => u.role === "student") || [],
     classes = data?.classes || [];
@@ -373,6 +383,8 @@ function App() {
                       Learning:
                         "A home for homework, resources, and new ideas.",
                       Notices: "Keep your community in the loop.",
+                      Academics:
+                        "Plan your academic year, teaching assignments, and assessments.",
                     }[page]}
               </p>
             </div>
@@ -392,12 +404,6 @@ function App() {
               <button className="primary" onClick={() => open("attendance")}>
                 <Plus size={17} />
                 Record attendance
-              </button>
-            )}
-            {page === "Results" && editor && (
-              <button className="primary" onClick={() => open("marks")}>
-                <Plus size={17} />
-                Enter marks
               </button>
             )}
             {page === "Learning" && editor && (
@@ -675,14 +681,16 @@ function App() {
           {page !== "Overview" && (
             <>
               <div className="toolbar">
-                <label className="search">
-                  <Search size={17} />
-                  <input
-                    placeholder={`Search ${page.toLowerCase()}…`}
-                    value={query}
-                    onChange={(e) => setQuery(e.target.value)}
-                  />
-                </label>
+                {!["Academics", "Results"].includes(page) && (
+                  <label className="search">
+                    <Search size={17} />
+                    <input
+                      placeholder={`Search ${page.toLowerCase()}…`}
+                      value={query}
+                      onChange={(e) => setQuery(e.target.value)}
+                    />
+                  </label>
+                )}
                 {(owner || manager) && page === "People" && (
                   <button
                     className="secondary"
@@ -692,9 +700,12 @@ function App() {
                   </button>
                 )}
                 {manager && page === "People" && (
-                  <button className="secondary" onClick={() => open("class")}>
+                  <button
+                    className="secondary"
+                    onClick={() => setPage("Academics")}
+                  >
                     <Plus size={16} />
-                    Add class
+                    Manage classes
                   </button>
                 )}
                 {owner && page === "Schools" && (
@@ -785,54 +796,53 @@ function App() {
                   ])}
                 />
               )}
-              {page === "Results" && editor && data && (
-                <RecordGrid
-                  key={"marks-" + sid}
-                  kind="marks"
-                  classes={classes}
-                  students={students}
-                  records={marks}
+              {page === "Academics" && data && (
+                <Academics
+                  key={sid}
+                  data={data}
                   api={api}
                   schoolId={sid}
                   refresh={refresh}
+                  manager={manager}
                 />
               )}
-              {page === "Results" && (
+              {page === "Results" && data && (
                 <>
-                  <ResultSummary
-                    marks={filtered(marks)}
-                    users={data?.users || []}
+                  <ExamResults
+                    key={sid}
+                    data={data}
+                    api={api}
+                    schoolId={sid}
+                    refresh={refresh}
+                    user={user}
+                    manager={manager}
                   />
-                  <div className="info-strip">
-                    <GraduationCap size={20} />
-                    <span>
-                      Results are calculated from recorded marks. Use your
-                      browser’s print dialog to save this report as a PDF.
-                    </span>
-                    <button
-                      className="secondary"
-                      onClick={() => window.print()}
-                    >
-                      Print report
-                    </button>
-                  </div>
-                  <Table
-                    columns={[
-                      "Student",
-                      "Exam",
-                      "Subject",
-                      "Marks",
-                      "Percentage",
-                    ]}
-                    rows={filtered(marks).map((m) => [
-                      data.users.find((u) => u.id === m.studentId)?.name ||
-                        "Student",
-                      m.exam,
-                      m.subject,
-                      `${m.score} / ${m.maxScore}`,
-                      `${Math.round((m.score / m.maxScore) * 100)}%`,
-                    ])}
-                  />
+                  {editor && marks.some((m) => !m.examId) && (
+                    <section className="academic-section">
+                      <div className="panel-heading">
+                        <div>
+                          <h3>Historical unconfigured marks</h3>
+                          <p>
+                            These entries are retained for staff review. Enter
+                            reviewed scores into a configured exam to publish
+                            them to students.
+                          </p>
+                        </div>
+                      </div>
+                      <Table
+                        columns={["Student", "Exam", "Subject", "Score"]}
+                        rows={marks
+                          .filter((m) => !m.examId)
+                          .map((m) => [
+                            data.users.find((u) => u.id === m.studentId)
+                              ?.name || "Student",
+                            m.exam,
+                            m.subject,
+                            `${m.score} / ${m.maxScore}`,
+                          ])}
+                      />
+                    </section>
+                  )}
                 </>
               )}
               {page === "Learning" && (
@@ -979,21 +989,29 @@ function RecordGrid({
       const selected = roster.filter((s) => value(s) !== "");
       if (!selected.length)
         throw new Error("Enter at least one record before saving.");
-      for (const s of selected) {
-        await api(`/schools/${schoolId}/${kind}`, {
+      if (kind === "attendance") {
+        const result = await api(`/schools/${schoolId}/attendance/batch`, {
           classId,
-          studentId: s.id,
-          ...(kind === "attendance"
-            ? { date, status: value(s) }
-            : {
-                exam,
-                subject,
-                score: Number(value(s)),
-                maxScore: Number(maxScore),
-              }),
+          date,
+          entries: selected.map((s) => ({ studentId: s.id, status: value(s) })),
         });
-        saved++;
-      }
+        saved = result.saved;
+      } else
+        for (const s of selected) {
+          await api(`/schools/${schoolId}/${kind}`, {
+            classId,
+            studentId: s.id,
+            ...(kind === "attendance"
+              ? { date, status: value(s) }
+              : {
+                  exam,
+                  subject,
+                  score: Number(value(s)),
+                  maxScore: Number(maxScore),
+                }),
+          });
+          saved++;
+        }
       setFeedback(`${saved} ${saved === 1 ? "record" : "records"} saved.`);
       setValues({});
       await refresh();

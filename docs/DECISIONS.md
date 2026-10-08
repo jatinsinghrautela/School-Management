@@ -11,3 +11,12 @@
 - Resources use HTTPS links or local private PDF/image storage. Automated email delivery remains optional; administrator-assisted recovery is implemented.
 - Free local operation is the reliable zero-new-investment baseline. Cloud hosting remains undecided.
 - User authorized a new GitHub repository. After browser handoff, `jatinsinghrautela/School-Management` appeared as the new empty repository and is the selected destination.
+
+## Academic milestone
+
+- Initial provisional marks remain available for staff review. Configured exams now use atomic registers and published report snapshots, superseding the initial sequential-save approach.
+- School locks serialize academic transactions in the existing JSON adapter; this does not replace the planned normalized schema.
+- Schools configure grading, subject weights and pass thresholds. Default bands are examples, not an official grading policy.
+- Teachers write only assigned subjects. Students see only their own published reports.
+- Publication creates immutable versions. Reopening requires a reason and pauses student access; management can inspect archived versions.
+- Browser printing provides a free report layout. Dedicated PDF downloads, school templates and export verification remain planned.
