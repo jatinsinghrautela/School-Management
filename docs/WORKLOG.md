@@ -1,5 +1,14 @@
 # Work log
 
+## 2026-10-09 — admissions and student records
+
+- Implemented submitted/reviewing/admitted/rejected/withdrawn admission workflow with reasoned audit history, school/class scope checks, duplicate email protection and terminal decision guards.
+- Admission atomically creates the student account, profile, guardian links and enrollment history; undisclosed random credentials require activation through existing recovery. Concurrent admits create only one user; profile conflicts roll back every write.
+- Added management-editable profiles and up to three authorized guardian contacts, student own-record visibility, historical guardian link retention and support-session write restrictions. Teachers/staff cannot read these private records. Parent login remains a later milestone.
+- Added People student-record/admission controls, enrollment history, multiple guardian editing and consistent panel spacing. SMTP/scanner remain safely unconfigured.
+- MySQL version 5 migration and disposable relational checks passed after restarting the existing localhost Docker MySQL container without replacing its volume. API suite and web build passed; browser automation failed to initialize, so interactive UI acceptance remains unverified.
+- Added ADMISSIONS.md and updated Phase 3 plan. Development preview uses synthetic demo data; the ignored environment file was not changed.
+
 ## 2026-10-08 — initial web foundation
 
 - Reviewed product scope; recorded roles, missing academic/operations modules, security requirements and web-first/mobile-later sequence.

@@ -68,7 +68,7 @@ Phase 2 implementation is complete. SMTP and ClamAV adapters are intentionally u
 
 ## Phase 3: School operations
 
-- [ ] Admissions workflow, student profiles, guardian links and enrollment history.
+- [x] Management-created admissions with reasoned review/admission/rejection/withdrawal, atomic student onboarding, private student profiles and guardian contact links, and enrollment history. Parent authentication is a separate milestone below.
 - [ ] Fee schedules, concessions, outstanding balances and receipts with manual payment recording first.
 - [ ] Staff profiles, leave requests and approvals; payroll as an optional later module.
 - [ ] Library catalog, lending and returns.

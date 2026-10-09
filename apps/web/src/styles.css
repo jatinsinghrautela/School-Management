@@ -1427,6 +1427,28 @@ td:first-child {
   margin-top: 24px;
   margin-bottom: 22px;
 }
+.student-records fieldset {
+  border: 1px solid rgba(23, 100, 85, 0.16);
+  border-radius: 16px;
+  padding: 16px;
+  min-width: 0;
+}
+.student-records legend {
+  padding: 0 8px;
+  font-weight: 600;
+}
+.student-records dl {
+  display: grid;
+  grid-template-columns: minmax(110px, 1fr) 2fr;
+  gap: 10px 16px;
+}
+.student-records dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.student-records textarea {
+  min-height: 80px;
+}
 .register-controls {
   display: flex;
   flex-wrap: wrap;

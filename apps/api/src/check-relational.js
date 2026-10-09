@@ -15,6 +15,9 @@ const ids = Object.fromEntries(
     "duplicate",
   ].map((k) => [k, randomUUID()]),
 );
+const admissionIds = Object.fromEntries(
+  ["guardian", "link", "profile", "application"].map((k) => [k, randomUUID()]),
+);
 const store = await createStore("mysql");
 const db = await mysql.createConnection({
   host: process.env.MYSQL_HOST || "127.0.0.1",
@@ -127,10 +130,87 @@ try {
       (initial.authVersion || 0) + 1,
     );
   });
+  await store.put("guardians", {
+    id: admissionIds.guardian,
+    schoolId: ids.school,
+    name: "Fixture Guardian",
+    relationship: "Guardian",
+    email: "fixture@example.invalid",
+    phone: "",
+  });
+  await store.put("studentGuardians", {
+    id: admissionIds.link,
+    schoolId: ids.school,
+    studentId: ids.user,
+    guardianId: admissionIds.guardian,
+    active: true,
+  });
+  await assert.rejects(
+    store.put("studentGuardians", {
+      id: ids.duplicate,
+      schoolId: ids.otherSchool,
+      studentId: ids.user,
+      guardianId: admissionIds.guardian,
+      active: true,
+    }),
+    (e) => e.status === 409,
+  );
+  await store.put("studentProfiles", {
+    id: admissionIds.profile,
+    schoolId: ids.school,
+    studentId: ids.user,
+    admissionNumber: "RELATIONAL-FIXTURE",
+    birthDate: "2010-01-01",
+  });
+  await assert.rejects(
+    store.put("studentProfiles", {
+      id: ids.duplicate,
+      schoolId: ids.school,
+      studentId: ids.user,
+      admissionNumber: "SECOND-FIXTURE",
+    }),
+    (e) => e.status === 409,
+  );
+  await store.put("admissions", {
+    id: admissionIds.application,
+    schoolId: ids.school,
+    classId: ids.class,
+    applicationNumber: "FIXTURE",
+    studentName: "Fixture",
+    loginEmail: "fixture@example.invalid",
+    status: "submitted",
+  });
+  await assert.rejects(
+    store.put("admissions", {
+      id: ids.duplicate,
+      schoolId: ids.otherSchool,
+      classId: ids.class,
+      applicationNumber: "FIXTURE",
+      studentName: "Wrong tenant",
+      loginEmail: "fixture@example.invalid",
+      status: "submitted",
+    }),
+    (e) => e.status === 409,
+  );
   console.log(
     "MySQL relational verification passed: duplicate identities, tenant references, attendance uniqueness and mark ranges are enforced.",
   );
 } finally {
+  await db.execute("DELETE FROM sg_student_guardians WHERE id IN (?,?)", [
+    admissionIds.link,
+    ids.duplicate,
+  ]);
+  await db.execute("DELETE FROM sg_guardians WHERE id=?", [
+    admissionIds.guardian,
+  ]);
+  await db.execute("DELETE FROM sg_student_profiles WHERE id IN (?,?)", [
+    admissionIds.profile,
+    ids.duplicate,
+  ]);
+  await db.execute("DELETE FROM sg_admissions WHERE id IN (?,?)", [
+    admissionIds.application,
+    ids.duplicate,
+  ]);
   await db.execute("DELETE FROM sg_attendance WHERE id IN (?,?)", [
     ids.attendance,
     ids.duplicate,

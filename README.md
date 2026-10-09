@@ -44,6 +44,8 @@ Demo emails: `owner@orbit.local`, `director@orbit.local`, `principal@orbit.local
 
 ## Academic workflow
 
+School management can use People → Admissions and student records for reviewed admission, student profiles, authorized guardian contacts and enrollment history. Students see their own profile only. See [Admissions guide](docs/ADMISSIONS.md). Guardian contacts do not create parent login accounts.
+
 1. A principal/admin opens Academics to create an academic year and grade/section classes.
 2. Create teacher/student accounts in People with their class memberships; assign subject teachers in Academics.
 3. Configure an exam schedule, subject maximum marks, weights, pass thresholds and grade bands. The defaults are editable examples.

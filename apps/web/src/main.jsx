@@ -34,6 +34,7 @@ import { Security } from "./security.jsx";
 import { AccessEditor } from "./access-editor.jsx";
 import { AttendanceCorrections } from "./attendance-corrections.jsx";
 import { DataTools } from "./data-tools.jsx";
+import { StudentRecords } from "./student-records.jsx";
 document.title = `${BRAND_NAME} · School workspace`;
 const icons = {
   Overview: LayoutDashboard,
@@ -999,6 +1000,26 @@ function App() {
                         : []),
                     ],
                   )}
+                />
+              )}
+              {page === "People" && manager && data && (
+                <StudentRecords
+                  api={api}
+                  schoolId={sid}
+                  classes={classes}
+                  manager={manager}
+                  readOnly={!!support}
+                  refresh={refresh}
+                />
+              )}
+              {page === "People" && user.role === "student" && data && (
+                <StudentRecords
+                  api={api}
+                  schoolId={sid}
+                  classes={classes}
+                  manager={false}
+                  readOnly
+                  refresh={refresh}
                 />
               )}
               {page === "People" && manager && data && (
