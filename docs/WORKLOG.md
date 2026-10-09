@@ -1,5 +1,15 @@
 # Work log
 
+## 2026-10-09 — fees and manual receipts
+
+- Added the Fees tab for management and students, immutable class/year schedules, reviewed student assignment, fixed concessions and outstanding balances grouped by currency.
+- Added ledger search and 20-row display pages with consistently padded forms and wrapping controls.
+- Implemented integer minor-unit accounting, school-locked consistent reads/writes, request-key retry protection, duplicate assignment guards and concurrent overpayment prevention.
+- Added manually recorded cash/bank/cheque payments, snapshot-based printable HTML receipts, escaped text and reasoned void corrections that retain original entries. No funds are transferred and no external payment service is connected.
+- Added MySQL migration version 6 with typed tables, scoped financial references, student/schedule and request/receipt uniqueness, and amount constraints. Disposable MySQL verification passed.
+- Validation: 39 API tests and production build passed; focused checks passed after final consistent-read and receipt-escaping changes. Browser automation still fails to initialize, so interactive visual/print verification remains unverified.
+- Updated PLAN and added FEES.md. SMTP/scanning safe disabled states remain unchanged. Staff profiles and leave workflow are the next planned milestone.
+
 ## 2026-10-09 — student-record spacing correction
 
 - Added a padded body with consistent vertical gaps to Admissions and student records. Aligned student labels/profile details, spaced wrapping action buttons, and corrected nested form/fieldset and checkbox layouts.

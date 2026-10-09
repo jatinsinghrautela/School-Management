@@ -35,11 +35,13 @@ import { AccessEditor } from "./access-editor.jsx";
 import { AttendanceCorrections } from "./attendance-corrections.jsx";
 import { DataTools } from "./data-tools.jsx";
 import { StudentRecords } from "./student-records.jsx";
+import { Fees } from "./fees.jsx";
 document.title = `${BRAND_NAME} · School workspace`;
 const icons = {
   Overview: LayoutDashboard,
   Schools: Building2,
   People: Users,
+  Fees: FileText,
   Attendance: CalendarCheck,
   Results: GraduationCap,
   Learning: BookOpen,
@@ -228,6 +230,7 @@ function App() {
     : [
         "Overview",
         "People",
+        ...(manager || user?.role === "student" ? ["Fees"] : []),
         ...(editor ? ["Academics"] : []),
         "Attendance",
         "Timetable",
@@ -507,6 +510,7 @@ function App() {
                       Schools:
                         "Every school in your network, connected in one place.",
                       People: "The people who make your campus extraordinary.",
+                      Fees: "Clear balances, concessions and payment records.",
                       Attendance:
                         "Every student counts. Keep track of every day.",
                       Results: "Turn progress into possibilities.",
@@ -1022,6 +1026,18 @@ function App() {
                   refresh={refresh}
                 />
               )}
+              {page === "Fees" &&
+                data &&
+                (manager || user.role === "student") && (
+                  <Fees
+                    api={api}
+                    schoolId={sid}
+                    classes={classes}
+                    students={students}
+                    manager={manager}
+                    readOnly={!!support}
+                  />
+                )}
               {page === "People" && manager && data && (
                 <DataTools
                   kind="directory"

@@ -16,7 +16,15 @@ const ids = Object.fromEntries(
   ].map((k) => [k, randomUUID()]),
 );
 const admissionIds = Object.fromEntries(
-  ["guardian", "link", "profile", "application"].map((k) => [k, randomUUID()]),
+  [
+    "guardian",
+    "link",
+    "profile",
+    "application",
+    "schedule",
+    "charge",
+    "payment",
+  ].map((k) => [k, randomUUID()]),
 );
 const store = await createStore("mysql");
 const db = await mysql.createConnection({
@@ -192,10 +200,91 @@ try {
     }),
     (e) => e.status === 409,
   );
+  await store.put("feeSchedules", {
+    id: admissionIds.schedule,
+    schoolId: ids.school,
+    classId: ids.class,
+    academicYearId: ids.year,
+    name: "Synthetic fee",
+    amountMinor: 10001,
+    currency: "INR",
+    dueDate: "2026-10-15",
+  });
+  const feeCharge = {
+    id: admissionIds.charge,
+    schoolId: ids.school,
+    scheduleId: admissionIds.schedule,
+    studentId: ids.user,
+    classId: ids.class,
+    academicYearId: ids.year,
+    amountMinor: 10001,
+    currency: "INR",
+    dueDate: "2026-10-15",
+  };
+  await store.put("feeCharges", feeCharge);
+  await assert.rejects(
+    store.put("feeCharges", { ...feeCharge, id: ids.duplicate }),
+    (e) => e.status === 409,
+  );
+  await assert.rejects(
+    store.put("feeCharges", {
+      ...feeCharge,
+      id: ids.duplicate,
+      schoolId: ids.otherSchool,
+    }),
+    (e) => e.status === 409,
+  );
+  const payment = {
+    id: admissionIds.payment,
+    schoolId: ids.school,
+    chargeId: feeCharge.id,
+    studentId: ids.user,
+    amountMinor: 1000,
+    currency: "INR",
+    paidOn: "2026-10-09",
+    requestKey: randomUUID(),
+    receiptNumber: "SYNTHETIC-RECEIPT",
+    voided: false,
+  };
+  await store.put("feePayments", payment);
+  await assert.rejects(
+    store.put("feePayments", {
+      ...payment,
+      id: ids.duplicate,
+      receiptNumber: "ANOTHER-RECEIPT",
+    }),
+    (e) => e.status === 409,
+  );
+  await assert.rejects(
+    store.put("feePayments", {
+      ...payment,
+      id: ids.duplicate,
+      requestKey: randomUUID(),
+      receiptNumber: "INVALID-AMOUNT",
+      amountMinor: 0,
+    }),
+    (e) => e.status === 409,
+  );
+  const stored = (await store.all("feePayments", ids.school)).find(
+    (p) => p.id === payment.id,
+  );
+  assert.equal(stored.amountMinor, 1000);
+  assert.equal(stored.voided, false);
   console.log(
     "MySQL relational verification passed: duplicate identities, tenant references, attendance uniqueness and mark ranges are enforced.",
   );
 } finally {
+  await db.execute("DELETE FROM sg_fee_payments WHERE id IN (?,?)", [
+    admissionIds.payment,
+    ids.duplicate,
+  ]);
+  await db.execute("DELETE FROM sg_fee_charges WHERE id IN (?,?)", [
+    admissionIds.charge,
+    ids.duplicate,
+  ]);
+  await db.execute("DELETE FROM sg_fee_schedules WHERE id=?", [
+    admissionIds.schedule,
+  ]);
   await db.execute("DELETE FROM sg_student_guardians WHERE id IN (?,?)", [
     admissionIds.link,
     ids.duplicate,

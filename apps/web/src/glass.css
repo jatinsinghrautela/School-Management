@@ -1008,6 +1008,93 @@ html {
   padding: 4px 24px 24px;
   min-width: 0;
 }
+.fees-body {
+  display: grid;
+  gap: 22px;
+  padding: 4px 24px 24px;
+  min-width: 0;
+}
+.fees-body > h4,
+.fees-body > p {
+  margin: 0;
+}
+.fees-body > details,
+.fee-entry {
+  border: 1px solid #b8cdc6;
+  border-radius: 16px;
+  padding: 16px;
+  min-width: 0;
+}
+.fees-workspace summary {
+  cursor: pointer;
+  line-height: 1.5;
+}
+.fees-workspace details > .calendar-form {
+  padding: 0;
+  margin-top: 20px;
+}
+.fees-workspace .fee-check {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.fees-workspace .fee-check input {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+}
+.fee-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+.fee-pagination {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.fee-summary > div {
+  display: grid;
+  gap: 8px;
+  padding: 16px;
+  border: 1px solid #b8cdc6;
+  border-radius: 16px;
+}
+.fee-summary strong {
+  font-size: 24px;
+}
+.fee-entry {
+  display: grid;
+  gap: 14px;
+  overflow-wrap: anywhere;
+}
+.fee-entry p {
+  margin: 8px 0 0;
+}
+.fee-entry label {
+  display: grid;
+  gap: 8px;
+  margin: 12px 0;
+}
+.fee-entry textarea {
+  width: 100%;
+  min-height: 80px;
+  padding: 12px;
+  border: 1px solid #b8cdc6;
+  border-radius: 12px;
+  font: inherit;
+}
+.fees-workspace td {
+  vertical-align: top;
+}
+@media (max-width: 600px) {
+  .fees-body {
+    padding: 4px 16px 20px;
+    gap: 18px;
+  }
+}
 .student-records-body > p,
 .student-records-body > h4,
 .student-records-body > dl {

@@ -1,6 +1,41 @@
 // Relational identity, access and academic fields; immutable snapshots and extension
 // metadata remain JSON. Legacy records are retained as the migration backup.
 const definitions = {
+  feeSchedules: {
+    classId: "VARCHAR(36) NOT NULL",
+    academicYearId: "VARCHAR(36) NOT NULL",
+    name: "VARCHAR(120) NOT NULL",
+    amountMinor: "BIGINT NOT NULL",
+    currency: "VARCHAR(3) NOT NULL",
+    dueDate: "DATE NOT NULL",
+  },
+  feeCharges: {
+    scheduleId: "VARCHAR(36) NOT NULL",
+    studentId: "VARCHAR(36) NOT NULL",
+    classId: "VARCHAR(36) NOT NULL",
+    academicYearId: "VARCHAR(36) NOT NULL",
+    amountMinor: "BIGINT NOT NULL",
+    currency: "VARCHAR(3) NOT NULL",
+    dueDate: "DATE NOT NULL",
+  },
+  feePayments: {
+    chargeId: "VARCHAR(36) NOT NULL",
+    studentId: "VARCHAR(36) NOT NULL",
+    amountMinor: "BIGINT NOT NULL",
+    currency: "VARCHAR(3) NOT NULL",
+    requestKey: "VARCHAR(36) NOT NULL",
+    receiptNumber: "VARCHAR(60) NOT NULL",
+    paidOn: "DATE NOT NULL",
+    voided: "BOOLEAN NOT NULL DEFAULT FALSE",
+  },
+  feeConcessions: {
+    chargeId: "VARCHAR(36) NOT NULL",
+    studentId: "VARCHAR(36) NOT NULL",
+    amountMinor: "BIGINT NOT NULL",
+    currency: "VARCHAR(3) NOT NULL",
+    requestKey: "VARCHAR(36) NOT NULL",
+    voided: "BOOLEAN NOT NULL DEFAULT FALSE",
+  },
   admissions: {
     classId: "VARCHAR(36) NOT NULL",
     studentId: "VARCHAR(36)",
@@ -139,6 +174,7 @@ const booleans = new Set([
   "passwordChangeRequired",
   "cancelled",
   "revoked",
+  "voided",
 ]);
 const arrayFields = {
   users: {
@@ -148,6 +184,15 @@ const arrayFields = {
   subjects: { teacherIds: ["sg_subject_teachers", "teacher_id"] },
 };
 const foreign = {
+  feeSchedules: { classId: "classes", academicYearId: "academicYears" },
+  feeCharges: {
+    scheduleId: "feeSchedules",
+    studentId: "users",
+    classId: "classes",
+    academicYearId: "academicYears",
+  },
+  feePayments: { chargeId: "feeCharges", studentId: "users" },
+  feeConcessions: { chargeId: "feeCharges", studentId: "users" },
   admissions: { classId: "classes", studentId: "users" },
   studentProfiles: { studentId: "users" },
   studentGuardians: { studentId: "users", guardianId: "guardians" },
@@ -195,6 +240,23 @@ const foreign = {
   },
 };
 const constraints = {
+  feeSchedules: [
+    "CHECK (amount_minor>0 AND amount_minor<=1000000000)",
+    "CHECK (currency IN ('INR','USD','EUR','GBP'))",
+  ],
+  feeCharges: [
+    "UNIQUE KEY student_schedule (school_id,schedule_id,student_id)",
+    "CHECK (amount_minor>0 AND amount_minor<=1000000000)",
+  ],
+  feePayments: [
+    "UNIQUE KEY payment_request (school_id,request_key)",
+    "UNIQUE KEY payment_receipt (school_id,receipt_number)",
+    "CHECK (amount_minor>0 AND amount_minor<=1000000000)",
+  ],
+  feeConcessions: [
+    "UNIQUE KEY concession_request (school_id,request_key)",
+    "CHECK (amount_minor>0 AND amount_minor<=1000000000)",
+  ],
   admissions: [
     "UNIQUE KEY application_number (school_id,application_number)",
     "CHECK (status IN ('submitted','reviewing','admitted','rejected','withdrawn'))",
@@ -406,6 +468,43 @@ export async function migrateRelational(pool, collections) {
         }
       }
       await conn.query("INSERT INTO sg_migrations(version) VALUES(5)");
+    }
+    const [[feeVersion]] = await conn.query(
+      "SELECT COUNT(*) AS present FROM sg_migrations WHERE version=6",
+    );
+    if (!feeVersion.present) {
+      for (const kind of [
+        "feeSchedules",
+        "feeCharges",
+        "feePayments",
+        "feeConcessions",
+      ])
+        for (const [field, parent] of Object.entries({
+          ...foreign[kind],
+          schoolId: "schools",
+        })) {
+          const name = `fk_${snake(kind)}_${snake(field)}`;
+          const [[exists]] = await conn.execute(
+            "SELECT COUNT(*) AS n FROM information_schema.TABLE_CONSTRAINTS WHERE CONSTRAINT_SCHEMA=DATABASE() AND TABLE_NAME=? AND CONSTRAINT_NAME=?",
+            [tableFor(kind), name],
+          );
+          if (!exists.n)
+            await conn.query(
+              `ALTER TABLE ${tableFor(kind)} ADD CONSTRAINT ${name} FOREIGN KEY (${snake(field)}) REFERENCES ${tableFor(parent)}(id)`,
+            );
+          if (!["users", "schools"].includes(parent)) {
+            const scopedName = `scope_${snake(kind)}_${snake(field)}`;
+            const [[scopedExists]] = await conn.execute(
+              "SELECT COUNT(*) AS n FROM information_schema.TABLE_CONSTRAINTS WHERE CONSTRAINT_SCHEMA=DATABASE() AND TABLE_NAME=? AND CONSTRAINT_NAME=?",
+              [tableFor(kind), scopedName],
+            );
+            if (!scopedExists.n)
+              await conn.query(
+                `ALTER TABLE ${tableFor(kind)} ADD CONSTRAINT ${scopedName} FOREIGN KEY (${snake(field)},school_id) REFERENCES ${tableFor(parent)}(id,school_id)`,
+              );
+          }
+        }
+      await conn.query("INSERT INTO sg_migrations(version) VALUES(6)");
     }
   } finally {
     await conn

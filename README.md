@@ -44,6 +44,8 @@ Demo emails: `owner@orbit.local`, `director@orbit.local`, `principal@orbit.local
 
 ## Academic workflow
 
+The Fees tab provides school fee schedules, concessions, outstanding balances and manual payment receipts. Students see their own ledger only. See [Fee workflow](docs/FEES.md); this records payments and does not process fund transfers.
+
 School management can use People → Admissions and student records for reviewed admission, student profiles, authorized guardian contacts and enrollment history. Students see their own profile only. See [Admissions guide](docs/ADMISSIONS.md). Guardian contacts do not create parent login accounts.
 
 1. A principal/admin opens Academics to create an academic year and grade/section classes.
