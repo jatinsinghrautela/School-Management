@@ -106,3 +106,7 @@ Due dates are validated calendar dates and interpreted as end of day UTC. Late a
 ## Staff and leave
 
 Staff employment profiles and independent leave approvals are available in the **Staff** tab. Teachers/supporting staff see their own records; school leadership reviews school requests. See [STAFF-LEAVE.md](docs/STAFF-LEAVE.md) for cancellation rules, audit history and current limits. Payroll is not included.
+
+## Phase 3 operations and families
+
+Library, transport, assets, tickets, visitors, document requests, inbox/read receipts, teacher–guardian messaging and verified linked-child parent access are implemented. Settings include school display branding, regional formats and English/Hindi family labels. See [PHASE-3.md](docs/PHASE-3.md) for onboarding, permissions, migration v8 and current limits. Run `npm run db:operations` against development MySQL for the new relational checks. Phase 4 remains required before real student data.

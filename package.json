@@ -16,7 +16,8 @@
     "start": "npm run start -w apps/api",
     "format": "prettier --write apps docs README.md package.json compose.yaml .github/workflows/ci.yml",
     "db:security": "npm run db:security -w apps/api",
-    "db:relational": "npm run db:relational -w apps/api"
+    "db:relational": "npm run db:relational -w apps/api",
+    "db:operations": "npm run db:operations -w apps/api"
   },
   "devDependencies": {
     "concurrently": "^9.2.0",

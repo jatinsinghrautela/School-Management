@@ -73,8 +73,9 @@ export function AccessEditor({
                     "teacher",
                     "student",
                     "staff",
+                    "parent",
                   ]
-                : ["teacher", "student", "staff"]
+                : ["teacher", "student", "staff", "parent"]
               ).map((r) => (
                 <option key={r} value={r}>
                   {r}

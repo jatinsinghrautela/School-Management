@@ -111,14 +111,27 @@ export function createAdmissionsRouter(store) {
       updatedAt: new Date().toISOString(),
       updatedBy: req.user.id,
     });
-    for (const link of await tx.all("studentGuardians", req.school.id))
-      if (link.studentId === studentId && link.active)
-        await tx.put("studentGuardians", {
-          ...link,
-          active: false,
-          endedAt: new Date().toISOString(),
-        });
+    const oldLinks = (await tx.all("studentGuardians", req.school.id)).filter(
+      (l) => l.studentId === studentId && l.active,
+    );
+    const oldGuardians = await tx.all("guardians", req.school.id),
+      retained = new Set();
     for (const contact of guardians) {
+      const oldLink = oldLinks.find(
+        (l) =>
+          !retained.has(l.id) &&
+          oldGuardians.some(
+            (g) =>
+              g.id === l.guardianId &&
+              ["name", "relationship", "phone", "email"].every(
+                (k) => g[k] === contact[k],
+              ),
+          ),
+      );
+      if (oldLink) {
+        retained.add(oldLink.id);
+        continue;
+      }
       const guardian = await tx.put("guardians", {
         ...contact,
         id: id(),
@@ -135,6 +148,13 @@ export function createAdmissionsRouter(store) {
         createdAt: new Date().toISOString(),
       });
     }
+    for (const link of oldLinks)
+      if (!retained.has(link.id))
+        await tx.put("studentGuardians", {
+          ...link,
+          active: false,
+          endedAt: new Date().toISOString(),
+        });
     return profile;
   }
   router.get(

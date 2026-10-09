@@ -31,6 +31,8 @@ import { tokenRepository } from "./tokens.js";
 import { createTimetableRouter } from "./timetable.js";
 import { createHomeworkRouter } from "./homework.js";
 import { createAdmissionsRouter } from "./admissions.js";
+import { createOperationsRouter } from "./operations.js";
+import { createFamilySocialRouter, defaultSettings } from "./family-social.js";
 import { createStaffRouter } from "./staff.js";
 import { createFeesRouter } from "./fees.js";
 import {
@@ -398,7 +400,7 @@ export function createApp(
       const permitted =
         req.user.role === "owner" ||
         (managers.includes(req.user.role) &&
-          ["teacher", "student", "staff"].includes(target.role) &&
+          ["teacher", "student", "staff", "parent"].includes(target.role) &&
           (target.orgId || null) === (req.user.orgId || null) &&
           target.schoolIds.length > 0 &&
           target.schoolIds.every((sid) =>
@@ -582,7 +584,7 @@ export function createApp(
     const allowed =
       req.user.role === "owner" ||
       (managers.includes(req.user.role) &&
-        ["teacher", "student", "staff"].includes(target.role) &&
+        ["teacher", "student", "staff", "parent"].includes(target.role) &&
         target.schoolIds.length > 0 &&
         target.schoolIds.every((sid) =>
           schools.some((s) => s.id === sid && canAccessSchool(req.user, s)),
@@ -621,7 +623,7 @@ export function createApp(
       target.role !== "owner" &&
       (req.user.role === "owner" ||
         (managers.includes(req.user.role) &&
-          ["teacher", "student", "staff"].includes(target.role) &&
+          ["teacher", "student", "staff", "parent"].includes(target.role) &&
           target.schoolIds.length > 0 &&
           target.schoolIds.every((sid) =>
             schools.some((s) => s.id === sid && canAccessSchool(req.user, s)),
@@ -731,8 +733,8 @@ export function createApp(
         if (
           req.user.role !== "owner" &&
           (!managers.includes(req.user.role) ||
-            !["teacher", "student", "staff"].includes(target.role) ||
-            !["teacher", "student", "staff"].includes(role) ||
+            !["teacher", "student", "staff", "parent"].includes(target.role) ||
+            !["teacher", "student", "staff", "parent"].includes(role) ||
             !target.schoolIds.every((sid) =>
               schools.some((s) => s.id === sid && canAccessSchool(req.user, s)),
             ))
@@ -847,7 +849,7 @@ export function createApp(
       );
     if (
       req.user.role !== "owner" &&
-      !["teacher", "student", "staff"].includes(role)
+      !["teacher", "student", "staff", "parent"].includes(role)
     )
       return fail(
         res,
@@ -930,11 +932,45 @@ export function createApp(
     if (!school || !canAccessSchool(req.user, school))
       return fail(res, 403, "School access denied");
     req.school = school;
+    if (
+      req.user.role === "parent" &&
+      !/^\/(workspace|family|operations|tickets|document-requests|messages|inbox|school-settings)(\/|$)/.test(
+        req.path,
+      )
+    )
+      return fail(
+        res,
+        403,
+        "Use the linked-child parent portal for this resource",
+      );
     next();
   });
   app.get("/api/schools/:schoolId/workspace", async (req, res) => {
     const sid = req.params.schoolId,
       u = req.user;
+    if (u.role === "parent")
+      return res.json({
+        school: req.school,
+        schoolSettings: {
+          ...defaultSettings,
+          ...(await store.all("schoolSettings", sid))[0],
+        },
+        users: [publicUser(u)],
+        classes: [],
+        attendance: [],
+        marks: [],
+        resources: [],
+        notices: [],
+        timetable: [],
+        calendar: [],
+        academicYears: [],
+        subjects: [],
+        exams: [],
+        reports: [],
+        terms: [],
+        enrollments: [],
+        submissions: [],
+      });
     const scoped = async (k) =>
       (await store.all(k, sid)).filter(
         (r) => r.schoolId === sid && (!r.classId || canSeeClass(u, r.classId)),
@@ -949,6 +985,10 @@ export function createApp(
     );
     res.json({
       school: req.school,
+      schoolSettings: {
+        ...defaultSettings,
+        ...(await store.all("schoolSettings", sid))[0],
+      },
       capabilities: {
         emailDelivery: !!mailer,
         uploads: scanner !== scanBuffer || !!process.env.CLAMAV_COMMAND,
@@ -1395,6 +1435,8 @@ export function createApp(
   app.use("/api/schools/:schoolId", createAdmissionsRouter(store));
   app.use("/api/schools/:schoolId", createFeesRouter(store));
   app.use("/api/schools/:schoolId", createStaffRouter(store));
+  app.use("/api/schools/:schoolId", createOperationsRouter(store));
+  app.use("/api/schools/:schoolId", createFamilySocialRouter(store));
   app.use("/api", (req, res) => fail(res, 404, "API endpoint not found"));
   const webRoot = fileURLToPath(new URL("../../web/dist/", import.meta.url));
   if (existsSync(webRoot)) {

@@ -189,3 +189,13 @@
 - Added role-scoped directory search/pagination, shared 20-row tables, reviewed Excel people import with row errors/single-use apply and permission-scoped attendance/directory/results exports. Imported users require private activation and do not share a default password.
 - Validation: 37 tests passed, production build passed, MySQL transaction/security/relational checks passed, including duplicate-email non-overwrite, cross-school references and rereading a concurrent user generation after row locking. Browser confirmed academic controls, session creation and saved Morning attendance, resource upload disabled state, card spacing and no console errors. Evidence: phase-two-academics.png, phase-two-attendance.png and phase-two-preview.png.
 - Updated PLAN, architecture, cost policy, attendance guide, README and PHASE-2 setup/operations documentation. Phase 4 production readiness remains separate.
+
+## Complete Phase 3 baseline (2026-10-09)
+
+- Completed library, transport, assets/custody, ticket workflows, visitor logs and reviewed printable document requests with scoped permissions, retained history, stale-version guards and retry-safe writes.
+- Added verified guardian account onboarding, explicit revocable child links, parent switching and own-child attendance/results/fees/resources/timetable/notices/calendar. Unchanged guardian contacts survive profile edits; changed contacts require fresh verification.
+- Added in-app notifications/read receipts and current class-authorized private teacher/guardian messaging. Link revocation removes subsequent access; leadership cannot inspect private messages. Audited owner support sessions remain read-only.
+- Added display branding/generated monograms, school accent, locale/timezone and English/Hindi family labels. No new external assets or paid dependencies.
+- Added additive MySQL migration v8 with thirteen typed tables and a disposable-fixture operations verification script. Existing admissions, fees and leave remain integrated.
+- Validation: 42 API tests passed; focused operations tests passed after final owner roster filtering; MySQL relational and operations checks passed. Browser exercised catalog/lending, route assignment and settings; desktop card gaps measured 24px, mobile had no horizontal overflow and sidebar sign-out remained accessible. Fixed native date submission and card/input/header spacing discovered during review.
+- Updated PLAN, README and PHASE-3 operating guide. SMTP/ClamAV remain intentionally unconfigured. Phase 4 production readiness and mobile remain separate.

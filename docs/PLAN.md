@@ -10,15 +10,15 @@ Independent schools have no organization and retain separate explicit membership
 
 ## Roles
 
-| Role                        | Scope and capabilities                                                                   |
-| --------------------------- | ---------------------------------------------------------------------------------------- |
-| Owner                       | Onboard organizations/schools, create leadership accounts, platform KPIs, audit activity |
-| Director                    | Manage assigned schools across an organization                                           |
-| Admin / principal           | Manage one or more assigned schools, classes, teachers/students/staff, notices           |
-| Teacher                     | Assigned classes/subjects, attendance, marks, learning resources                         |
-| Student                     | Own results/attendance, assigned class materials and targeted notices                    |
-| Staff                       | Own profile and applicable notices; job-specific permissions later                       |
-| Parent / guardian (planned) | Explicit linked-child access, never unrestricted class access                            |
+| Role              | Scope and capabilities                                                                   |
+| ----------------- | ---------------------------------------------------------------------------------------- |
+| Owner             | Onboard organizations/schools, create leadership accounts, platform KPIs, audit activity |
+| Director          | Manage assigned schools across an organization                                           |
+| Admin / principal | Manage one or more assigned schools, classes, teachers/students/staff, notices           |
+| Teacher           | Assigned classes/subjects, attendance, marks, learning resources                         |
+| Student           | Own results/attendance, assigned class materials and targeted notices                    |
+| Staff             | Own profile and applicable notices; job-specific permissions later                       |
+| Parent / guardian | Explicit linked-child access, never unrestricted class access                            |
 
 ## Phase 1: Initial web MVP — implemented
 
@@ -71,12 +71,14 @@ Phase 2 implementation is complete. SMTP and ClamAV adapters are intentionally u
 - [x] Management-created admissions with reasoned review/admission/rejection/withdrawal, atomic student onboarding, private student profiles and guardian contact links, and enrollment history. Parent authentication is a separate milestone below.
 - [x] Class/year fee schedules, reviewed student assignment, reasoned concessions, exact outstanding balances, manual payment receipts, retry-safe writes and audited void corrections. No online gateway or fund transfers.
 - [x] Private staff profiles, reasoned leave requests, independent approvals/rejections, cancellations, overlap guards and retry-safe audited history. Payroll remains an optional later module.
-- [ ] Library catalog, lending and returns.
-- [ ] Transport routes and assigned students; no live GPS until privacy and infrastructure decisions.
-- [ ] Inventory/assets, support tickets, visitor logs, certificate/document requests.
-- [ ] In-app notification inbox with read receipts and teacher/guardian messaging.
-- [ ] Parent portal with linked-child switching.
-- [ ] School branding, academic settings and localization.
+- [x] Library catalog, capacity-checked lending, reasoned returns and retained history.
+- [x] Transport routes, stops, capacity-checked student assignments and reasoned releases; no live GPS.
+- [x] Inventory/assets and custody, versioned support tickets, visitor check-in/out, reviewed document requests and escaped printable certificates.
+- [x] In-app inbox, notice/message read receipts and private class-authorized teacher/guardian messaging.
+- [x] Verified guardian onboarding, revocable child links and parent switching across own children, attendance, published results, fees, resources and timetable.
+- [x] School display branding, accent, locale/timezone formats and English/Hindi family labels; existing academic/report configuration remains in Academics/Results. Full interface translation is a later extension.
+
+Phase 3 baseline implementation is complete. See PHASE-3.md for operating instructions and limits.
 
 ## Phase 4: Release quality — required before real student data
 

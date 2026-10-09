@@ -12,7 +12,20 @@ function minor(value) {
     throw new Error("Enter a positive amount within the supported limit");
   return result;
 }
-export function Fees({ api, schoolId, classes, students, manager, readOnly }) {
+export function Fees({
+  api,
+  schoolId,
+  classes,
+  students,
+  manager,
+  readOnly,
+  settings,
+}) {
+  const money = (n, c) =>
+    new Intl.NumberFormat(settings?.locale || "en-IN", {
+      style: "currency",
+      currency: c,
+    }).format(n / 100);
   const [data, setData] = useState(null),
     [error, setError] = useState(""),
     [message, setMessage] = useState(""),

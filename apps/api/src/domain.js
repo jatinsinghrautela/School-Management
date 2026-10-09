@@ -8,6 +8,7 @@ export const roles = [
   "teacher",
   "student",
   "staff",
+  "parent",
 ];
 export function canAccessSchool(user, school) {
   return (
@@ -17,6 +18,7 @@ export function canAccessSchool(user, school) {
   );
 }
 export function canSeeClass(user, classId) {
+  if (user.role === "parent") return false;
   return (
     user.role === "owner" ||
     managers.includes(user.role) ||

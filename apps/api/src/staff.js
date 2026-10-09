@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { id, managers, canAccessSchool } from "./domain.js";
+import { notify } from "./operations-common.js";
 import { validDate } from "./calendar.js";
 const employed = [...managers, "teacher", "staff"];
 const fail = (status, message) => {
@@ -273,6 +274,13 @@ export function createStaffRouter(store) {
           history: [...row.history, entry],
         };
         await tx.put("leaveRequests", updated);
+        await notify(
+          tx,
+          req,
+          row.userId,
+          "Leave request updated",
+          `${row.startDate} to ${row.endDate}: ${decision}. ${entry.reason}`,
+        );
         await audit(tx, req, `leave.${decision}`, {
           requestId: row.id,
           ...entry,

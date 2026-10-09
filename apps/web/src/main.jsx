@@ -35,6 +35,7 @@ import { AccessEditor } from "./access-editor.jsx";
 import { AttendanceCorrections } from "./attendance-corrections.jsx";
 import { DataTools } from "./data-tools.jsx";
 import { StudentRecords } from "./student-records.jsx";
+import { Operations, Inbox, Family, SchoolSettings } from "./operations.jsx";
 import { Staff } from "./staff.jsx";
 import { Fees } from "./fees.jsx";
 document.title = `${BRAND_NAME} · School workspace`;
@@ -44,6 +45,12 @@ const icons = {
   People: Users,
   Fees: FileText,
   Staff: Users,
+  Library: BookOpen,
+  Transport: Building2,
+  Operations: FileText,
+  Inbox: Megaphone,
+  Family: Users,
+  Settings: ShieldCheck,
   Attendance: CalendarCheck,
   Results: GraduationCap,
   Learning: BookOpen,
@@ -227,22 +234,32 @@ function App() {
     manager = ["director", "admin", "principal"].includes(user?.role),
     teacher = user?.role === "teacher",
     editor = manager || teacher;
+  useEffect(() => {
+    if (user?.role === "parent") setPage("Family");
+  }, [user?.id]);
   const nav = owner
     ? ["Overview", "Schools", "People", "Security"]
-    : [
-        "Overview",
-        "People",
-        ...(manager || user?.role === "student" ? ["Fees"] : []),
-        ...(manager || teacher || user?.role === "staff" ? ["Staff"] : []),
-        ...(editor ? ["Academics"] : []),
-        "Attendance",
-        "Timetable",
-        "Calendar",
-        "Results",
-        "Learning",
-        "Notices",
-        "Security",
-      ];
+    : user?.role === "parent"
+      ? ["Family", "Library", "Transport", "Operations", "Inbox", "Security"]
+      : [
+          "Overview",
+          "People",
+          ...(manager || user?.role === "student" ? ["Fees"] : []),
+          ...(manager || teacher || user?.role === "staff" ? ["Staff"] : []),
+          ...(editor ? ["Academics"] : []),
+          "Attendance",
+          "Timetable",
+          "Calendar",
+          "Results",
+          "Learning",
+          "Notices",
+          "Library",
+          "Transport",
+          "Operations",
+          "Inbox",
+          ...(manager ? ["Family", "Settings"] : []),
+          "Security",
+        ];
   const school = schools.find((s) => s.id === sid),
     students = data?.users.filter((u) => u.role === "student") || [],
     classes = data?.classes || [];
@@ -343,7 +360,10 @@ function App() {
       )
     : null;
   return (
-    <div className="shell">
+    <div
+      className="shell"
+      style={{ "--school-accent": data?.schoolSettings?.accent || "#11796f" }}
+    >
       {mobile && narrow && (
         <button
           className="drawer-overlay"
@@ -360,7 +380,7 @@ function App() {
           href="#"
           onClick={(e) => {
             e.preventDefault();
-            setPage("Overview");
+            setPage(user.role === "parent" ? "Family" : "Overview");
           }}
         >
           <span className="brand-icon">
@@ -374,11 +394,26 @@ function App() {
         </div>
         <div className="school-badge">
           <span className="school-icon">
-            {owner ? <ShieldCheck size={20} /> : <Building2 size={20} />}
+            {owner ? (
+              <ShieldCheck size={20} />
+            ) : data?.schoolSettings?.displayName ? (
+              data.schoolSettings.displayName
+                .split(/\s+/)
+                .map((w) => w[0])
+                .slice(0, 2)
+                .join("")
+                .toUpperCase()
+            ) : (
+              <Building2 size={20} />
+            )}
           </span>
           <div>
             <strong>
-              {owner ? "Mission control" : school?.name || "Your school"}
+              {owner
+                ? "Mission control"
+                : data?.schoolSettings?.displayName ||
+                  school?.name ||
+                  "Your school"}
             </strong>
             <small>
               {owner
@@ -484,11 +519,15 @@ function App() {
               </select>
             )}
             <span className="date-label">
-              {new Date().toLocaleDateString("en-IN", {
-                day: "numeric",
-                month: "short",
-                year: "numeric",
-              })}
+              {new Date().toLocaleDateString(
+                data?.schoolSettings?.locale || "en-IN",
+                {
+                  timeZone: data?.schoolSettings?.timeZone || "Asia/Kolkata",
+                  day: "numeric",
+                  month: "short",
+                  year: "numeric",
+                },
+              )}
             </span>
           </div>
         </header>
@@ -498,7 +537,9 @@ function App() {
               <div className="eyebrow">
                 {owner
                   ? "YOUR EDUCATION NETWORK"
-                  : school?.name?.toUpperCase() || "YOUR CAMPUS"}
+                  : (
+                      data?.schoolSettings?.displayName || school?.name
+                    )?.toUpperCase() || "YOUR CAMPUS"}
               </div>
               <h1>
                 {page === "Overview"
@@ -514,6 +555,18 @@ function App() {
                         "Every school in your network, connected in one place.",
                       People: "The people who make your campus extraordinary.",
                       Fees: "Clear balances, concessions and payment records.",
+                      Library:
+                        "Keep books circulating with clear lending history.",
+                      Transport:
+                        "Plan routes and make every assigned seat count.",
+                      Operations:
+                        "Manage school assets, visits, support and document requests.",
+                      Inbox:
+                        "School updates and private teacher–guardian conversations.",
+                      Family:
+                        "Verified child links and a clear view of school life.",
+                      Settings:
+                        "Your school’s identity and regional preferences.",
                       Staff:
                         "Employment profiles and transparent leave decisions.",
                       Attendance:
@@ -838,6 +891,14 @@ function App() {
                   "Calendar",
                   "Calendar",
                   "Security",
+                  "Library",
+                  "Transport",
+                  "Operations",
+                  "Inbox",
+                  "Family",
+                  "Settings",
+                  "Staff",
+                  "Fees",
                 ].includes(page) && (
                   <label className="search">
                     <Search size={17} />
@@ -930,9 +991,12 @@ function App() {
                           u.role !== "owner" &&
                           (owner ||
                             (manager &&
-                              ["teacher", "student", "staff"].includes(
-                                u.role,
-                              ))) && (
+                              [
+                                "teacher",
+                                "student",
+                                "staff",
+                                "parent",
+                              ].includes(u.role))) && (
                             <button
                               className="secondary"
                               onClick={() => setAccessTarget(u)}
@@ -947,9 +1011,12 @@ function App() {
                           u.role !== "owner" &&
                           (owner ||
                             (manager &&
-                              ["teacher", "student", "staff"].includes(
-                                u.role,
-                              ))) && (
+                              [
+                                "teacher",
+                                "student",
+                                "staff",
+                                "parent",
+                              ].includes(u.role))) && (
                             <button
                               className="secondary"
                               onClick={() => {
@@ -972,9 +1039,12 @@ function App() {
                           u.role !== "owner" &&
                           (owner ||
                             (manager &&
-                              ["teacher", "student", "staff"].includes(
-                                u.role,
-                              ))) && (
+                              [
+                                "teacher",
+                                "student",
+                                "staff",
+                                "parent",
+                              ].includes(u.role))) && (
                             <button
                               className="secondary"
                               disabled={loading}
@@ -1031,6 +1101,50 @@ function App() {
                   refresh={refresh}
                 />
               )}
+              {data &&
+                ["Library", "Transport", "Operations"].includes(page) && (
+                  <Operations
+                    key={`${sid}:${page}`}
+                    api={api}
+                    schoolId={sid}
+                    page={page}
+                    manager={manager}
+                    readOnly={!!support}
+                    refresh={refresh}
+                  />
+                )}
+              {data && page === "Inbox" && (
+                <Inbox
+                  key={sid}
+                  api={api}
+                  schoolId={sid}
+                  readOnly={!!support}
+                  role={user.role}
+                  settings={data.schoolSettings}
+                />
+              )}
+              {data &&
+                page === "Family" &&
+                (manager || user.role === "parent") && (
+                  <Family
+                    key={sid}
+                    api={api}
+                    schoolId={sid}
+                    manager={manager}
+                    readOnly={!!support}
+                    refresh={refresh}
+                    settings={data.schoolSettings}
+                  />
+                )}
+              {data && page === "Settings" && manager && (
+                <SchoolSettings
+                  key={sid}
+                  api={api}
+                  schoolId={sid}
+                  readOnly={!!support}
+                  refresh={refresh}
+                />
+              )}
               {page === "Staff" &&
                 data &&
                 (manager || teacher || user.role === "staff") && (
@@ -1053,6 +1167,7 @@ function App() {
                     students={students}
                     manager={manager}
                     readOnly={!!support}
+                    settings={data.schoolSettings}
                   />
                 )}
               {page === "People" && manager && data && (
@@ -2441,7 +2556,7 @@ function Editor({
                 "Role",
                 owner
                   ? ["director", "admin", "principal"]
-                  : ["teacher", "student", "staff"],
+                  : ["teacher", "student", "staff", "parent"],
               )}
               {owner &&
                 field(
@@ -2584,6 +2699,7 @@ function Editor({
                 "teacher",
                 "student",
                 "staff",
+                "parent",
                 "director",
                 "admin",
                 "principal",

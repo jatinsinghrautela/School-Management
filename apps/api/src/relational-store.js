@@ -1,6 +1,106 @@
+const OPERATIONS_COLLECTIONS = [
+  "libraryBooks",
+  "libraryLoans",
+  "transportRoutes",
+  "transportAssignments",
+  "assets",
+  "tickets",
+  "visitors",
+  "documentRequests",
+  "notifications",
+  "noticeReads",
+  "messages",
+  "parentLinks",
+  "schoolSettings",
+];
 // Relational identity, access and academic fields; immutable snapshots and extension
 // metadata remain JSON. Legacy records are retained as the migration backup.
 const definitions = {
+  libraryBooks: {
+    code: "VARCHAR(60) NOT NULL",
+    title: "VARCHAR(200) NOT NULL",
+    author: "VARCHAR(200) NOT NULL",
+    copies: "INT NOT NULL",
+    active: "BOOLEAN NOT NULL DEFAULT TRUE",
+    version: "INT NOT NULL",
+  },
+  libraryLoans: {
+    bookId: "VARCHAR(36) NOT NULL",
+    userId: "VARCHAR(36) NOT NULL",
+    dueDate: "DATE NOT NULL",
+    status: "VARCHAR(24) NOT NULL",
+    requestKey: "VARCHAR(36) NOT NULL",
+  },
+  transportRoutes: {
+    code: "VARCHAR(60) NOT NULL",
+    name: "VARCHAR(200) NOT NULL",
+    vehicle: "VARCHAR(60) NOT NULL",
+    capacity: "INT NOT NULL",
+    active: "BOOLEAN NOT NULL DEFAULT TRUE",
+    version: "INT NOT NULL",
+  },
+  transportAssignments: {
+    routeId: "VARCHAR(36) NOT NULL",
+    studentId: "VARCHAR(36) NOT NULL",
+    active: "BOOLEAN NOT NULL DEFAULT TRUE",
+  },
+  assets: {
+    code: "VARCHAR(60) NOT NULL",
+    name: "VARCHAR(200) NOT NULL",
+    category: "VARCHAR(80) NOT NULL",
+    quantity: "INT NOT NULL",
+    status: "VARCHAR(24) NOT NULL",
+    custodianId: "VARCHAR(36)",
+    version: "INT NOT NULL",
+  },
+  tickets: {
+    userId: "VARCHAR(36) NOT NULL",
+    status: "VARCHAR(24) NOT NULL",
+    requestKey: "VARCHAR(36) NOT NULL",
+    version: "INT NOT NULL",
+  },
+  visitors: {
+    hostId: "VARCHAR(36) NOT NULL",
+    name: "VARCHAR(200) NOT NULL",
+    status: "VARCHAR(24) NOT NULL",
+    requestKey: "VARCHAR(36) NOT NULL",
+  },
+  documentRequests: {
+    userId: "VARCHAR(36) NOT NULL",
+    studentId: "VARCHAR(36) NOT NULL",
+    type: "VARCHAR(24) NOT NULL",
+    status: "VARCHAR(24) NOT NULL",
+    requestKey: "VARCHAR(36) NOT NULL",
+    version: "INT NOT NULL",
+  },
+  notifications: {
+    userId: "VARCHAR(36) NOT NULL",
+    title: "VARCHAR(200) NOT NULL",
+    sourceKind: "VARCHAR(24) NOT NULL",
+  },
+  noticeReads: {
+    userId: "VARCHAR(36) NOT NULL",
+    noticeId: "VARCHAR(36) NOT NULL",
+  },
+  messages: {
+    fromId: "VARCHAR(36) NOT NULL",
+    toId: "VARCHAR(36) NOT NULL",
+    studentId: "VARCHAR(36) NOT NULL",
+    requestKey: "VARCHAR(36) NOT NULL",
+  },
+  parentLinks: {
+    userId: "VARCHAR(36) NOT NULL",
+    guardianId: "VARCHAR(36) NOT NULL",
+    active: "BOOLEAN NOT NULL DEFAULT TRUE",
+  },
+  schoolSettings: {
+    displayName: "VARCHAR(120) NOT NULL",
+    accent: "VARCHAR(7) NOT NULL",
+    locale: "VARCHAR(12) NOT NULL",
+    timeZone: "VARCHAR(60) NOT NULL",
+    version: "INT NOT NULL",
+  },
+
   staffProfiles: {
     userId: "VARCHAR(36) NOT NULL",
     employeeNumber: "VARCHAR(120) NOT NULL",
@@ -199,6 +299,17 @@ const arrayFields = {
   subjects: { teacherIds: ["sg_subject_teachers", "teacher_id"] },
 };
 const foreign = {
+  libraryLoans: { bookId: "libraryBooks", userId: "users" },
+  transportAssignments: { routeId: "transportRoutes", studentId: "users" },
+  assets: { custodianId: "users" },
+  tickets: { userId: "users" },
+  visitors: { hostId: "users" },
+  documentRequests: { userId: "users", studentId: "users" },
+  notifications: { userId: "users" },
+  noticeReads: { userId: "users", noticeId: "notices" },
+  messages: { fromId: "users", toId: "users", studentId: "users" },
+  parentLinks: { userId: "users", guardianId: "guardians" },
+
   staffProfiles: { userId: "users" },
   leaveRequests: { userId: "users" },
   feeSchedules: { classId: "classes", academicYearId: "academicYears" },
@@ -257,6 +368,47 @@ const foreign = {
   },
 };
 const constraints = {
+  libraryBooks: [
+    "UNIQUE KEY book_code (school_id,code)",
+    "CHECK (copies>0 AND copies<=10000)",
+  ],
+  libraryLoans: [
+    "UNIQUE KEY loan_request (school_id,request_key)",
+    "CHECK (status IN ('open','returned'))",
+  ],
+  transportRoutes: [
+    "UNIQUE KEY route_code (school_id,code)",
+    "CHECK (capacity>0 AND capacity<=500)",
+  ],
+  transportAssignments: [
+    "active_student VARCHAR(36) GENERATED ALWAYS AS (CASE WHEN active THEN student_id ELSE NULL END) STORED",
+    "UNIQUE KEY current_transport (school_id,active_student)",
+  ],
+  assets: [
+    "UNIQUE KEY asset_code (school_id,code)",
+    "CHECK (quantity>0 AND quantity<=100000)",
+    "CHECK (status IN ('available','in-use','maintenance','retired'))",
+  ],
+  tickets: [
+    "UNIQUE KEY ticket_request (school_id,request_key)",
+    "CHECK (status IN ('open','in-progress','resolved','closed'))",
+  ],
+  visitors: [
+    "UNIQUE KEY visitor_request (school_id,request_key)",
+    "CHECK (status IN ('checked-in','checked-out'))",
+  ],
+  documentRequests: [
+    "UNIQUE KEY document_request (school_id,request_key)",
+    "CHECK (status IN ('requested','ready','rejected','collected','cancelled'))",
+  ],
+  noticeReads: ["UNIQUE KEY notice_read (school_id,user_id,notice_id)"],
+  messages: [
+    "UNIQUE KEY message_request (school_id,request_key)",
+    "CHECK (from_id<>to_id)",
+  ],
+  parentLinks: ["UNIQUE KEY parent_guardian (school_id,user_id,guardian_id)"],
+  schoolSettings: ["UNIQUE KEY school_settings (school_id)"],
+
   staffProfiles: [
     "UNIQUE KEY staff_profile (school_id,user_id)",
     "UNIQUE KEY employee_number (school_id,employee_number)",
@@ -294,7 +446,7 @@ const constraints = {
   ],
   users: [
     "UNIQUE KEY login_email (email)",
-    "CHECK (role IN ('owner','director','admin','principal','teacher','student','staff'))",
+    "CHECK (role IN ('owner','director','admin','principal','teacher','student','staff','parent'))",
   ],
   academicYears: ["CHECK (start_date <= end_date)"],
   terms: ["CHECK (start_date <= end_date)"],
@@ -553,6 +705,51 @@ export async function migrateRelational(pool, collections) {
             );
         }
       await conn.query("INSERT INTO sg_migrations(version) VALUES(7)");
+    }
+    const [[operationsVersion]] = await conn.query(
+      "SELECT COUNT(*) AS present FROM sg_migrations WHERE version=8",
+    );
+    if (!operationsVersion.present) {
+      const [roleChecks] = await conn.query(
+        "SELECT tc.CONSTRAINT_NAME FROM information_schema.TABLE_CONSTRAINTS tc JOIN information_schema.CHECK_CONSTRAINTS cc ON tc.CONSTRAINT_SCHEMA=cc.CONSTRAINT_SCHEMA AND tc.CONSTRAINT_NAME=cc.CONSTRAINT_NAME WHERE tc.CONSTRAINT_SCHEMA=DATABASE() AND tc.TABLE_NAME='sg_users' AND tc.CONSTRAINT_TYPE='CHECK' AND cc.CHECK_CLAUSE LIKE '%role%'",
+      );
+      for (const c of roleChecks) {
+        if (!/^[a-zA-Z0-9_]+$/.test(c.CONSTRAINT_NAME))
+          throw new Error("Unexpected role check identifier");
+        await conn.query(
+          `ALTER TABLE sg_users DROP CHECK \`${c.CONSTRAINT_NAME}\``,
+        );
+      }
+      await conn.query(
+        "ALTER TABLE sg_users ADD CONSTRAINT schoolglass_user_roles CHECK (role IN ('owner','director','admin','principal','teacher','student','staff','parent'))",
+      );
+      for (const kind of OPERATIONS_COLLECTIONS)
+        for (const [field, parent] of Object.entries({
+          ...foreign[kind],
+          schoolId: "schools",
+        })) {
+          const name = `fk_${snake(kind)}_${snake(field)}`;
+          const [[exists]] = await conn.execute(
+            "SELECT COUNT(*) AS n FROM information_schema.TABLE_CONSTRAINTS WHERE CONSTRAINT_SCHEMA=DATABASE() AND TABLE_NAME=? AND CONSTRAINT_NAME=?",
+            [tableFor(kind), name],
+          );
+          if (!exists.n)
+            await conn.query(
+              `ALTER TABLE ${tableFor(kind)} ADD CONSTRAINT ${name} FOREIGN KEY (${snake(field)}) REFERENCES ${tableFor(parent)}(id)`,
+            );
+          if (!["users", "schools"].includes(parent)) {
+            const scopedName = `scope_${snake(kind)}_${snake(field)}`;
+            const [[scopedExists]] = await conn.execute(
+              "SELECT COUNT(*) AS n FROM information_schema.TABLE_CONSTRAINTS WHERE CONSTRAINT_SCHEMA=DATABASE() AND TABLE_NAME=? AND CONSTRAINT_NAME=?",
+              [tableFor(kind), scopedName],
+            );
+            if (!scopedExists.n)
+              await conn.query(
+                `ALTER TABLE ${tableFor(kind)} ADD CONSTRAINT ${scopedName} FOREIGN KEY (${snake(field)},school_id) REFERENCES ${tableFor(parent)}(id,school_id)`,
+              );
+          }
+        }
+      await conn.query("INSERT INTO sg_migrations(version) VALUES(8)");
     }
   } finally {
     await conn

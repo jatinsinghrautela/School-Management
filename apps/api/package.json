@@ -10,7 +10,8 @@
     "db:check": "node src/check-transactions.js",
     "test": "node --test test/*.test.js",
     "db:security": "node src/check-security.js",
-    "db:relational": "node src/check-relational.js"
+    "db:relational": "node src/check-relational.js",
+    "db:operations": "node src/check-operations.js"
   },
   "dependencies": {
     "bcryptjs": "^3.0.2",

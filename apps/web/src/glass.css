@@ -1340,3 +1340,191 @@ html {
     grid-template-columns: 1fr;
   }
 }
+
+/* School operations maintain consistent contained card spacing. */
+.operations-stack {
+  display: grid;
+  gap: 24px;
+  min-width: 0;
+}
+.operations-body {
+  display: grid;
+  gap: 20px;
+  padding: 24px;
+  min-width: 0;
+}
+.operations-body p,
+.operations-body h3,
+.operation-feedback p {
+  margin: 0;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+.operation-feedback {
+  display: grid;
+  gap: 12px;
+}
+.operation-feedback:empty {
+  display: none;
+}
+.operations-stack .panel-title,
+.operations-panel .panel-title,
+.staff-workspace .panel-title {
+  padding: 24px 24px 0;
+}
+.operations-stack .panel-title h2,
+.operations-panel .panel-title h2,
+.staff-workspace .panel-title h2 {
+  margin: 0;
+  font-size: 20px;
+  line-height: 1.4;
+}
+.operations-stack .panel-title p,
+.operations-panel .panel-title p,
+.staff-workspace .panel-title p {
+  margin: 8px 0 0;
+  line-height: 1.6;
+}
+.staff-workspace .panel-title {
+  padding-bottom: 20px;
+}
+.operation-form,
+.operation-record {
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 18px;
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+}
+.operation-form summary {
+  cursor: pointer;
+  font-weight: 600;
+  line-height: 1.5;
+}
+.operation-form form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  margin-top: 20px;
+}
+.operations-body label,
+.operation-form label {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+.operation-wide {
+  grid-column: 1 / -1;
+}
+.operations-body input,
+.operations-body select,
+.operations-body textarea {
+  width: 100%;
+  min-width: 0;
+}
+.operations-body input:not([type="checkbox"]) {
+  min-height: 44px;
+  padding: 11px 13px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #ffffffd9;
+  color: #16332f;
+}
+.operations-body textarea {
+  min-height: 96px;
+  font: inherit;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  resize: vertical;
+}
+.operation-checkboxes {
+  display: grid;
+  gap: 12px;
+}
+.operation-checkboxes label {
+  display: flex;
+  align-items: flex-start;
+  line-height: 1.5;
+  gap: 10px;
+}
+.operation-checkboxes input {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+}
+.operation-heading {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+.operation-record details p {
+  margin-top: 12px;
+  padding: 10px;
+  background: #f1f7f3;
+  border-radius: 8px;
+}
+@media (max-width: 600px) {
+  .operations-stack .panel-title,
+  .operations-panel .panel-title,
+  .staff-workspace .panel-title {
+    padding: 20px 16px 0;
+  }
+  .staff-workspace .panel-title {
+    padding-bottom: 18px;
+  }
+  .operations-body {
+    padding: 16px;
+    gap: 18px;
+  }
+  .operation-form form {
+    grid-template-columns: 1fr;
+  }
+  .operation-record,
+  .operation-form {
+    padding: 14px;
+  }
+}
+
+.shell .heading-dot,
+.shell .active-dot {
+  color: var(--school-accent);
+}
+.shell .school-badge {
+  border-left: 3px solid var(--school-accent);
+}
+.operation-form form > div:not(.operation-wide),
+.operation-form form > div.operation-wide {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+.school-brand-preview {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 18px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: #ffffffb8;
+}
+.school-monogram {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  border: 3px solid;
+  border-radius: 18px;
+  background: #e6f5ef;
+  color: #16332f;
+  font-size: 24px;
+  font-weight: 700;
+}
+.shell .active-dot {
+  background: var(--school-accent);
+}
