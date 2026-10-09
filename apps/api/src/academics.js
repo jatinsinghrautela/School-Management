@@ -1,3 +1,4 @@
+import { schoolLogo } from "./school-media.js";
 import { Router } from "express";
 import { requireAttendanceDay } from "./calendar.js";
 import { requireAttendanceCorrection } from "./attendance-corrections.js";
@@ -627,7 +628,8 @@ export function createAcademicRouter(store) {
           "Every enrolled student needs marks for every exam subject before publication",
         );
         const publishedAt = new Date().toISOString(),
-          version = exam.version + 1;
+          version = exam.version + 1,
+          publicationLogo = await schoolLogo(tx, req.school.id);
         for (const student of roster) {
           const rows = exam.subjects.map((spec) => {
             const mark = marks.find(
@@ -662,6 +664,7 @@ export function createAcademicRouter(store) {
             version,
             studentName: student.name,
             schoolName: req.school.name,
+            schoolLogo: publicationLogo,
             schoolCity: req.school.city,
             className: cls.name,
             academicYear: year.name,
@@ -789,7 +792,10 @@ export function createAcademicRouter(store) {
           r.version === version,
       );
       assert(r, 404, "Report not found");
-      const b = await reportPdf(r);
+      const b = await reportPdf({
+        ...r,
+        schoolLogo: r.schoolLogo || (await schoolLogo(store, req.school.id)),
+      });
       res.json({
         filename: `report-${r.version}.pdf`,
         base64: b.toString("base64"),

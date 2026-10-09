@@ -7,6 +7,7 @@ export function StudentRecords({
   readOnly,
   refresh,
 }) {
+  const [guardianOnboarding, setGuardianOnboarding] = useState({});
   const [data, setData] = useState(null),
     [error, setError] = useState(""),
     [busy, setBusy] = useState(false),
@@ -253,6 +254,46 @@ export function StudentRecords({
                                 }
                               />
                             </label>
+                            {a.status === "reviewing" && (
+                              <fieldset className="admission-parent-options">
+                                <legend>Guardian accounts at admission</legend>
+                                <p>
+                                  Approval creates the student account. Select
+                                  guardian contacts whose identity and child
+                                  access you have verified; accounts and links
+                                  will be created or reused in the same
+                                  transaction.
+                                </p>
+                                {a.guardians.map((g, i) => (
+                                  <label className="checkbox" key={i}>
+                                    <input
+                                      type="checkbox"
+                                      disabled={!g.email}
+                                      checked={(
+                                        guardianOnboarding[a.id] || []
+                                      ).includes(i)}
+                                      onChange={(e) =>
+                                        setGuardianOnboarding({
+                                          ...guardianOnboarding,
+                                          [a.id]: e.target.checked
+                                            ? [
+                                                ...(guardianOnboarding[a.id] ||
+                                                  []),
+                                                i,
+                                              ]
+                                            : (
+                                                guardianOnboarding[a.id] || []
+                                              ).filter((x) => x !== i),
+                                        })
+                                      }
+                                    />
+                                    {g.name} ·{" "}
+                                    {g.email ||
+                                      "Add a guardian email before onboarding"}
+                                  </label>
+                                ))}
+                              </fieldset>
+                            )}
                             <div className="register-actions">
                               {(a.status === "submitted"
                                 ? ["reviewing", "rejected", "withdrawn"]
@@ -269,6 +310,15 @@ export function StudentRecords({
                                     action(`/admissions/${a.id}/decision`, {
                                       status,
                                       reason: decisions[a.id],
+                                      ...(status === "admitted"
+                                        ? {
+                                            guardianAccountIndices:
+                                              guardianOnboarding[a.id] || [],
+                                            guardianAccountsVerified:
+                                              (guardianOnboarding[a.id] || [])
+                                                .length > 0,
+                                          }
+                                        : {}),
                                     })
                                   }
                                 >
@@ -283,6 +333,12 @@ export function StudentRecords({
                               ))}
                             </div>
                           </>
+                        ) : a.status === "admitted" ? (
+                          "Student account created. " +
+                          (a.parentAccountIds?.length
+                            ? `${a.parentAccountIds.length} guardian account(s) linked. `
+                            : "") +
+                          "Use People → Recover account for private activation."
                         ) : (
                           "Finalized"
                         )}

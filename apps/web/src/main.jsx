@@ -1,3 +1,4 @@
+import { Gallery } from "./school-media.jsx";
 import { SchoolCalendar } from "./calendar.jsx";
 import React, { useEffect, useState, useRef } from "react";
 import { createRoot } from "react-dom/client";
@@ -35,7 +36,13 @@ import { AccessEditor } from "./access-editor.jsx";
 import { AttendanceCorrections } from "./attendance-corrections.jsx";
 import { DataTools } from "./data-tools.jsx";
 import { StudentRecords } from "./student-records.jsx";
-import { Operations, Inbox, Family, SchoolSettings } from "./operations.jsx";
+import {
+  Operations,
+  Inbox,
+  Family,
+  SchoolSettings,
+  downloadArtifact,
+} from "./operations.jsx";
 import { Staff } from "./staff.jsx";
 import { Fees } from "./fees.jsx";
 document.title = `${BRAND_NAME} · School workspace`;
@@ -49,6 +56,7 @@ const icons = {
   Transport: Building2,
   Operations: FileText,
   Inbox: Megaphone,
+  Gallery: Sparkles,
   Family: Users,
   Settings: ShieldCheck,
   Attendance: CalendarCheck,
@@ -174,17 +182,10 @@ function App() {
   }
   async function download(resource) {
     try {
-      const response = await fetch(
-        `/api/schools/${sid}/files/${resource.fileId}`,
-        { headers: { Authorization: `Bearer ${token}` } },
+      await downloadArtifact(
+        api,
+        `/schools/${sid}/resources/${resource.id}/document`,
       );
-      if (!response.ok) throw new Error("Unable to download this resource");
-      const url = URL.createObjectURL(await response.blob());
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = resource.fileName || "resource";
-      a.click();
-      setTimeout(() => URL.revokeObjectURL(url), 1000);
     } catch (e) {
       setError(e.message);
     }
@@ -240,7 +241,15 @@ function App() {
   const nav = owner
     ? ["Overview", "Schools", "People", "Security"]
     : user?.role === "parent"
-      ? ["Family", "Library", "Transport", "Operations", "Inbox", "Security"]
+      ? [
+          "Family",
+          "Library",
+          "Transport",
+          "Operations",
+          "Inbox",
+          "Gallery",
+          "Security",
+        ]
       : [
           "Overview",
           "People",
@@ -257,6 +266,7 @@ function App() {
           "Transport",
           "Operations",
           "Inbox",
+          "Gallery",
           ...(manager ? ["Family", "Settings"] : []),
           "Security",
         ];
@@ -396,6 +406,12 @@ function App() {
           <span className="school-icon">
             {owner ? (
               <ShieldCheck size={20} />
+            ) : data?.schoolSettings?.logoDataUri ? (
+              <img
+                className="school-logo"
+                src={data.schoolSettings.logoDataUri}
+                alt="School logo"
+              />
             ) : data?.schoolSettings?.displayName ? (
               data.schoolSettings.displayName
                 .split(/\s+/)
@@ -563,6 +579,8 @@ function App() {
                         "Manage school assets, visits, support and document requests.",
                       Inbox:
                         "School updates and private teacher–guardian conversations.",
+                      Gallery:
+                        "School celebrations and moments, shared with your community.",
                       Family:
                         "Verified child links and a clear view of school life.",
                       Settings:
@@ -604,7 +622,7 @@ function App() {
                 Add resource
               </button>
             )}
-            {page === "Notices" && manager && (
+            {page === "Notices" && (manager || user.role === "teacher") && (
               <button className="primary" onClick={() => open("notice")}>
                 <Plus size={17} />
                 Publish notice
@@ -895,6 +913,7 @@ function App() {
                   "Transport",
                   "Operations",
                   "Inbox",
+                  "Gallery",
                   "Family",
                   "Settings",
                   "Staff",
@@ -1394,6 +1413,14 @@ function App() {
                   )}
                 </div>
               )}
+              {data && page === "Gallery" && (
+                <Gallery
+                  api={api}
+                  schoolId={sid}
+                  manager={manager}
+                  readOnly={!!support}
+                />
+              )}
               {page === "Notices" && (
                 <div className="resource-grid">
                   {filtered(notices).map((n) => (
@@ -1405,6 +1432,32 @@ function App() {
                       </span>
                       <h3>{n.title}</h3>
                       <p>{n.body}</p>
+                      <p className="notice-scope">
+                        {n.classIds?.length || n.classId
+                          ? (n.classIds || [n.classId])
+                              .map(
+                                (id) =>
+                                  classes.find((c) => c.id === id)?.name ||
+                                  "Assigned class",
+                              )
+                              .join(", ")
+                          : "Whole school audience"}
+                      </p>
+                      <button
+                        className="secondary"
+                        onClick={async () => {
+                          try {
+                            await downloadArtifact(
+                              api,
+                              `/schools/${sid}/notices/${n.id}/download`,
+                            );
+                          } catch (e) {
+                            setError(e.message);
+                          }
+                        }}
+                      >
+                        Download notice
+                      </button>
                       <small>
                         {new Date(n.createdAt).toLocaleString("en-IN")}
                       </small>
@@ -1594,6 +1647,7 @@ function App() {
         modal && (
           <Editor
             type={modal}
+            teacher={user.role === "teacher"}
             close={() => {
               setModal(null);
               setError("");
@@ -2358,6 +2412,7 @@ function Editor({
   students,
   calendar = [],
   capabilities = {},
+  teacher = false,
 }) {
   const [file, setFile] = useState(null);
   const [form, setForm] = useState({
@@ -2378,7 +2433,7 @@ function Editor({
     maxScore: "100",
     title: "",
     body: "",
-    audience: "all",
+    audience: teacher ? "student" : "all",
     type: "homework",
     description: "",
     url: "",
@@ -2488,7 +2543,12 @@ function Editor({
       } else save(prefix + "/resources", form);
     }
     if (type === "notice")
-      save(prefix + "/notices", { ...form, classId: form.classId || null });
+      save(prefix + "/notices", {
+        title: form.title,
+        body: form.body,
+        audience: form.audience,
+        classIds: form.classIds,
+      });
   }
   return (
     <div
@@ -2694,17 +2754,50 @@ function Editor({
             <>
               {field("title", "Title")}
               {field("body", "Message", null, "textarea")}
-              {field("audience", "Audience", [
-                "all",
-                "teacher",
-                "student",
-                "staff",
-                "parent",
-                "director",
-                "admin",
-                "principal",
-              ])}
-              {field("classId", "Class (optional)", classes, "text", false)}
+              {field(
+                "audience",
+                "Audience",
+                teacher
+                  ? ["student"]
+                  : [
+                      "all",
+                      "teacher",
+                      "student",
+                      "staff",
+                      "parent",
+                      "director",
+                      "admin",
+                      "principal",
+                    ],
+              )}
+              <fieldset className="notice-targets">
+                <legend>Classes and sections</legend>
+                <p>
+                  {teacher
+                    ? "Select one or more classes/sections you teach."
+                    : "Select specific classes/sections, or leave all unchecked for the whole school audience."}
+                </p>
+                <div className="notice-target-grid">
+                  {classes.map((c) => (
+                    <label className="checkbox" key={c.id}>
+                      <input
+                        type="checkbox"
+                        checked={form.classIds.includes(c.id)}
+                        onChange={(e) =>
+                          setForm({
+                            ...form,
+                            classIds: e.target.checked
+                              ? [...form.classIds, c.id]
+                              : form.classIds.filter((x) => x !== c.id),
+                          })
+                        }
+                      />
+                      {c.name}
+                    </label>
+                  ))}
+                </div>
+                <p>{form.classIds.length} selected</p>
+              </fieldset>
             </>
           )}
           {error && (
@@ -2718,7 +2811,11 @@ function Editor({
             </button>
             <button
               className="primary"
-              disabled={loading || attendanceHolidays.length > 0}
+              disabled={
+                loading ||
+                attendanceHolidays.length > 0 ||
+                (type === "notice" && teacher && !form.classIds.length)
+              }
             >
               {loading ? "Saving…" : "Save changes"}
               <Check size={16} />

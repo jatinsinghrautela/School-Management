@@ -24,3 +24,7 @@ After user feedback, content cards were returned to predominantly opaque light s
 ## Public-holiday references
 
 Holiday data is factual external reference data, not AI-generated artwork. date-holidays uses ISC-licensed code and CC BY-SA 3.0 data; attribution/license links and selected-country source links appear in the workbook Settings and interface. See CALENDAR-EXCEL.md for the India 2026 government source and coverage limits. Original branding and artwork remain project-generated.
+
+## School publishing follow-up
+
+School logos and gallery photographs are supplied by authorized school leadership. Gallery publishing requires a permission acknowledgment; server copies remove EXIF/IPTC/text metadata. The synthetic PDF preview uses an original book-shaped mark drawn as RGBA pixels in the test fixture, with no stock artwork. PDF-LIB uses the MIT license and runs locally on the server; no third-party media, font or AI subscription was added.

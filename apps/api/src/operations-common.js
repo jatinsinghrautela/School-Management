@@ -1,3 +1,4 @@
+import { logoHeader } from "./school-media.js";
 import { id, managers, canAccessSchool } from "./domain.js";
 export const fail = (status, message) => {
   throw Object.assign(new Error(message), { status });
@@ -96,6 +97,6 @@ export const escape = (v) =>
         c
       ],
   );
-export function printable(title, school, body) {
-  return `<!doctype html><html lang="en"><meta charset="utf-8"><title>${escape(title)}</title><style>body{font:16px system-ui;color:#16332f;max-width:760px;margin:40px auto;padding:24px;line-height:1.6}table{border-collapse:collapse;width:100%}td,th{padding:10px;border-bottom:1px solid #cadbd6;text-align:left}pre{white-space:pre-wrap;overflow-wrap:anywhere;font:inherit}@media print{body{margin:0}}</style><h1>${escape(school)}</h1><h2>${escape(title)}</h2>${body}</html>`;
+export function printable(title, school, body, logo = "") {
+  return `<!doctype html><html lang="en"><meta charset="utf-8"><title>${escape(title)}</title><style>body{font:16px system-ui;color:#16332f;max-width:760px;margin:40px auto;padding:24px;line-height:1.6}table{border-collapse:collapse;width:100%}td,th{padding:10px;border-bottom:1px solid #cadbd6;text-align:left}pre{white-space:pre-wrap;overflow-wrap:anywhere;font:inherit}@media print{body{margin:0}}</style>${logoHeader(logo)}<h1>${escape(school)}</h1><h2>${escape(title)}</h2>${body}</html>`;
 }

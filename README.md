@@ -109,4 +109,6 @@ Staff employment profiles and independent leave approvals are available in the *
 
 ## Phase 3 operations and families
 
-Library, transport, assets, tickets, visitors, document requests, inbox/read receipts, teacher–guardian messaging and verified linked-child parent access are implemented. Settings include school display branding, regional formats and English/Hindi family labels. See [PHASE-3.md](docs/PHASE-3.md) for onboarding, permissions, migration v8 and current limits. Run `npm run db:operations` against development MySQL for the new relational checks. Phase 4 remains required before real student data.
+Library, transport, assets, tickets, visitors, document requests, inbox/read receipts, teacher–guardian messaging and verified linked-child parent access are implemented. Settings include school display branding, regional formats and English/Hindi family labels. See [PHASE-3.md](docs/PHASE-3.md) for onboarding, permissions, migration v9 and current limits. Run `npm run db:operations` against development MySQL for the new relational checks. Phase 4 remains required before real student data.
+
+Notices support multiple class/section targets and assigned teacher publishing. Admission approval can onboard verified guardian accounts together with the student. School logos, branded learning-material downloads and the private event gallery are implemented; logo/gallery uploads remain disabled until local ClamAV is configured. See [SCHOOL-PUBLISHING.md](docs/SCHOOL-PUBLISHING.md).

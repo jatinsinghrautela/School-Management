@@ -1,3 +1,4 @@
+import { schoolLogo } from "./school-media.js";
 import { Router } from "express";
 import { id, managers, canAccessSchool } from "./domain.js";
 import { validDate } from "./calendar.js";
@@ -717,6 +718,7 @@ export function createOperationsRouter(store) {
             ...(b.status === "ready"
               ? {
                   content: b.content.trim(),
+                  schoolLogo: await schoolLogo(tx, req.school.id),
                   reference: b.reference.trim(),
                   issuedBy: req.user.name,
                   issuedAt: event.at,
@@ -766,6 +768,7 @@ export function createOperationsRouter(store) {
           `${row.type} · ${row.reference}`,
           req.school.name,
           `<p>Student: ${escape(row.studentName)}</p><pre>${escape(row.content)}</pre><p>Issued by ${escape(row.issuedBy)} · ${escape(row.issuedAt)}</p><p>This is school-provided text. Printed names are not cryptographic signatures.</p>`,
+          row.schoolLogo || (await schoolLogo(store, req.school.id)),
         ),
       });
     }),

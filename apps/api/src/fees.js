@@ -1,3 +1,4 @@
+import { schoolLogo, logoHeader } from "./school-media.js";
 import { Router } from "express";
 import { id, managers } from "./domain.js";
 import { validDate } from "./calendar.js";
@@ -276,6 +277,7 @@ export function createFeesRouter(store) {
               ? {
                   receiptNumber: `RCT-${now.slice(0, 10).replaceAll("-", "")}-${rowId.slice(0, 8).toUpperCase()}`,
                   schoolName: req.school.name,
+                  schoolLogo: await schoolLogo(tx, req.school.id),
                 }
               : {}),
           });
@@ -357,7 +359,7 @@ export function createFeesRouter(store) {
       ];
       res.json({
         filename: `${p.receiptNumber}.html`,
-        html: `<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>${escape(p.receiptNumber)}</title><style>body{font:16px system-ui;color:#173e34;max-width:720px;margin:40px auto;padding:24px;line-height:1.6}h1{font-size:26px}table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:12px;border-bottom:1px solid #d2e3da}th{width:35%}.void{color:#9b2525;font-weight:bold}@media print{body{margin:0}}</style><h1>${escape(p.schoolName)}</h1><h2>Manual payment receipt</h2>${p.voided ? `<p class="void">VOIDED — ${escape(p.voidReason)} (${escape(p.voidedAt)})</p>` : ""}<table>${rows.map(([k, v]) => `<tr><th>${escape(k)}</th><td>${escape(v)}</td></tr>`).join("")}</table><p>This records a manually entered payment. It does not verify a bank settlement or process a transfer.</p><p>Schoolglass Desk</p></html>`,
+        html: `<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>${escape(p.receiptNumber)}</title><style>body{font:16px system-ui;color:#173e34;max-width:720px;margin:40px auto;padding:24px;line-height:1.6}h1{font-size:26px}table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:12px;border-bottom:1px solid #d2e3da}th{width:35%}.void{color:#9b2525;font-weight:bold}@media print{body{margin:0}}</style>${logoHeader(p.schoolLogo || (await schoolLogo(store, req.school.id)))}<h1>${escape(p.schoolName)}</h1><h2>Manual payment receipt</h2>${p.voided ? `<p class="void">VOIDED — ${escape(p.voidReason)} (${escape(p.voidedAt)})</p>` : ""}<table>${rows.map(([k, v]) => `<tr><th>${escape(k)}</th><td>${escape(v)}</td></tr>`).join("")}</table><p>This records a manually entered payment. It does not verify a bank settlement or process a transfer.</p><p>Schoolglass Desk</p></html>`,
       });
     }),
   );

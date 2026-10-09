@@ -22,3 +22,7 @@ API under /api/schools/:schoolId:
 MySQL migration version 5 creates typed admissions, student-profile, guardian and guardian-link tables. Scoped foreign keys protect class/guardian references; profile/admission-number uniqueness is enforced in MySQL. Back up before upgrades, as described in PHASE-2.md.
 
 Verification: full API suite and production build pass. Local MySQL was restarted without replacing its existing volume; the new migration, guardian cross-school rejection, profile uniqueness and admission class scope were verified with disposable fixtures. Interactive browser review could not run because the browser automation tool failed to initialize in this session; no browser screenshot or UI acceptance claim is made.
+
+## Integrated guardian onboarding
+
+Admission approval automatically creates the student account. During review, management can select verified guardian contacts with login emails to create/reuse parent accounts and child links atomically with approval. No second student account needs to be created. Account activation through People → Recover account remains required. See [SCHOOL-PUBLISHING.md](SCHOOL-PUBLISHING.md) for reuse, rollback and verification rules. The new browser evidence is admission-guardian-review.png; it supersedes the older milestone’s browser limitation for this follow-up.

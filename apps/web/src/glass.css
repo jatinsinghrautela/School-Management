@@ -1528,3 +1528,96 @@ html {
 .shell .active-dot {
   background: var(--school-accent);
 }
+
+.notice-targets,
+.admission-parent-options {
+  border: 1px solid #cadbd6;
+  border-radius: 16px;
+  padding: 16px;
+  margin: 16px 0;
+  min-width: 0;
+}
+.notice-target-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  max-height: 260px;
+  overflow: auto;
+}
+.notice-targets .checkbox,
+.admission-parent-options .checkbox {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 8px;
+  white-space: normal;
+}
+.notice-targets input[type="checkbox"],
+.admission-parent-options input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  min-width: 18px;
+}
+.fee-ledger-detail {
+  scroll-margin-top: 24px;
+  outline-offset: 4px;
+}
+.school-logo {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+}
+.school-logo-preview {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+}
+.school-logo-editor {
+  padding: 20px;
+  border: 1px solid #cadbd6;
+  border-radius: 16px;
+  margin: 16px 0;
+}
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
+  gap: 24px;
+}
+.gallery-card {
+  overflow: hidden;
+  min-width: 0;
+}
+.gallery-photo {
+  aspect-ratio: 4/3;
+  background: #e1eeea;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.gallery-photo img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.gallery-caption {
+  padding: 24px;
+  overflow-wrap: anywhere;
+}
+.gallery-caption h3 {
+  margin: 0 0 10px;
+}
+.gallery-caption details {
+  margin-top: 16px;
+}
+
+.admission-parent-options {
+  max-width: 360px;
+  min-width: 220px;
+}
+.admission-parent-options p {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  font-size: 13px;
+  line-height: 1.6;
+}

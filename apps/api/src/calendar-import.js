@@ -1,3 +1,4 @@
+import { schoolLogo } from "./school-media.js";
 import { Router } from "express";
 import multer from "multer";
 import rateLimit from "express-rate-limit";
@@ -90,7 +91,11 @@ export function createCalendarImportRouter(store) {
   router.post("/calendar-excel/template", async (req, res, next) => {
     try {
       const prefs = preferences(req.body),
-        buffer = await calendarWorkbook(req.school, prefs);
+        buffer = await calendarWorkbook(
+          req.school,
+          prefs,
+          await schoolLogo(store, req.school.id),
+        );
       res.json({
         filename: `school-calendar-${prefs.year}.xlsx`,
         content: buffer.toString("base64"),

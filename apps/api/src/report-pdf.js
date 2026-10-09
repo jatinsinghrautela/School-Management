@@ -14,6 +14,14 @@ export async function reportPdf(r) {
   });
   const style = r.reportStyle || {},
     accent = style.accent || "#176455";
+  if (/^data:image\/png;base64,[A-Za-z0-9+/=]+$/.test(r.schoolLogo || "")) {
+    const logo = Buffer.from(r.schoolLogo.split(",")[1], "base64");
+    doc.image(logo, (doc.page.width - 64) / 2, doc.y, {
+      width: 64,
+      height: 64,
+    });
+    doc.y += 76;
+  }
   doc.fillColor(accent).fontSize(22).text(r.schoolName, { align: "center" });
   doc
     .fillColor("#465951")

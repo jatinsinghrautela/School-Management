@@ -80,6 +80,8 @@ Phase 2 implementation is complete. SMTP and ClamAV adapters are intentionally u
 
 Phase 3 baseline implementation is complete. See PHASE-3.md for operating instructions and limits.
 
+Phase 3 publishing follow-up also implements multiple class/section notices with assigned teacher publishing, admission-integrated guardian accounts, focused fee ledgers, scanned fixed-size school logos on documents and a private paginated event gallery. See SCHOOL-PUBLISHING.md.
+
 ## Phase 4: Release quality — required before real student data
 
 - [ ] Cross-tenant penetration review, durable audit logs, restrictive database permissions.

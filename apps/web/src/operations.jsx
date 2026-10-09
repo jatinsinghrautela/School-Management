@@ -1,3 +1,4 @@
+import { LogoUpload } from "./school-media.jsx";
 import React, { useEffect, useRef, useState, useId } from "react";
 const f = (name, label, type = "text", options = null) => ({
   name,
@@ -1360,7 +1361,7 @@ export function SchoolSettings({ api, schoolId, readOnly, refresh }) {
     setError("");
     try {
       const r = await api(base + "/school-settings", body);
-      setData(r);
+      setData({ ...r, ...(await api(base + "/school-settings")) });
       await refresh();
       setMessage("School appearance and regional settings saved.");
       return true;
@@ -1408,6 +1409,19 @@ export function SchoolSettings({ api, schoolId, readOnly, refresh }) {
               <small>Original generated monogram · {data.accent}</small>
             </div>
           </div>
+        )}
+        {data && (
+          <LogoUpload
+            api={api}
+            schoolId={schoolId}
+            settings={data}
+            readOnly={readOnly}
+            onSaved={async () => {
+              setData(await api(base + "/school-settings"));
+              await refresh();
+              setMessage("School logo saved.");
+            }}
+          />
         )}
         {data && !readOnly && (
           <Form

@@ -28,11 +28,24 @@ export function canSeeClass(user, classId) {
 export function publicUser({ passwordHash, ...user }) {
   return user;
 }
+export function noticeClassIds(notice) {
+  return Array.isArray(notice.classIds)
+    ? notice.classIds
+    : notice.classId
+      ? [notice.classId]
+      : [];
+}
+export function noticeMatchesClasses(notice, classIds) {
+  const targets = noticeClassIds(notice);
+  return !targets.length || targets.some((c) => classIds.includes(c));
+}
 export function visibleNotice(user, notice) {
   return (
     (notice.audience === "all" ||
       notice.audience === user.role ||
+      (user.role === "teacher" && notice.publishedBy === user.id) ||
       managers.includes(user.role)) &&
-    (!notice.classId || canSeeClass(user, notice.classId))
+    (!noticeClassIds(notice).length ||
+      noticeClassIds(notice).some((c) => canSeeClass(user, c)))
   );
 }

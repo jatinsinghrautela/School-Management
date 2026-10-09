@@ -1,3 +1,5 @@
+import { schoolLogo } from "./school-media.js";
+import { brandWorkbook } from "./document-brand.js";
 import { Router } from "express";
 import ExcelJS from "exceljs";
 import multer from "multer";
@@ -44,7 +46,12 @@ export function createDataToolsRouter(store) {
             u.role === "student" &&
             u.classIds.some((c) => canSeeClass(req.user, c)))),
     );
-  async function workbookResponse(res, book, filename) {
+  async function workbookResponse(req, res, book, filename) {
+    brandWorkbook(
+      book,
+      req.school.name,
+      await schoolLogo(store, req.school.id),
+    );
     const b = await book.xlsx.writeBuffer();
     res.json({ filename, base64: Buffer.from(b).toString("base64") });
   }
@@ -165,7 +172,7 @@ export function createDataToolsRouter(store) {
       sheet.getRow(1).font = { bold: true };
       sheet.views = [{ state: "frozen", ySplit: 1 }];
       sheet.columns.forEach((c) => (c.width = 26));
-      await workbookResponse(res, book, `${kind}.xlsx`);
+      await workbookResponse(req, res, book, `${kind}.xlsx`);
     }),
   );
   router.get(
@@ -191,7 +198,7 @@ export function createDataToolsRouter(store) {
           type: "list",
           formulae: ['"student,teacher,staff"'],
         };
-      await workbookResponse(res, book, "people-import.xlsx");
+      await workbookResponse(req, res, book, "people-import.xlsx");
     }),
   );
   router.post(

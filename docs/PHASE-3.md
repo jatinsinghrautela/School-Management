@@ -1,6 +1,6 @@
 # Phase 3: School operations
 
-The Phase 3 baseline is implemented across the shared Node API and responsive React workspace. All modules enforce explicit school membership, including independent schools. No paid service or new dependency was added.
+The Phase 3 baseline is implemented across the shared Node API and responsive React workspace. All modules enforce explicit school membership, including independent schools. No paid service was added. The publishing follow-up adds pinned MIT-licensed pdf-lib for server-side branded resource downloads.
 
 ## Available workflows
 
@@ -24,7 +24,7 @@ Parents cannot access generic class rosters, school directories or academic mana
 
 ## Database and local checks
 
-Back up MySQL and private upload storage before upgrading. Startup applies additive relational migration **v8**, including parent roles and thirteen typed operations/family tables with scoped foreign keys, uniqueness and value checks. Legacy records remain untouched as a migration backup.
+Back up MySQL and private upload storage before upgrading. Startup applies additive relational migration **v9**, including parent roles and thirteen typed operations/family tables plus the scoped gallery table with scoped foreign keys, uniqueness and value checks. Legacy records remain untouched as a migration backup.
 
 ```powershell
 npm test
@@ -35,10 +35,12 @@ npm run db:operations
 
 `db:operations` requires the configured development MySQL database. It creates UUID-isolated synthetic fixtures, checks constraints/round-trips and cleans up only those fixtures. Do not run verification scripts against a production database.
 
-Validation for this milestone: 42 API tests passed; focused operations tests passed after final roster filtering; relational and new operations MySQL checks passed. Browser review covered catalog/lending, route/stop assignment, branding, parent switching, responsive card spacing and accessible sign-out. Evidence is in `docs/screenshots/phase-three-*.png`.
+Validation for this milestone: 46 API tests passed; focused operations tests passed after final roster filtering; relational and new operations MySQL checks passed. Browser review covered catalog/lending, route/stop assignment, branding, parent switching, responsive card spacing and accessible sign-out. Evidence is in `docs/screenshots/phase-three-*.png`.
 
 ## Current limits and release boundary
 
 Records use manual search/pagination and refresh; the current API returns scoped module collections, so very large schools need server pagination and load testing before deployment. Fees are manually recorded payments, with no gateway/fund transfer. Payroll, live GPS and a full language catalog are outside this baseline. SMTP and malware scanning remain safely disabled until school-provided infrastructure is configured. Branding uses original code-generated monograms and existing original SVG/CSS assets; no stock image or external font was introduced.
 
 Phase 4 privacy, backup/restore, security, monitoring, accessibility and HTTPS deployment checks remain required before real student data. Mobile development follows web acceptance and reuses this backend.
+
+Publishing follow-up: multi-class/section teacher notices, integrated guardian onboarding during admission, focused fee ledger, fixed-size school logos and a private school gallery are described in [SCHOOL-PUBLISHING.md](SCHOOL-PUBLISHING.md).

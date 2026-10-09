@@ -231,11 +231,36 @@ try {
   await conflict(() =>
     store.put("schoolSettings", { ...settings, id: duplicate }),
   );
+  const mediaFile = await put("files", {
+    kind: "gallery",
+    size: 1,
+    mime: "image/png",
+    scanStatus: "clean",
+    staged: false,
+  });
+  const photo = await put("galleryPhotos", {
+    fileId: mediaFile.id,
+    title: "Disposable photo",
+    archived: false,
+    publishedBy: uid,
+    width: 256,
+    height: 256,
+  });
+  assert.equal(
+    (await store.all("galleryPhotos", sid)).find((p) => p.id === photo.id)
+      .archived,
+    false,
+  );
+  await conflict(() =>
+    store.put("galleryPhotos", { ...photo, id: duplicate, schoolId: otherSid }),
+  );
   console.log(
-    "Phase 3 MySQL verification passed: parent role, scoped references, active assignments, uniqueness, bounds and typed round-trips.",
+    "Phase 3 MySQL verification passed: parent role, scoped references, active assignments, uniqueness, bounds, gallery file isolation and typed round-trips.",
   );
 } finally {
   for (const kind of [
+    "galleryPhotos",
+    "files",
     "schoolSettings",
     "messages",
     "noticeReads",

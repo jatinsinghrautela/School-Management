@@ -1,3 +1,4 @@
+import { brandedResource } from "./resource-document.js";
 import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { Router } from "express";
@@ -8,8 +9,10 @@ import {
   managers,
   canAccessSchool,
   visibleNotice,
+  noticeMatchesClasses,
   publicUser,
 } from "./domain.js";
+import { schoolLogo } from "./school-media.js";
 import { feeBalance } from "./fees.js";
 import { holidaysOn } from "./calendar.js";
 import {
@@ -33,6 +36,86 @@ export const defaultSettings = {
   timeZone: "Asia/Kolkata",
   version: 0,
 };
+export async function linkParentAccount(tx, req, b, hash) {
+  if (
+    !text(b.name) ||
+    !text(b.email) ||
+    !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(b.email) ||
+    b.authorized !== true ||
+    !Array.isArray(b.guardianIds) ||
+    b.guardianIds.length < 1 ||
+    b.guardianIds.length > 10 ||
+    !b.guardianIds.every((x) => typeof x === "string") ||
+    new Set(b.guardianIds).size !== b.guardianIds.length
+  )
+    fail(
+      400,
+      "Verify guardian identity and authorization, then choose name, email and guardian contacts",
+    );
+  const gs = await tx.all("guardians", req.school.id),
+    sl = await tx.all("studentGuardians", req.school.id),
+    users = await tx.all("users"),
+    email = b.email.trim().toLowerCase();
+  if (
+    !b.guardianIds.every(
+      (g) =>
+        gs.some((x) => x.id === g) &&
+        sl.some((x) => x.guardianId === g && x.active),
+    )
+  )
+    fail(400, "Choose current guardian contacts from this school");
+  let user = users.find((u) => u.email.toLowerCase() === email);
+  if (
+    user &&
+    (user.role !== "parent" ||
+      user.active === false ||
+      !canAccessSchool(user, req.school) ||
+      (!req.school.orgId && user.schoolIds.some((s) => s !== req.school.id)))
+  )
+    fail(409, "Email belongs to an incompatible or inactive account");
+  if (user) user = await member(tx, req, user.id, ["parent"]);
+  else {
+    user = {
+      id: id(),
+      name: b.name.trim(),
+      email,
+      role: "parent",
+      orgId: req.school.orgId || null,
+      schoolIds: [req.school.id],
+      classIds: [],
+      active: true,
+      passwordHash: hash,
+      passwordChangeRequired: true,
+      authVersion: 0,
+    };
+    await tx.put("users", user);
+  }
+  const existing = await tx.all("parentLinks", req.school.id);
+  for (const guardianId of b.guardianIds) {
+    const old = existing.find(
+      (l) => l.userId === user.id && l.guardianId === guardianId,
+    );
+    if (!old?.active)
+      await tx.put("parentLinks", {
+        id: old?.id || id(),
+        schoolId: req.school.id,
+        userId: user.id,
+        guardianId,
+        active: true,
+        verifiedBy: req.user.id,
+        verifiedAt: new Date().toISOString(),
+      });
+  }
+  await audit(tx, req, "parent.linked", {
+    userId: user.id,
+    guardianIds: b.guardianIds,
+  });
+  return {
+    user: publicUser(user),
+    message:
+      "Parent linked. Use People → Recover account for private activation; no password is shared or emailed automatically.",
+  };
+}
 async function peers(tx, req) {
   if (!["teacher", "parent"].includes(req.user.role)) return [];
   const users = (await tx.all("users")).filter(
@@ -93,7 +176,7 @@ async function inbox(tx, req) {
   const notices = (await tx.all("notices", req.school.id)).filter((n) =>
     req.user.role === "parent"
       ? (n.audience === "all" || n.audience === "parent") &&
-        (!n.classId || classes.has(n.classId))
+        noticeMatchesClasses(n, [...classes])
       : visibleNotice(req.user, n),
   );
   const documents = await tx.all("documentRequests", req.school.id);
@@ -113,7 +196,7 @@ async function inbox(tx, req) {
   );
   return [
     ...notifications,
-    ...notices.map((n) => ({
+    ...notices.map(({ schoolLogo, ...n }) => ({
       ...n,
       id: `notice:${n.id}`,
       readAt:
@@ -139,6 +222,8 @@ export function createFamilySocialRouter(store) {
       res.json({
         ...defaultSettings,
         ...(await store.all("schoolSettings", req.school.id))[0],
+        logoDataUri: await schoolLogo(store, req.school.id),
+        uploadsEnabled: !!process.env.CLAMAV_COMMAND,
       }),
     ),
   );
@@ -168,6 +253,7 @@ export function createFamilySocialRouter(store) {
           if ((old?.version || 0) !== b.version)
             fail(409, "School settings changed; reload before saving");
           const row = {
+            ...old,
             id: old?.id || id(),
             schoolId: req.school.id,
             displayName: b.displayName.trim(),
@@ -219,89 +305,11 @@ export function createFamilySocialRouter(store) {
     route(async (req, res) => {
       manage(req);
       const b = req.body;
-      if (
-        !text(b.name) ||
-        !text(b.email) ||
-        !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(b.email) ||
-        b.authorized !== true ||
-        !Array.isArray(b.guardianIds) ||
-        b.guardianIds.length < 1 ||
-        b.guardianIds.length > 10 ||
-        !b.guardianIds.every((x) => typeof x === "string") ||
-        new Set(b.guardianIds).size !== b.guardianIds.length
-      )
-        fail(
-          400,
-          "Verify guardian identity and authorization, then choose name, email and guardian contacts",
-        );
       const hash = await bcrypt.hash(randomBytes(32).toString("hex"), 12);
       res.json(
-        await store.transaction(req.school.id, async (tx) => {
-          const gs = await tx.all("guardians", req.school.id),
-            sl = await tx.all("studentGuardians", req.school.id),
-            users = await tx.all("users"),
-            email = b.email.trim().toLowerCase();
-          if (
-            !b.guardianIds.every(
-              (g) =>
-                gs.some((x) => x.id === g) &&
-                sl.some((x) => x.guardianId === g && x.active),
-            )
-          )
-            fail(400, "Choose current guardian contacts from this school");
-          let user = users.find((u) => u.email.toLowerCase() === email);
-          if (
-            user &&
-            (user.role !== "parent" ||
-              user.active === false ||
-              !canAccessSchool(user, req.school) ||
-              (!req.school.orgId &&
-                user.schoolIds.some((s) => s !== req.school.id)))
-          )
-            fail(409, "Email belongs to an incompatible or inactive account");
-          if (user) user = await member(tx, req, user.id, ["parent"]);
-          else {
-            user = {
-              id: id(),
-              name: b.name.trim(),
-              email,
-              role: "parent",
-              orgId: req.school.orgId || null,
-              schoolIds: [req.school.id],
-              classIds: [],
-              active: true,
-              passwordHash: hash,
-              passwordChangeRequired: true,
-              authVersion: 0,
-            };
-            await tx.put("users", user);
-          }
-          const existing = await tx.all("parentLinks", req.school.id);
-          for (const guardianId of b.guardianIds) {
-            const old = existing.find(
-              (l) => l.userId === user.id && l.guardianId === guardianId,
-            );
-            if (!old?.active)
-              await tx.put("parentLinks", {
-                id: old?.id || id(),
-                schoolId: req.school.id,
-                userId: user.id,
-                guardianId,
-                active: true,
-                verifiedBy: req.user.id,
-                verifiedAt: new Date().toISOString(),
-              });
-          }
-          await audit(tx, req, "parent.linked", {
-            userId: user.id,
-            guardianIds: b.guardianIds,
-          });
-          return {
-            user: publicUser(user),
-            message:
-              "Parent linked. Use People → Recover account for private activation; no password is shared or emailed automatically.",
-          };
-        }),
+        await store.transaction(req.school.id, (tx) =>
+          linkParentAccount(tx, req, b, hash),
+        ),
       );
     }),
   );
@@ -392,7 +400,10 @@ export function createFamilySocialRouter(store) {
               ),
               resources: (await tx.all("resources", req.school.id))
                 .filter((x) => allowed.has(x.classId))
-                .map(({ fileId, ...x }) => ({ ...x, hasAttachment: !!fileId })),
+                .map(({ fileId, schoolLogo, ...x }) => ({
+                  ...x,
+                  hasAttachment: !!fileId,
+                })),
               timetable: (await tx.all("timetable", req.school.id))
                 .filter((x) => !x.cancelled && allowed.has(x.classId))
                 .map((x) => ({
@@ -413,7 +424,7 @@ export function createFamilySocialRouter(store) {
               notices: (await tx.all("notices", req.school.id)).filter(
                 (x) =>
                   ["all", "parent", "student"].includes(x.audience) &&
-                  (!x.classId || allowed.has(x.classId)),
+                  noticeMatchesClasses(x, [...allowed]),
               ),
               calendar: calendar
                 .filter(
@@ -445,6 +456,7 @@ export function createFamilySocialRouter(store) {
             x.id === resource.fileId &&
             x.scanStatus === "clean" &&
             !x.staged &&
+            !x.deleted &&
             ["application/pdf", "image/png", "image/jpeg"].includes(x.mime),
         );
       if (!file || !/^[a-f0-9-]{36}$/i.test(file.id))
@@ -458,10 +470,19 @@ export function createFamilySocialRouter(store) {
         if (e.code === "ENOENT") fail(404, "Attachment is unavailable");
         throw e;
       }
+      const logo =
+        resource.schoolLogo || (await schoolLogo(store, req.school.id));
+      const result = await brandedResource(
+        bytes,
+        file.mime,
+        req.school,
+        resource,
+        logo,
+      );
       res.json({
-        filename: file.name,
-        mime: file.mime,
-        base64: bytes.toString("base64"),
+        filename: logo ? `class-resource-${resource.id}.pdf` : file.name,
+        mime: result.mime,
+        base64: result.bytes.toString("base64"),
       });
     }),
   );
@@ -489,6 +510,7 @@ export function createFamilySocialRouter(store) {
           report.examName,
           report.schoolName,
           `<p>${escape(report.studentName)} · ${escape(report.className)} · ${escape(report.academicYear)}</p><table><tr><th>Subject</th><th>Score</th><th>Maximum</th></tr>${report.rows.map((x) => `<tr><td>${escape(x.name)}</td><td>${escape(x.score)}</td><td>${escape(x.maxScore)}</td></tr>`).join("")}</table><p>Grade ${escape(report.grade)} · ${escape(report.percentage.toFixed(2))}%</p><p>Published version ${escape(report.version)} · ${escape(report.publishedAt)}</p>`,
+          report.schoolLogo || (await schoolLogo(store, req.school.id)),
         ),
       });
     }),

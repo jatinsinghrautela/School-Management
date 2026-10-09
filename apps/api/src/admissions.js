@@ -2,6 +2,7 @@ import { Router } from "express";
 import bcrypt from "bcryptjs";
 import { randomBytes } from "node:crypto";
 import { id, managers, publicUser } from "./domain.js";
+import { linkParentAccount } from "./family-social.js";
 import { validDate } from "./calendar.js";
 const fail = (status, message) => {
   throw Object.assign(new Error(message), { status });
@@ -266,7 +267,24 @@ export function createAdmissionsRouter(store) {
     "/admissions/:applicationId/decision",
     route(async (req, res) => {
       manage(req);
-      const { status, reason = "" } = req.body;
+      const {
+        status,
+        reason = "",
+        guardianAccountIndices = [],
+        guardianAccountsVerified = false,
+      } = req.body;
+      if (
+        !Array.isArray(guardianAccountIndices) ||
+        guardianAccountIndices.length > 3 ||
+        guardianAccountIndices.some(
+          (x) => !Number.isInteger(x) || x < 0 || x > 2,
+        ) ||
+        new Set(guardianAccountIndices).size !==
+          guardianAccountIndices.length ||
+        (guardianAccountIndices.length &&
+          (status !== "admitted" || guardianAccountsVerified !== true))
+      )
+        fail(400, "Select verified guardian contacts for admission approval");
       if (
         !["reviewing", "admitted", "rejected", "withdrawn"].includes(status) ||
         !text(reason, 500) ||
@@ -323,6 +341,41 @@ export function createAdmissionsRouter(store) {
             classIds: [cls.id],
           });
           await saveProfile(tx, req, studentId, application);
+          const parentAccountIds = [];
+          const guardianLinks = (
+            await tx.all("studentGuardians", req.school.id)
+          ).filter((l) => l.studentId === studentId && l.active);
+          const guardianRecords = await tx.all("guardians", req.school.id);
+          for (const index of guardianAccountIndices) {
+            const contact = application.guardians[index];
+            if (!contact || !email(contact.email))
+              fail(
+                400,
+                "Each selected guardian needs a valid login email in the application",
+              );
+            const guardian = guardianRecords.find(
+              (g) =>
+                guardianLinks.some((l) => l.guardianId === g.id) &&
+                ["name", "email", "phone", "relationship"].every(
+                  (k) => g[k] === contact[k],
+                ),
+            );
+            if (!guardian)
+              fail(409, "Guardian contact changed; review the application");
+            const parent = await linkParentAccount(
+              tx,
+              req,
+              {
+                name: contact.name,
+                email: contact.email,
+                authorized: true,
+                guardianIds: [guardian.id],
+              },
+              passwordHash,
+            );
+            parentAccountIds.push(parent.user.id);
+          }
+          application.parentAccountIds = [...new Set(parentAccountIds)];
           await tx.put("enrollments", {
             id: id(),
             schoolId: req.school.id,

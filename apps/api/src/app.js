@@ -33,6 +33,7 @@ import { createHomeworkRouter } from "./homework.js";
 import { createAdmissionsRouter } from "./admissions.js";
 import { createOperationsRouter } from "./operations.js";
 import { createFamilySocialRouter, defaultSettings } from "./family-social.js";
+import { createSchoolMediaRouter, schoolLogo } from "./school-media.js";
 import { createStaffRouter } from "./staff.js";
 import { createFeesRouter } from "./fees.js";
 import {
@@ -934,7 +935,7 @@ export function createApp(
     req.school = school;
     if (
       req.user.role === "parent" &&
-      !/^\/(workspace|family|operations|tickets|document-requests|messages|inbox|school-settings)(\/|$)/.test(
+      !/^\/(workspace|family|operations|tickets|document-requests|messages|inbox|school-settings|school-logo|gallery|notices)(\/|$)/.test(
         req.path,
       )
     )
@@ -954,6 +955,7 @@ export function createApp(
         schoolSettings: {
           ...defaultSettings,
           ...(await store.all("schoolSettings", sid))[0],
+          logoDataUri: await schoolLogo(store, sid),
         },
         users: [publicUser(u)],
         classes: [],
@@ -988,6 +990,7 @@ export function createApp(
       schoolSettings: {
         ...defaultSettings,
         ...(await store.all("schoolSettings", sid))[0],
+        logoDataUri: await schoolLogo(store, sid),
       },
       capabilities: {
         emailDelivery: !!mailer,
@@ -1041,7 +1044,7 @@ export function createApp(
           teacherName:
             users.find((u) => u.id === r.teacherId)?.name || "Teacher",
         })),
-      resources: await scoped("resources"),
+      resources: (await scoped("resources")).map(({ schoolLogo, ...r }) => r),
       submissions: ["student", "teacher", ...managers].includes(u.role)
         ? (await scoped("submissions")).filter(
             (r) => u.role !== "student" || r.studentId === u.id,
@@ -1050,7 +1053,9 @@ export function createApp(
       calendar: (await scoped("calendar")).filter(
         (e) => managers.includes(u.role) || visibleCalendar(u, e),
       ),
-      notices: (await scoped("notices")).filter((n) => visibleNotice(u, n)),
+      notices: (await scoped("notices"))
+        .filter((n) => visibleNotice(u, n))
+        .map(({ schoolLogo, ...n }) => n),
     });
   });
   app.post("/api/schools/:schoolId/classes", manage, async (req, res) => {
@@ -1289,6 +1294,7 @@ export function createApp(
             dueDate,
             fileId,
             fileName: name,
+            schoolLogo: await schoolLogo(tx, req.school.id),
             url: "",
             createdAt: new Date().toISOString(),
           });
@@ -1401,26 +1407,87 @@ export function createApp(
       }
     },
   );
-  app.post("/api/schools/:schoolId/notices", manage, async (req, res) => {
-    const { title, body, audience = "all", classId = null } = req.body;
+  app.post("/api/schools/:schoolId/notices", async (req, res) => {
+    if (!managers.includes(req.user.role) && req.user.role !== "teacher")
+      return fail(
+        res,
+        403,
+        "Leadership or assigned teacher access is required",
+      );
+    const { title, body, audience = "all" } = req.body;
+    const classIds =
+      req.body.classIds ?? (req.body.classId ? [req.body.classId] : []);
     if (
       !valid(title) ||
       !valid(body, 5000) ||
-      !["all", ...roles].includes(audience)
+      !["all", ...roles].includes(audience) ||
+      !Array.isArray(classIds) ||
+      classIds.length > 200 ||
+      classIds.some((x) => typeof x !== "string") ||
+      new Set(classIds).size !== classIds.length
     )
-      return fail(res, 400, "Valid notice details required");
-    if (classId && !(await checkClass(req, res))) return;
-    const row = await store.put("notices", {
-      id: id(),
-      schoolId: req.school.id,
-      title,
-      body,
-      audience,
-      classId,
-      createdAt: new Date().toISOString(),
+      return fail(
+        res,
+        400,
+        "Valid notice details and distinct class/section targets required",
+      );
+    const result = await store.transaction(req.school.id, async (tx) => {
+      await tx.lockUsers([req.user.id]);
+      const current = (await tx.all("users")).find((u) => u.id === req.user.id);
+      const classes = await tx.all("classes", req.school.id);
+      if (
+        !current ||
+        current.active === false ||
+        !canAccessSchool(current, req.school) ||
+        current.role !== req.user.role
+      )
+        return { error: "Account access changed", status: 403 };
+      if (!classIds.every((c) => classes.some((x) => x.id === c)))
+        return {
+          error: "Choose classes/sections belonging to this school",
+          status: 400,
+        };
+      if (
+        current.role === "teacher" &&
+        (audience !== "student" ||
+          !classIds.length ||
+          !classIds.every((c) => current.classIds.includes(c)))
+      )
+        return {
+          error:
+            "Teachers must select their assigned classes/sections and the student audience",
+          status: 403,
+        };
+      const row = await tx.put("notices", {
+        id: id(),
+        schoolId: req.school.id,
+        title: title.trim(),
+        body: body.trim(),
+        audience,
+        classId: classIds.length === 1 ? classIds[0] : null,
+        classIds,
+        publishedBy: current.id,
+        schoolLogo: await schoolLogo(tx, req.school.id),
+        createdAt: new Date().toISOString(),
+      });
+      await tx.put("audit", {
+        id: id(),
+        schoolId: req.school.id,
+        actorId: current.id,
+        action: "notice.published",
+        ...(req.session.support
+          ? {
+              supportOwnerId: req.session.support.ownerId,
+              supportReason: req.session.support.reason,
+            }
+          : {}),
+        details: { noticeId: row.id, classIds },
+        createdAt: new Date().toISOString(),
+      });
+      return row;
     });
-    await audit(req.user, "notice.published", req.school.id);
-    res.status(201).json(row);
+    if (result.error) return fail(res, result.status, result.error);
+    res.status(201).json(result);
   });
   app.use("/api/schools/:schoolId", createAcademicRouter(store));
   app.use("/api/schools/:schoolId", createProgressionRouter(store));
@@ -1437,6 +1504,7 @@ export function createApp(
   app.use("/api/schools/:schoolId", createStaffRouter(store));
   app.use("/api/schools/:schoolId", createOperationsRouter(store));
   app.use("/api/schools/:schoolId", createFamilySocialRouter(store));
+  app.use("/api/schools/:schoolId", createSchoolMediaRouter(store, scanner));
   app.use("/api", (req, res) => fail(res, 404, "API endpoint not found"));
   const webRoot = fileURLToPath(new URL("../../web/dist/", import.meta.url));
   if (existsSync(webRoot)) {

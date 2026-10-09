@@ -16,6 +16,12 @@ const OPERATIONS_COLLECTIONS = [
 // Relational identity, access and academic fields; immutable snapshots and extension
 // metadata remain JSON. Legacy records are retained as the migration backup.
 const definitions = {
+  galleryPhotos: {
+    fileId: "VARCHAR(36) NOT NULL",
+    title: "VARCHAR(120) NOT NULL",
+    archived: "BOOLEAN NOT NULL DEFAULT FALSE",
+    publishedBy: "VARCHAR(36) NOT NULL",
+  },
   libraryBooks: {
     code: "VARCHAR(60) NOT NULL",
     title: "VARCHAR(200) NOT NULL",
@@ -290,6 +296,7 @@ const booleans = new Set([
   "cancelled",
   "revoked",
   "voided",
+  "archived",
 ]);
 const arrayFields = {
   users: {
@@ -299,6 +306,7 @@ const arrayFields = {
   subjects: { teacherIds: ["sg_subject_teachers", "teacher_id"] },
 };
 const foreign = {
+  galleryPhotos: { fileId: "files", publishedBy: "users" },
   libraryLoans: { bookId: "libraryBooks", userId: "users" },
   transportAssignments: { routeId: "transportRoutes", studentId: "users" },
   assets: { custodianId: "users" },
@@ -750,6 +758,34 @@ export async function migrateRelational(pool, collections) {
           }
         }
       await conn.query("INSERT INTO sg_migrations(version) VALUES(8)");
+    }
+    const [[mediaVersion]] = await conn.query(
+      "SELECT COUNT(*) AS present FROM sg_migrations WHERE version=9",
+    );
+    if (!mediaVersion.present) {
+      for (const [field, parent] of Object.entries({
+        ...foreign.galleryPhotos,
+        schoolId: "schools",
+      })) {
+        const name = `fk_gallery_photos_${snake(field)}`;
+        const [[existing]] = await conn.execute(
+          "SELECT COUNT(*) AS n FROM information_schema.TABLE_CONSTRAINTS WHERE CONSTRAINT_SCHEMA=DATABASE() AND TABLE_NAME=? AND CONSTRAINT_NAME=?",
+          [tableFor("galleryPhotos"), name],
+        );
+        if (!existing.n)
+          await conn.query(
+            `ALTER TABLE ${tableFor("galleryPhotos")} ADD CONSTRAINT ${name} FOREIGN KEY (${snake(field)}) REFERENCES ${tableFor(parent)}(id)`,
+          );
+      }
+      const [[scope]] = await conn.execute(
+        "SELECT COUNT(*) AS n FROM information_schema.TABLE_CONSTRAINTS WHERE CONSTRAINT_SCHEMA=DATABASE() AND TABLE_NAME=? AND CONSTRAINT_NAME='scope_gallery_photo_file'",
+        [tableFor("galleryPhotos")],
+      );
+      if (!scope.n)
+        await conn.query(
+          `ALTER TABLE ${tableFor("galleryPhotos")} ADD CONSTRAINT scope_gallery_photo_file FOREIGN KEY (file_id,school_id) REFERENCES ${tableFor("files")}(id,school_id)`,
+        );
+      await conn.query("INSERT INTO sg_migrations(version) VALUES(9)");
     }
   } finally {
     await conn

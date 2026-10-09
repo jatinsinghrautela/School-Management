@@ -1,3 +1,4 @@
+import { brandWorkbook } from "./document-brand.js";
 import ExcelJS from "exceljs";
 import { createHash } from "node:crypto";
 import { inflateRawSync } from "node:zlib";
@@ -75,7 +76,7 @@ export function yearRows(prefs) {
   }
   return rows;
 }
-export async function calendarWorkbook(school, prefs) {
+export async function calendarWorkbook(school, prefs, logo = "") {
   const workbook = new ExcelJS.Workbook();
   workbook.creator = "Schoolglass Desk";
   const sheet = workbook.addWorksheet("Year calendar", {
@@ -222,6 +223,7 @@ export async function calendarWorkbook(school, prefs) {
     settings.addRow(["India 2026 gazetted source", india2026Source]);
     settings.getRow(17).height = 42;
   }
+  brandWorkbook(workbook, school.name, logo);
   return Buffer.from(await workbook.xlsx.writeBuffer());
 }
 // Bound the ZIP directory before decompression; reject ZIP64, embedded macros and huge expanded files.

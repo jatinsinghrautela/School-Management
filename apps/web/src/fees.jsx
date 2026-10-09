@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 const money = (n, c) =>
   new Intl.NumberFormat(undefined, { style: "currency", currency: c }).format(
     n / 100,
@@ -37,6 +37,19 @@ export function Fees({
     [chargeId, setChargeId] = useState(""),
     [requestKeys, setRequestKeys] = useState({}),
     [voidReasons, setVoidReasons] = useState({});
+  const ledgerRef = useRef(null);
+  const [ledgerOpen, setLedgerOpen] = useState(0);
+  useEffect(() => {
+    if (ledgerOpen && ledgerRef.current) {
+      ledgerRef.current.scrollIntoView({
+        behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
+          ? "instant"
+          : "smooth",
+        block: "start",
+      });
+      ledgerRef.current.focus({ preventScroll: true });
+    }
+  }, [ledgerOpen]);
   const writable = manager && !readOnly;
   useEffect(() => {
     let active = true;
@@ -341,7 +354,10 @@ export function Fees({
                         <td>
                           <button
                             className="secondary"
-                            onClick={() => setChargeId(c.id)}
+                            onClick={() => {
+                              setChargeId(c.id);
+                              setLedgerOpen((n) => n + 1);
+                            }}
                           >
                             View ledger
                           </button>
@@ -375,7 +391,12 @@ export function Fees({
         </div>
       </section>
       {charge && (
-        <section className="panel record-grid">
+        <section
+          className="panel record-grid fee-ledger-detail"
+          ref={ledgerRef}
+          tabIndex={-1}
+          aria-label="Selected fee ledger"
+        >
           <div className="panel-heading">
             <div>
               <h3>

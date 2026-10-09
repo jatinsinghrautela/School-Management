@@ -1033,6 +1033,7 @@ export function ExamResults({ data, api, schoolId, refresh, user, manager }) {
       )}
       {report && (
         <ReportCard
+          logo={data.schoolSettings?.logoDataUri}
           download={async (r) => {
             try {
               const file = await api(
@@ -1118,7 +1119,14 @@ export function ExamResults({ data, api, schoolId, refresh, user, manager }) {
   );
 }
 
-function ReportCard({ report: r, close, history = [], select, download }) {
+function ReportCard({
+  report: r,
+  close,
+  history = [],
+  select,
+  download,
+  logo,
+}) {
   return (
     <div className="modal-backdrop report-backdrop">
       <section
@@ -1167,7 +1175,17 @@ function ReportCard({ report: r, close, history = [], select, download }) {
               </div>
             )}
             <span className="report-emblem">
-              <GraduationCap size={35} />
+              {r.schoolLogo || logo ? (
+                <img
+                  src={r.schoolLogo || logo}
+                  width="64"
+                  height="64"
+                  alt="School logo"
+                  style={{ objectFit: "contain" }}
+                />
+              ) : (
+                <GraduationCap size={35} />
+              )}
             </span>
             <h2 id="report-title">{r.schoolName}</h2>
             <p>{r.schoolCity}</p>

@@ -199,3 +199,13 @@
 - Added additive MySQL migration v8 with thirteen typed tables and a disposable-fixture operations verification script. Existing admissions, fees and leave remain integrated.
 - Validation: 42 API tests passed; focused operations tests passed after final owner roster filtering; MySQL relational and operations checks passed. Browser exercised catalog/lending, route assignment and settings; desktop card gaps measured 24px, mobile had no horizontal overflow and sidebar sign-out remained accessible. Fixed native date submission and card/input/header spacing discovered during review.
 - Updated PLAN, README and PHASE-3 operating guide. SMTP/ClamAV remain intentionally unconfigured. Phase 4 production readiness and mobile remain separate.
+
+## Phase 3 publishing and usability improvements (2026-10-09)
+
+- Added multi-class/section notice targeting with legacy single-class compatibility; teachers publish only to students in currently assigned classes and retain own-notice visibility. Added scoped branded notice downloads and parent child-target matching.
+- Integrated verified guardian account creation/reuse and explicit links into atomic admission approval, with rollback for incompatible accounts. Student accounts were already automatic; activation remains a separate credential step. Added clear account creation summaries and inline verified-contact choices.
+- Fixed View ledger feedback by scrolling and focusing the selected charge panel, with reduced-motion handling. Browser verified the ₹1,000 synthetic charge panel and payment/concession sections without recording a payment.
+- Added scanned 256 × 256 PNG logos, 128 KB bounds, PNG pixel validation, school sidebar branding and immutable logo snapshots on reports/receipts/documents/notices. Branded workbook identity sheets preserve import layouts; resources download with a logo cover and preserved original pages/images, using server-only pinned pdf-lib.
+- Added school-scoped gallery, leadership publish/archive, permission acknowledgment, metadata stripping, dimension/size/quota checks, private image reads, twelve-item pagination and lazy image loading. Uploads remain safely disabled until ClamAV is configured.
+- Added additive MySQL migration v9 and gallery scoped-file/boolean checks. Validation: 46 tests and production build pass; MySQL operations checks pass. Browser reviewed multi-target and teacher publication, ledger focus, guardian review layout and upload disabled states. Synthetic two-page branded resource PDF rendered with Poppler and both pages visually checked.
+- Updated PLAN, README, admission/asset guides and SCHOOL-PUBLISHING operating guide. No paid infrastructure added. Phase 4 remains required before real student data.
