@@ -1,5 +1,11 @@
 # Work log
 
+## 2026-10-09 — student-record spacing correction
+
+- Added a padded body with consistent vertical gaps to Admissions and student records. Aligned student labels/profile details, spaced wrapping action buttons, and corrected nested form/fieldset and checkbox layouts.
+- Added narrow-screen stacked profile details and smaller card insets. Styles are scoped to the student-record card, preserving other layouts.
+- Production build verified. Browser automation remains unavailable due to initialization failure, so interactive visual verification could not be performed.
+
 ## 2026-10-09 — admissions and student records
 
 - Implemented submitted/reviewing/admitted/rejected/withdrawn admission workflow with reasoned audit history, school/class scope checks, duplicate email protection and terminal decision guards.

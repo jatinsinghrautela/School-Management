@@ -72,228 +72,230 @@ export function StudentRecords({
           </p>
         </div>
       </div>
-      {error && (
-        <div className="alert" role="status">
-          {error}
-        </div>
-      )}
-      {manager && (
-        <div className="register-actions">
-          <button
-            className={tab === "records" ? "primary" : "secondary"}
-            onClick={() => setTab("records")}
-          >
-            Student records
-          </button>
-          <button
-            className={tab === "admissions" ? "primary" : "secondary"}
-            onClick={() => setTab("admissions")}
-          >
-            Admissions
-          </button>
-        </div>
-      )}
-      {!data ? (
-        <p>Loading student records…</p>
-      ) : tab === "records" ? (
-        <>
-          <label>
-            Student
-            <select
-              aria-label="Student record"
-              value={selected}
-              onChange={(e) => setSelected(e.target.value)}
+      <div className="student-records-body">
+        {error && (
+          <div className="alert" role="status">
+            {error}
+          </div>
+        )}
+        {manager && (
+          <div className="register-actions">
+            <button
+              className={tab === "records" ? "primary" : "secondary"}
+              onClick={() => setTab("records")}
             >
-              {data.students.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.name}
-                </option>
-              ))}
-            </select>
-          </label>
-          {student ? (
-            <>
-              <dl>
-                <dt>Admission number</dt>
-                <dd>{profile?.admissionNumber || "Not recorded"}</dd>
-                <dt>Birth date</dt>
-                <dd>{profile?.birthDate || "Not recorded"}</dd>
-                <dt>Address</dt>
-                <dd>{profile?.address || "Not recorded"}</dd>
-              </dl>
-              <h4>Guardian contacts</h4>
-              {guardians.length ? (
-                guardians.map((g) => (
-                  <p key={g.id}>
-                    {g.name} · {g.relationship}
-                    <br />
-                    {g.phone} {g.email}
-                  </p>
-                ))
-              ) : (
-                <p>No guardian contacts recorded.</p>
-              )}
-              {writable && (
-                <details className="calendar-form">
-                  <summary>Edit student profile</summary>
-                  <ProfileForm
-                    key={selected + ":" + (profile?.updatedAt || "")}
-                    initial={profile}
-                    guardians={guardians}
-                    busy={busy}
-                    submit={(body) =>
-                      action(`/students/${selected}/profile`, body)
-                    }
-                  />
-                  <p>
-                    Saving replaces the active guardian contacts. Previous links
-                    are retained for audit history.
-                  </p>
-                </details>
-              )}
-              <h4>Enrollment history</h4>
-              <div className="table-wrap">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Class</th>
-                      <th>Status</th>
-                      <th>Dates</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {data.enrollments
-                      .filter((e) => e.studentId === selected)
-                      .map((e) => (
-                        <tr key={e.id}>
-                          <td>
-                            {classes.find((c) => c.id === e.classId)?.name ||
-                              e.className ||
-                              "Past class"}
-                          </td>
-                          <td>{e.status}</td>
-                          <td>
-                            {e.startedOn || "Earlier enrollment"} →{" "}
-                            {e.endedOn || "Current"}
-                          </td>
-                        </tr>
-                      ))}
-                  </tbody>
-                </table>
-              </div>
-            </>
-          ) : (
-            <p>No student accounts yet.</p>
-          )}
-        </>
-      ) : (
-        <>
-          {writable && (
-            <details className="calendar-form">
-              <summary>Create admission application</summary>
-              <AdmissionForm
-                classes={classes}
-                busy={busy}
-                submit={(body) => action("/admissions", body)}
-              />
-            </details>
-          )}
-          <p>
-            Admitted accounts need activation through People → Recover account.
-            Applications are created by school management; there is no public
-            signup.
-          </p>
-          <div className="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Application</th>
-                  <th>Student / class</th>
-                  <th>Status</th>
-                  <th>Review</th>
-                </tr>
-              </thead>
-              <tbody>
-                {[...data.admissions].reverse().map((a) => (
-                  <tr key={a.id}>
-                    <td>
-                      {a.applicationNumber}
-                      <details>
-                        <summary>Decision history</summary>
-                        {a.history.map((h, i) => (
-                          <p key={i}>
-                            {h.status} · {h.at.slice(0, 10)} {h.reason}
-                          </p>
-                        ))}
-                      </details>
-                    </td>
-                    <td>
-                      {a.studentName}
+              Student records
+            </button>
+            <button
+              className={tab === "admissions" ? "primary" : "secondary"}
+              onClick={() => setTab("admissions")}
+            >
+              Admissions
+            </button>
+          </div>
+        )}
+        {!data ? (
+          <p>Loading student records…</p>
+        ) : tab === "records" ? (
+          <>
+            <label>
+              Student
+              <select
+                aria-label="Student record"
+                value={selected}
+                onChange={(e) => setSelected(e.target.value)}
+              >
+                {data.students.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+            {student ? (
+              <>
+                <dl>
+                  <dt>Admission number</dt>
+                  <dd>{profile?.admissionNumber || "Not recorded"}</dd>
+                  <dt>Birth date</dt>
+                  <dd>{profile?.birthDate || "Not recorded"}</dd>
+                  <dt>Address</dt>
+                  <dd>{profile?.address || "Not recorded"}</dd>
+                </dl>
+                <h4>Guardian contacts</h4>
+                {guardians.length ? (
+                  guardians.map((g) => (
+                    <p key={g.id}>
+                      {g.name} · {g.relationship}
                       <br />
-                      {classes.find((c) => c.id === a.classId)?.name ||
-                        a.className}
-                    </td>
-                    <td>{a.status}</td>
-                    <td>
-                      {writable &&
-                      ["submitted", "reviewing"].includes(a.status) ? (
-                        <>
-                          <label>
-                            Decision reason
-                            <textarea
-                              aria-label={`Decision reason for ${a.studentName}`}
-                              maxLength={500}
-                              value={decisions[a.id] || ""}
-                              onChange={(e) =>
-                                setDecisions({
-                                  ...decisions,
-                                  [a.id]: e.target.value,
-                                })
-                              }
-                            />
-                          </label>
-                          <div className="register-actions">
-                            {(a.status === "submitted"
-                              ? ["reviewing", "rejected", "withdrawn"]
-                              : ["admitted", "rejected", "withdrawn"]
-                            ).map((status) => (
-                              <button
-                                key={status}
-                                className="secondary"
-                                disabled={
-                                  busy ||
-                                  (decisions[a.id] || "").trim().length < 5
-                                }
-                                onClick={() =>
-                                  action(`/admissions/${a.id}/decision`, {
-                                    status,
-                                    reason: decisions[a.id],
+                      {g.phone} {g.email}
+                    </p>
+                  ))
+                ) : (
+                  <p>No guardian contacts recorded.</p>
+                )}
+                {writable && (
+                  <details className="calendar-form">
+                    <summary>Edit student profile</summary>
+                    <ProfileForm
+                      key={selected + ":" + (profile?.updatedAt || "")}
+                      initial={profile}
+                      guardians={guardians}
+                      busy={busy}
+                      submit={(body) =>
+                        action(`/students/${selected}/profile`, body)
+                      }
+                    />
+                    <p>
+                      Saving replaces the active guardian contacts. Previous
+                      links are retained for audit history.
+                    </p>
+                  </details>
+                )}
+                <h4>Enrollment history</h4>
+                <div className="table-wrap">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Class</th>
+                        <th>Status</th>
+                        <th>Dates</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {data.enrollments
+                        .filter((e) => e.studentId === selected)
+                        .map((e) => (
+                          <tr key={e.id}>
+                            <td>
+                              {classes.find((c) => c.id === e.classId)?.name ||
+                                e.className ||
+                                "Past class"}
+                            </td>
+                            <td>{e.status}</td>
+                            <td>
+                              {e.startedOn || "Earlier enrollment"} →{" "}
+                              {e.endedOn || "Current"}
+                            </td>
+                          </tr>
+                        ))}
+                    </tbody>
+                  </table>
+                </div>
+              </>
+            ) : (
+              <p>No student accounts yet.</p>
+            )}
+          </>
+        ) : (
+          <>
+            {writable && (
+              <details className="calendar-form">
+                <summary>Create admission application</summary>
+                <AdmissionForm
+                  classes={classes}
+                  busy={busy}
+                  submit={(body) => action("/admissions", body)}
+                />
+              </details>
+            )}
+            <p>
+              Admitted accounts need activation through People → Recover
+              account. Applications are created by school management; there is
+              no public signup.
+            </p>
+            <div className="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Application</th>
+                    <th>Student / class</th>
+                    <th>Status</th>
+                    <th>Review</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[...data.admissions].reverse().map((a) => (
+                    <tr key={a.id}>
+                      <td>
+                        {a.applicationNumber}
+                        <details>
+                          <summary>Decision history</summary>
+                          {a.history.map((h, i) => (
+                            <p key={i}>
+                              {h.status} · {h.at.slice(0, 10)} {h.reason}
+                            </p>
+                          ))}
+                        </details>
+                      </td>
+                      <td>
+                        {a.studentName}
+                        <br />
+                        {classes.find((c) => c.id === a.classId)?.name ||
+                          a.className}
+                      </td>
+                      <td>{a.status}</td>
+                      <td>
+                        {writable &&
+                        ["submitted", "reviewing"].includes(a.status) ? (
+                          <>
+                            <label>
+                              Decision reason
+                              <textarea
+                                aria-label={`Decision reason for ${a.studentName}`}
+                                maxLength={500}
+                                value={decisions[a.id] || ""}
+                                onChange={(e) =>
+                                  setDecisions({
+                                    ...decisions,
+                                    [a.id]: e.target.value,
                                   })
                                 }
-                              >
-                                {status === "reviewing"
-                                  ? "Start review"
-                                  : status === "admitted"
-                                    ? "Admit student"
-                                    : status === "rejected"
-                                      ? "Reject"
-                                      : "Withdraw"}
-                              </button>
-                            ))}
-                          </div>
-                        </>
-                      ) : (
-                        "Finalized"
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          {!data.admissions.length && <p>No applications yet.</p>}
-        </>
-      )}
+                              />
+                            </label>
+                            <div className="register-actions">
+                              {(a.status === "submitted"
+                                ? ["reviewing", "rejected", "withdrawn"]
+                                : ["admitted", "rejected", "withdrawn"]
+                              ).map((status) => (
+                                <button
+                                  key={status}
+                                  className="secondary"
+                                  disabled={
+                                    busy ||
+                                    (decisions[a.id] || "").trim().length < 5
+                                  }
+                                  onClick={() =>
+                                    action(`/admissions/${a.id}/decision`, {
+                                      status,
+                                      reason: decisions[a.id],
+                                    })
+                                  }
+                                >
+                                  {status === "reviewing"
+                                    ? "Start review"
+                                    : status === "admitted"
+                                      ? "Admit student"
+                                      : status === "rejected"
+                                        ? "Reject"
+                                        : "Withdraw"}
+                                </button>
+                              ))}
+                            </div>
+                          </>
+                        ) : (
+                          "Finalized"
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            {!data.admissions.length && <p>No applications yet.</p>}
+          </>
+        )}
+      </div>
     </section>
   );
 }

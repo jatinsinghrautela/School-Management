@@ -1001,6 +1001,99 @@ html {
   color: #173e34;
   font: inherit;
 }
+.student-records-body {
+  text-align: left;
+  display: grid;
+  gap: 22px;
+  padding: 4px 24px 24px;
+  min-width: 0;
+}
+.student-records-body > p,
+.student-records-body > h4,
+.student-records-body > dl {
+  margin: 0;
+}
+.student-records-body > label {
+  display: grid;
+  gap: 8px;
+  max-width: 440px;
+}
+.student-records-body > label select {
+  width: 100%;
+  min-height: 44px;
+  padding: 12px 36px 12px 14px;
+}
+.student-records .register-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+}
+.student-records details.calendar-form {
+  display: block;
+  padding: 16px;
+  border: 1px solid #b8cdc6;
+  border-radius: 16px;
+}
+.student-records details > summary {
+  cursor: pointer;
+  line-height: 1.5;
+}
+.student-records details.calendar-form > p {
+  margin: 16px 0 0;
+  line-height: 1.6;
+}
+.student-records dt {
+  font-weight: 600;
+}
+.student-records details > form.calendar-form {
+  margin-top: 20px;
+  padding: 0;
+}
+.student-records fieldset {
+  display: grid;
+  gap: 16px;
+}
+.student-records .check-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  line-height: 1.5;
+}
+.student-records .check-option input {
+  width: 18px;
+  height: 18px;
+  margin: 2px 0 0;
+  flex: 0 0 18px;
+}
+.student-records td {
+  vertical-align: top;
+  overflow-wrap: anywhere;
+}
+.student-records td > label {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.student-records td textarea {
+  width: 100%;
+  min-width: 180px;
+}
+@media (max-width: 600px) {
+  .student-records-body {
+    padding: 4px 16px 20px;
+    gap: 18px;
+  }
+  .student-records dl {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+  .student-records dd {
+    margin-bottom: 12px;
+  }
+}
 @media (max-width: 700px) {
   .calendar-day {
     min-height: 78px;
