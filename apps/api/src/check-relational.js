@@ -24,6 +24,8 @@ const admissionIds = Object.fromEntries(
     "schedule",
     "charge",
     "payment",
+    "staffProfile",
+    "leave",
   ].map((k) => [k, randomUUID()]),
 );
 const store = await createStore("mysql");
@@ -270,10 +272,80 @@ try {
   );
   assert.equal(stored.amountMinor, 1000);
   assert.equal(stored.voided, false);
+  const staffProfile = {
+    id: admissionIds.staffProfile,
+    schoolId: ids.school,
+    userId: ids.user,
+    employeeNumber: "SYNTHETIC-EMPLOYEE",
+    jobTitle: "Fixture",
+    department: "Fixture",
+    joinDate: "2026-04-01",
+  };
+  await store.put("staffProfiles", staffProfile);
+  await assert.rejects(
+    store.put("staffProfiles", { ...staffProfile, id: ids.duplicate }),
+    (e) => e.status === 409,
+  );
+  await assert.rejects(
+    store.put("staffProfiles", {
+      ...staffProfile,
+      id: ids.duplicate,
+      schoolId: randomUUID(),
+    }),
+    (e) => e.status === 409,
+  );
+  const leave = {
+    id: admissionIds.leave,
+    schoolId: ids.school,
+    userId: ids.user,
+    startDate: "2026-11-01",
+    endDate: "2026-11-03",
+    type: "personal",
+    status: "pending",
+    requestKey: randomUUID(),
+    history: [],
+  };
+  await store.put("leaveRequests", leave);
+  await assert.rejects(
+    store.put("leaveRequests", { ...leave, id: ids.duplicate }),
+    (e) => e.status === 409,
+  );
+  await assert.rejects(
+    store.put("leaveRequests", {
+      ...leave,
+      id: ids.duplicate,
+      requestKey: randomUUID(),
+      endDate: "2026-10-31",
+    }),
+    (e) => e.status === 409,
+  );
+  await assert.rejects(
+    store.put("leaveRequests", {
+      ...leave,
+      id: ids.duplicate,
+      requestKey: randomUUID(),
+      status: "unknown",
+    }),
+    (e) => e.status === 409,
+  );
+  assert.equal(
+    (await store.all("leaveRequests", ids.school)).find(
+      (r) => r.id === leave.id,
+    ).startDate,
+    "2026-11-01",
+  );
   console.log(
-    "MySQL relational verification passed: duplicate identities, tenant references, attendance uniqueness and mark ranges are enforced.",
+    "MySQL relational verification passed: duplicate identities, tenant references, attendance uniqueness, mark ranges, fees and staff/leave constraints are enforced.",
   );
 } finally {
+  await db.execute("DELETE FROM sg_leave_requests WHERE id IN (?,?)", [
+    admissionIds.leave,
+    ids.duplicate,
+  ]);
+  await db.execute("DELETE FROM sg_staff_profiles WHERE id IN (?,?)", [
+    admissionIds.staffProfile,
+    ids.duplicate,
+  ]);
   await db.execute("DELETE FROM sg_fee_payments WHERE id IN (?,?)", [
     admissionIds.payment,
     ids.duplicate,

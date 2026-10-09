@@ -1,6 +1,21 @@
 // Relational identity, access and academic fields; immutable snapshots and extension
 // metadata remain JSON. Legacy records are retained as the migration backup.
 const definitions = {
+  staffProfiles: {
+    userId: "VARCHAR(36) NOT NULL",
+    employeeNumber: "VARCHAR(120) NOT NULL",
+    jobTitle: "VARCHAR(120) NOT NULL",
+    department: "VARCHAR(120) NOT NULL",
+    joinDate: "DATE NOT NULL",
+  },
+  leaveRequests: {
+    userId: "VARCHAR(36) NOT NULL",
+    startDate: "DATE NOT NULL",
+    endDate: "DATE NOT NULL",
+    type: "VARCHAR(24) NOT NULL",
+    status: "VARCHAR(24) NOT NULL",
+    requestKey: "VARCHAR(36) NOT NULL",
+  },
   feeSchedules: {
     classId: "VARCHAR(36) NOT NULL",
     academicYearId: "VARCHAR(36) NOT NULL",
@@ -184,6 +199,8 @@ const arrayFields = {
   subjects: { teacherIds: ["sg_subject_teachers", "teacher_id"] },
 };
 const foreign = {
+  staffProfiles: { userId: "users" },
+  leaveRequests: { userId: "users" },
   feeSchedules: { classId: "classes", academicYearId: "academicYears" },
   feeCharges: {
     scheduleId: "feeSchedules",
@@ -240,6 +257,16 @@ const foreign = {
   },
 };
 const constraints = {
+  staffProfiles: [
+    "UNIQUE KEY staff_profile (school_id,user_id)",
+    "UNIQUE KEY employee_number (school_id,employee_number)",
+  ],
+  leaveRequests: [
+    "UNIQUE KEY leave_request (school_id,request_key)",
+    "CHECK (end_date>=start_date)",
+    "CHECK (status IN ('pending','approved','rejected','cancelled'))",
+    "CHECK (type IN ('personal','sick','annual','other'))",
+  ],
   feeSchedules: [
     "CHECK (amount_minor>0 AND amount_minor<=1000000000)",
     "CHECK (currency IN ('INR','USD','EUR','GBP'))",
@@ -505,6 +532,27 @@ export async function migrateRelational(pool, collections) {
           }
         }
       await conn.query("INSERT INTO sg_migrations(version) VALUES(6)");
+    }
+    const [[staffVersion]] = await conn.query(
+      "SELECT COUNT(*) AS present FROM sg_migrations WHERE version=7",
+    );
+    if (!staffVersion.present) {
+      for (const kind of ["staffProfiles", "leaveRequests"])
+        for (const [field, parent] of Object.entries({
+          ...foreign[kind],
+          schoolId: "schools",
+        })) {
+          const name = `fk_${snake(kind)}_${snake(field)}`;
+          const [[exists]] = await conn.execute(
+            "SELECT COUNT(*) AS n FROM information_schema.TABLE_CONSTRAINTS WHERE CONSTRAINT_SCHEMA=DATABASE() AND TABLE_NAME=? AND CONSTRAINT_NAME=?",
+            [tableFor(kind), name],
+          );
+          if (!exists.n)
+            await conn.query(
+              `ALTER TABLE ${tableFor(kind)} ADD CONSTRAINT ${name} FOREIGN KEY (${snake(field)}) REFERENCES ${tableFor(parent)}(id)`,
+            );
+        }
+      await conn.query("INSERT INTO sg_migrations(version) VALUES(7)");
     }
   } finally {
     await conn

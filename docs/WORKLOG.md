@@ -1,5 +1,14 @@
 # Work log
 
+## Staff profiles and leave milestone (2026-10-09)
+
+- Added Staff navigation for school leaders, teachers and supporting staff. Leadership manages school-scoped employment profiles; employees see only their own profile and leave history. Students have no access, and support sessions are read-only.
+- Added reasoned leave requests, independent approval/rejection, own pending cancellation and leadership cancellation of another employee's approved leave. Request retries are idempotent; school transactions prevent overlapping requests and competing decisions. Decisions and profile edits retain transactional audit history.
+- Added contained, padded cards with responsive profile fields, status/search filters and 15-request pagination. Leave does not change attendance, timetable assignments or payroll automatically.
+- Added MySQL migration 7 with typed employment/leave fields, references, uniqueness and date/status/type constraints. Disposable database fixtures passed; existing records remain preserved.
+- Validation: all 40 API tests and the production build passed. Browser automation still fails during initialization (missing kernel-assets path); interactive UI acceptance is explicitly unverified.
+- Updated PLAN, README and STAFF-LEAVE.md. No paid services or new dependencies. Library catalog/lending is the next planned Phase 3 milestone.
+
 ## 2026-10-09 — fees and manual receipts
 
 - Added the Fees tab for management and students, immutable class/year schedules, reviewed student assignment, fixed concessions and outstanding balances grouped by currency.

@@ -31,6 +31,7 @@ import { tokenRepository } from "./tokens.js";
 import { createTimetableRouter } from "./timetable.js";
 import { createHomeworkRouter } from "./homework.js";
 import { createAdmissionsRouter } from "./admissions.js";
+import { createStaffRouter } from "./staff.js";
 import { createFeesRouter } from "./fees.js";
 import {
   createAcademicRouter,
@@ -1393,6 +1394,7 @@ export function createApp(
   app.use("/api/schools/:schoolId", createHomeworkRouter(store));
   app.use("/api/schools/:schoolId", createAdmissionsRouter(store));
   app.use("/api/schools/:schoolId", createFeesRouter(store));
+  app.use("/api/schools/:schoolId", createStaffRouter(store));
   app.use("/api", (req, res) => fail(res, 404, "API endpoint not found"));
   const webRoot = fileURLToPath(new URL("../../web/dist/", import.meta.url));
   if (existsSync(webRoot)) {

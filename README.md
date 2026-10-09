@@ -102,3 +102,7 @@ Timetable shows recurring weekly periods and a dated view for academic-year clas
 Students open Learning → Submit homework to send a text answer (up to 10,000 characters). They see only their own attempts and feedback. Assigned-class teachers and school management open Review submissions, provide feedback, and choose Reviewed or Request revision. Every answer is stored as a new version; review history is appended. Teachers review only the latest attempt, and students need a revision request to resubmit reviewed work.
 
 Due dates are validated calendar dates and interpreted as end of day UTC. Late answers are accepted and flagged. Private scanned attachment submissions are implemented, subject to configuration and quotas. School timezone settings, rubrics/scoring, reminders and submission pagination remain future work.
+
+## Staff and leave
+
+Staff employment profiles and independent leave approvals are available in the **Staff** tab. Teachers/supporting staff see their own records; school leadership reviews school requests. See [STAFF-LEAVE.md](docs/STAFF-LEAVE.md) for cancellation rules, audit history and current limits. Payroll is not included.

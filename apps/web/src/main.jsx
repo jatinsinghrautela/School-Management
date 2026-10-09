@@ -35,6 +35,7 @@ import { AccessEditor } from "./access-editor.jsx";
 import { AttendanceCorrections } from "./attendance-corrections.jsx";
 import { DataTools } from "./data-tools.jsx";
 import { StudentRecords } from "./student-records.jsx";
+import { Staff } from "./staff.jsx";
 import { Fees } from "./fees.jsx";
 document.title = `${BRAND_NAME} · School workspace`;
 const icons = {
@@ -42,6 +43,7 @@ const icons = {
   Schools: Building2,
   People: Users,
   Fees: FileText,
+  Staff: Users,
   Attendance: CalendarCheck,
   Results: GraduationCap,
   Learning: BookOpen,
@@ -231,6 +233,7 @@ function App() {
         "Overview",
         "People",
         ...(manager || user?.role === "student" ? ["Fees"] : []),
+        ...(manager || teacher || user?.role === "staff" ? ["Staff"] : []),
         ...(editor ? ["Academics"] : []),
         "Attendance",
         "Timetable",
@@ -511,6 +514,8 @@ function App() {
                         "Every school in your network, connected in one place.",
                       People: "The people who make your campus extraordinary.",
                       Fees: "Clear balances, concessions and payment records.",
+                      Staff:
+                        "Employment profiles and transparent leave decisions.",
                       Attendance:
                         "Every student counts. Keep track of every day.",
                       Results: "Turn progress into possibilities.",
@@ -1026,6 +1031,18 @@ function App() {
                   refresh={refresh}
                 />
               )}
+              {page === "Staff" &&
+                data &&
+                (manager || teacher || user.role === "staff") && (
+                  <Staff
+                    key={sid}
+                    api={api}
+                    schoolId={sid}
+                    manager={manager}
+                    userId={user.id}
+                    readOnly={!!support}
+                  />
+                )}
               {page === "Fees" &&
                 data &&
                 (manager || user.role === "student") && (

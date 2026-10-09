@@ -6,6 +6,8 @@ import {
   tableFor,
 } from "./relational-store.js";
 export const collections = [
+  "staffProfiles",
+  "leaveRequests",
   "feeSchedules",
   "feeCharges",
   "feePayments",
