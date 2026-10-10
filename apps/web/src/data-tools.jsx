@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 export function downloadGenerated(file) {
   const bytes = Uint8Array.from(atob(file.base64), (c) => c.charCodeAt(0));
   const url = URL.createObjectURL(new Blob([bytes]));
@@ -10,9 +10,15 @@ export function downloadGenerated(file) {
 }
 export function DataTools({ kind, api, schoolId, refresh, manager }) {
   const [file, setFile] = useState(null),
+    [credentials, setCredentials] = useState(null),
     [preview, setPreview] = useState(null),
     [error, setError] = useState(""),
     [busy, setBusy] = useState(false);
+  useEffect(() => {
+    setCredentials(null);
+    setPreview(null);
+    setFile(null);
+  }, [schoolId]);
   async function action(path, body) {
     setBusy(true);
     setError("");
@@ -58,10 +64,32 @@ export function DataTools({ kind, api, schoolId, refresh, manager }) {
           <summary>Import teachers, students or staff</summary>
           <p>
             Download the template, use the Class choices from its Classes sheet,
-            then upload and review. Imported users must activate through an
-            emailed invitation or private assisted recovery. No shared default
-            password is created.
+            then upload and review. Each imported user receives a unique
+            temporary password and must change it on first login. Download the
+            credentials after importing and share each user's credentials
+            privately.
           </p>
+          {credentials && (
+            <div className="success" role="status">
+              <p>
+                Accounts created. Save the credentials before leaving this page;
+                passwords are not saved for later download. If lost, use account
+                recovery.
+              </p>
+              <button
+                className="secondary"
+                onClick={() => downloadGenerated(credentials)}
+              >
+                Download login credentials
+              </button>
+              <button
+                className="text-button"
+                onClick={() => setCredentials(null)}
+              >
+                Dismiss credentials
+              </button>
+            </div>
+          )}
           <button
             className="secondary"
             disabled={busy}
@@ -131,11 +159,10 @@ export function DataTools({ kind, api, schoolId, refresh, manager }) {
                     previewId: preview.previewId,
                   });
                   if (r) {
+                    setCredentials(r.credentials);
                     setPreview(null);
                     setFile(null);
-                    setError(
-                      `${r.created} accounts created. Send invitations or issue private recovery tokens from account recovery.`,
-                    );
+                    setError("");
                     await refresh();
                   }
                 }}

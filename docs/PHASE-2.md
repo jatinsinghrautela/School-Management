@@ -26,7 +26,7 @@ The API runs cleanup every 30 minutes: expired security tokens older than seven 
 
 ## People and export tools
 
-People offers an Excel template with Class choices, student/teacher/staff role validation, row errors, a review preview and a single-use atomic apply. Up to 200 users can be imported per workbook. Formulas and invalid class/role/email rows are rejected. Imports never create a shared default password; use emailed invitations or private assisted recovery to activate accounts. Support impersonation cannot bulk-create accounts.
+People offers an unchanged Excel template with Class choices, student/teacher/staff role validation, row errors, a review preview and a single-use atomic apply. Up to 200 users can be imported per workbook. Formulas and invalid class/role/email rows are rejected. Each imported account receives an independently generated temporary password and must change it on first login. The successful import returns a separate credential workbook to its importing manager, with a download button available while that page remains open. Save it before navigating away and share credentials individually. Only password hashes are persisted; the credential workbook is not stored on the server or in browser storage. Lost credentials require account recovery. Support impersonation cannot bulk-create accounts.
 
 Shared tables paginate at 20 rows. GET directory supports search and page/limit parameters, with visibility applied before counts. Directory export is restricted to normal management sessions; attendance and results exports enforce school/class/student permissions. Results exports include current approved versions and preserve student access to their own past approved reports after promotion.
 

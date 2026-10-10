@@ -303,9 +303,41 @@ export function createDataToolsRouter(store) {
         p.authVersion !== (req.user.authVersion || 0)
       )
         fail(409, "Import preview expired or unavailable");
-      const hashes = await Promise.all(
-        p.entries.map(() => bcrypt.hash(randomBytes(32).toString("hex"), 12)),
+      const passwords = p.entries.map(() =>
+        randomBytes(18).toString("base64url"),
       );
+      const hashes = await Promise.all(
+        passwords.map((password) => bcrypt.hash(password, 12)),
+      );
+      const credentials = new ExcelJS.Workbook();
+      const sheet = credentials.addWorksheet("Login credentials");
+      sheet.addRow([
+        "Name",
+        "Email",
+        "Role",
+        "Temporary password",
+        "First login",
+      ]);
+      p.entries.forEach((entry, index) =>
+        sheet.addRow([
+          entry.name,
+          entry.email,
+          entry.role,
+          passwords[index],
+          "Change password before using the workspace",
+        ]),
+      );
+      sheet.getRow(1).font = { bold: true };
+      sheet.views = [{ state: "frozen", ySplit: 1 }];
+      sheet.columns.forEach((column) => (column.width = 36));
+      sheet.getColumn(5).width = 52;
+      brandWorkbook(
+        credentials,
+        req.school.name,
+        await schoolLogo(store, req.school.id),
+      );
+      // Serialize before committing accounts; plaintext credentials never enter the store.
+      const credentialBuffer = await credentials.xlsx.writeBuffer();
       const result = await store.transaction(req.school.id, async (tx) => {
         const current = (await tx.all("peopleImports")).find(
             (i) => i.id === p.id,
@@ -364,7 +396,14 @@ export function createDataToolsRouter(store) {
         });
         return { created: p.entries.length };
       });
-      res.json(result);
+      res.set("Cache-Control", "no-store");
+      res.json({
+        ...result,
+        credentials: {
+          filename: `people-login-credentials-${p.id}.xlsx`,
+          base64: Buffer.from(credentialBuffer).toString("base64"),
+        },
+      });
     }),
   );
   return router;

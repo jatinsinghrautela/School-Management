@@ -173,15 +173,80 @@ test("directory and workbook exports enforce visibility; imports preview, valida
   book.getWorksheet("People").getRow(2).getCell(3).value = "owner";
   assert.equal((await preview()).status, 400);
   book.getWorksheet("People").getRow(2).getCell(3).value = "student";
+  book.getWorksheet("People").getRow(3).values = [
+    "Imported Teacher",
+    "imported.teacher@test.local",
+    "teacher",
+    label,
+  ];
   const p = await preview();
   assert.equal(p.status, 200, JSON.stringify(p.data));
   assert.equal(
     (
-      await call(school + "/people-import/apply", tokens.principal, {
+      await call(school + "/people-import/apply", tokens.teacher, {
         previewId: p.data.previewId,
       })
     ).status,
+    403,
+  );
+  const applied = await call(
+    school + "/people-import/apply",
+    tokens.principal,
+    { previewId: p.data.previewId },
+  );
+  assert.equal(applied.status, 200);
+  assert.equal(applied.data.created, 2);
+  const credentialBook = new ExcelJS.Workbook();
+  await credentialBook.xlsx.load(
+    Buffer.from(applied.data.credentials.base64, "base64"),
+  );
+  const credentials = credentialBook.getWorksheet("Login credentials");
+  const temporary = credentials.getCell("D2").value;
+  assert.equal(typeof temporary, "string");
+  assert.ok(temporary.length >= 12);
+  assert.notEqual(temporary, credentials.getCell("D3").value);
+  const login = await call("/auth/login", null, {
+    email: "imported@test.local",
+    password: temporary,
+  });
+  assert.equal(login.status, 200);
+  assert.equal(login.data.user.passwordChangeRequired, true);
+  assert.equal(
+    (await call(school + "/directory", login.data.token)).status,
+    403,
+  );
+  const changed = await call("/auth/change-password", login.data.token, {
+    currentPassword: temporary,
+    password: "ImportedAccountNew123!",
+  });
+  assert.equal(changed.status, 200);
+  assert.equal(
+    (
+      await call("/auth/login", null, {
+        email: "imported@test.local",
+        password: temporary,
+      })
+    ).status,
+    401,
+  );
+  assert.equal(
+    (
+      await call("/auth/login", null, {
+        email: "imported@test.local",
+        password: "ImportedAccountNew123!",
+      })
+    ).status,
     200,
+  );
+  const teacherLogin = await call("/auth/login", null, {
+    email: "imported.teacher@test.local",
+    password: credentials.getCell("D3").value,
+  });
+  assert.equal(teacherLogin.status, 200);
+  assert.equal(teacherLogin.data.user.passwordChangeRequired, true);
+  assert.ok(!JSON.stringify(await store.all("users")).includes(temporary));
+  assert.ok(
+    !JSON.stringify(await store.all("peopleImports")).includes(temporary),
   );
   assert.equal(
     (
@@ -194,7 +259,7 @@ test("directory and workbook exports enforce visibility; imports preview, valida
   const u = (await store.all("users")).find(
     (u) => u.email === "imported@test.local",
   );
-  assert.equal(u.passwordChangeRequired, true);
+  assert.equal(u.passwordChangeRequired, false);
   assert.equal(u.role, "student");
 });
 test("unconfigured email delivery and scanner fail safely", async () => {
