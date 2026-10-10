@@ -1,7 +1,8 @@
 import { test, expect } from "@playwright/test";
+import { appearanceOptions } from "./appearance-options.js";
+test.use(appearanceOptions("dark"));
 
 test("two-option appearance toggle stays responsive", async ({ page }) => {
-  await page.emulateMedia({ colorScheme: "dark" });
   await page.setViewportSize({ width: 320, height: 844 });
   await page.goto("/");
   await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");

@@ -23,6 +23,8 @@ Email and scanner indicators report configuration only. A configured adapter sti
 
 External uptime probes, alert routing, multi-instance aggregation, encrypted backups/restore drills, retention and privacy decisions, production deployment and a controlled pilot remain Phase 4 release work. No paid monitoring service or third-party telemetry was introduced.
 
+Phase 4 now includes `npm run monitor:probe` for bounded liveness/readiness checks (five-second request deadlines, no redirect following). It returns JSON and exits nonzero on unavailable services without logging response contents. Default target is loopback port 4000. A remote host requires an HTTPS origin and `--allow-remote`, and must be a host the operator controls. Schedule/capture this command through existing infrastructure; no external alert messages are sent by the tool. `test:capacity` supplies an isolated synthetic baseline, not real MySQL sizing. Actual-host alert acceptance and multi-instance aggregation remain deployment work; start with one process.
+
 ## Validation
 
 48 API tests pass, including bucket expiry, failure/rejection separation, privacy-safe counters, full audit totals, upload totals, safe disabled states and authenticated owner-only access. Frontend production build passes. The local owner dashboard was visually reviewed with readable cards, spacing and the sign-out control visible.

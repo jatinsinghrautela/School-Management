@@ -1,4 +1,5 @@
 import { readinessProbe } from "./readiness.js";
+import { createPrivacyRouter } from "./privacy.js";
 import { requestMonitor, platformMetrics } from "./monitoring.js";
 import {
   createCalendarRouter,
@@ -1015,7 +1016,7 @@ export function createApp(
     req.school = school;
     if (
       req.user.role === "parent" &&
-      !/^\/(workspace|family|operations|tickets|document-requests|messages|inbox|school-settings|school-logo|gallery|notices)(\/|$)/.test(
+      !/^\/(privacy|workspace|family|operations|tickets|document-requests|messages|inbox|school-settings|school-logo|gallery|notices)(\/|$)/.test(
         req.path,
       )
     )
@@ -1585,6 +1586,7 @@ export function createApp(
   app.use("/api/schools/:schoolId", createOperationsRouter(store));
   app.use("/api/schools/:schoolId", createFamilySocialRouter(store));
   app.use("/api/schools/:schoolId", createSchoolMediaRouter(store, scanner));
+  app.use("/api/schools/:schoolId", createPrivacyRouter(store));
   app.use("/api", (req, res) => fail(res, 404, "API endpoint not found"));
   const webRoot = fileURLToPath(new URL("../../web/dist/", import.meta.url));
   if (existsSync(webRoot)) {

@@ -1,0 +1,67 @@
+.privacy-workspace {
+  display: grid;
+  gap: 20px;
+  min-width: 0;
+  margin-top: 20px;
+}
+.privacy-card {
+  padding: clamp(18px, 3vw, 28px);
+  min-width: 0;
+}
+.privacy-card h2,
+.privacy-card h3 {
+  margin: 0 0 12px;
+}
+.privacy-card p {
+  line-height: 1.65;
+  overflow-wrap: anywhere;
+}
+.privacy-copy {
+  white-space: pre-wrap;
+}
+.privacy-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+.privacy-card form {
+  display: grid;
+  gap: 16px;
+  margin: 18px 0;
+}
+.privacy-card label {
+  display: grid;
+  gap: 8px;
+}
+.privacy-card input,
+.privacy-card select,
+.privacy-card textarea {
+  width: 100%;
+  min-width: 0;
+}
+.privacy-card .privacy-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  line-height: 1.5;
+}
+.privacy-check input {
+  width: auto;
+  margin-top: 4px;
+  flex-shrink: 0;
+}
+.privacy-request {
+  padding: 16px 0;
+  border-top: 1px solid var(--border);
+}
+.privacy-inventory {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 12px;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 700px) {
+  .privacy-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

@@ -47,6 +47,7 @@ import { useDialogLock } from "./use-dialog-lock.js";
 import { Timetable } from "./timetable.jsx";
 import { Homework } from "./homework.jsx";
 import { Security } from "./security.jsx";
+import { Privacy } from "./privacy.jsx";
 import { AccessEditor } from "./access-editor.jsx";
 import { AttendanceCorrections } from "./attendance-corrections.jsx";
 import { DataTools } from "./data-tools.jsx";
@@ -1445,11 +1446,22 @@ function App() {
                 </>
               )}
               {page === "Security" && (
-                <Security
-                  api={api}
-                  onChanged={passwordChanged}
-                  logout={logout}
-                />
+                <>
+                  <Security
+                    api={api}
+                    onChanged={passwordChanged}
+                    logout={logout}
+                  />
+                  {school && !owner && (
+                    <Privacy
+                      key={school.id}
+                      api={api}
+                      schoolId={school.id}
+                      manager={manager}
+                      readOnly={!!support}
+                    />
+                  )}
+                </>
               )}
               {page === "Learning" && (
                 <div className="resource-grid">

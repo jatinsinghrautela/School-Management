@@ -87,15 +87,21 @@ Phase 3 publishing follow-up also implements multiple class/section notices with
 - [x] Targeted school-isolation security review/regressions, append-only persistent audit writes, production migration separation and tested table-specific runtime grants. See RUNTIME-SECURITY.md.
 - [ ] Independent penetration review, actual production privilege verification and externally protected audit retention.
 - [ ] Data retention rules, consent and privacy notices appropriate to operating jurisdictions.
+- [x] School-approved privacy notice/contact/retention publication, password-confirmed scoped personal export, tracked access/correction/deletion reviews and read-only retention inventory. Actual jurisdiction/consent approval and independently verified erasure remain acceptance gates; closing a ticket never deletes records.
 - [x] Offline encrypted MySQL/upload backup, authenticated verification, isolated synthetic MySQL restore drill and incident-response runbook. See BACKUP-RECOVERY.md and INCIDENT-RESPONSE.md.
 - [ ] Actual-host recovery acceptance, off-device storage/key custody and school-approved backup objectives/retention; verified export/deletion process.
 - [x] API/unit/integration regressions, isolated MySQL checks and six Chromium E2E checks plus five axe accessibility tests including keyboard dialog controls, responsive logout, school switching and role-specific actions. See BROWSER-TESTS.md.
 - [ ] Broader accessibility/screen-reader and cross-browser review, additional workflow coverage and actual HTTPS browser acceptance.
+- [x] Local Chromium/Firefox/WebKit matrix, privacy download/review workflow and reproducible release verifier. Manual screen-reader/device and actual HTTPS review remain separate.
 - [x] Owner-only monitoring foundation: enabled accounts, independent schools, retained audit totals, recent audited activity, upload bytes, request failures and latency. Bounded process-local counters and explicit service configuration states; external alerts and deployment acceptance remain below.
 - [ ] Production monitoring acceptance: uptime probes, actionable alerts, multi-instance aggregation and capacity testing.
+- [x] Operator-run bounded health/readiness probe and isolated synthetic authenticated-read capacity baseline; failure exit codes are ready for operator-approved alert routing. Actual-host monitoring/capacity and multi-instance aggregation are deferred.
 - [x] Production configuration preflight, loopback-proxy HTTPS gate, uncached database readiness, bounded pool/probes and shutdown handling. See DEPLOYMENT-CHECKS.md.
 - [ ] Actual HTTPS deployment, infrastructure secret/network isolation and production CSP/browser acceptance.
+- [x] Later-deployment guide, unfilled production environment/proxy templates and signed-off pilot checklist. No domain is available; live setup is deferred at the user's request.
 - [ ] Pilot with synthetic data first, then a controlled school trial after release checks.
+
+Phase 4 local implementation and release tooling are documented in PHASE-4.md. The unchecked independent/school/infrastructure gates cannot be certified by local development tests; they remain required before real student data. Domain/host setup is documented for later, with no paid integration introduced.
 
 ## Phase 5: Mobile — after web acceptance
 

@@ -227,7 +227,29 @@ try {
     locale: "en-IN",
     timeZone: "Asia/Kolkata",
     version: 1,
+    privacy: {
+      notice: "Synthetic privacy notice",
+      retention: "Reviewed fixture retention",
+      jurisdiction: "Fixture",
+      contactEmail: "privacy@fixture.local",
+      version: 1,
+    },
   });
+  assert.deepEqual(
+    (await store.all("schoolSettings", sid)).find((s) => s.id === settings.id)
+      .privacy,
+    settings.privacy,
+  );
+  await store.put("tickets", {
+    ...ticket,
+    category: "privacy",
+    privacyType: "deletion",
+  });
+  const privacyTicket = (await store.all("tickets", sid)).find(
+    (t) => t.id === ticket.id,
+  );
+  assert.equal(privacyTicket.category, "privacy");
+  assert.equal(privacyTicket.privacyType, "deletion");
   await conflict(() =>
     store.put("schoolSettings", { ...settings, id: duplicate }),
   );

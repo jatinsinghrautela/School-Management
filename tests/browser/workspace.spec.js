@@ -54,6 +54,12 @@ test("notice dialog traps keyboard focus, locks scrolling and restores focus", a
   expect(await page.evaluate(() => document.body.style.overflow)).not.toBe(
     "hidden",
   );
+  await trigger.focus();
+  await page.keyboard.press("Enter");
+  await expect(dialog).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(dialog).toHaveCount(0);
+  await expect(trigger).toBeFocused();
 });
 
 test("director can switch between assigned schools", async ({ page }) => {

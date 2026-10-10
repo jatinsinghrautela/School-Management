@@ -1,0 +1,16 @@
+# Replace only after you control this hostname and the deployment host.
+school.example.invalid {
+    # Multipart overhead; the API still limits each file to five MB.
+    request_body {
+        max_size 6MB
+    }
+    reverse_proxy 127.0.0.1:4000 {
+        header_up X-Forwarded-Proto {scheme}
+        header_up X-Forwarded-Host {host}
+        header_up X-Forwarded-For {remote_host}
+        transport http {
+            dial_timeout 5s
+            response_header_timeout 30s
+        }
+    }
+}

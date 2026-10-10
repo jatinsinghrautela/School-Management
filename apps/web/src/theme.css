@@ -338,11 +338,17 @@ html[data-theme="dark"] body {
   color: #edf6f3;
   border-color: #3b5654;
 }
-[data-theme="dark"] :is(input, textarea, select),
-[data-theme="dark"] select::picker(select) {
+[data-theme="dark"] :is(input, textarea, select) {
   background: #102126 !important;
   color: #edf6f3 !important;
   border-color: #526e6c;
+}
+@supports selector(select::picker(select)) {
+  [data-theme="dark"] select::picker(select) {
+    background: #102126 !important;
+    color: #edf6f3 !important;
+    border-color: #526e6c;
+  }
 }
 [data-theme="dark"]
   :is(

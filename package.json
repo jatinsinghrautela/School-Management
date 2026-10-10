@@ -25,7 +25,12 @@
     "db:grants": "npm run db:grants -w apps/api --",
     "db:permissions": "npm run db:permissions -w apps/api",
     "deploy:check": "npm run deploy:check -w apps/api --",
-    "test:e2e": "npm run build && playwright test"
+    "test:e2e": "npm run build && playwright test",
+    "test:browsers": "npm run build && node scripts/browser-matrix.js",
+    "test:capacity": "node scripts/capacity-check.js",
+    "monitor:probe": "node apps/api/src/uptime-cli.js",
+    "release:verify": "node scripts/release-verify.js",
+    "release:container": "node scripts/container-verify.js"
   },
   "devDependencies": {
     "@axe-core/playwright": "4.13.0",

@@ -314,3 +314,15 @@ Removed the stationary yellow and pale-blue arcs highlighted by the user, leavin
 Clipped the moon shading inside the circular ball so it cannot distort the outline. Enlarged the ball to fill the rounded track end and added a gradient outer rim. Reduced the control to 88 by 44 pixels on desktop and 76 by 40 pixels on small screens, retaining rolling transitions, idle animation and reduced-motion support.
 
 Validation: web build, preference/animation regression and responsive checks passed. Inspected rendered light and dark endpoints; the responsive test verifies the compact width and layout at 320, 390 and 768 pixels.
+
+## 2026-10-10 - Phase 4 local release bundle
+
+Implemented school privacy notices with leadership approval and version checks, password-confirmed exports restricted to the requesting account, reviewed access/correction/deletion requests, and a leadership record inventory. Privacy requests use the existing Operations workflow; closing a request does not erase records. Owner and support sessions cannot perform personal exports or privacy mutations. Added the Security-page interface and documented reviewed disclosure, retention, holds and backup handling without inventing jurisdiction requirements.
+
+Added bounded health/readiness probes, isolated synthetic capacity checks, a local release evidence report and a three-engine browser verifier. Each engine receives a fresh server so real authentication limits remain intact. Fixed Firefox dark input contrast by isolating its unsupported picker selector and WebKit dialog focus restoration for pointer and keyboard interactions. Added CI verification and optional container tooling; the container fallback remains unverified because Docker image download failed with the system drive full.
+
+Documented later domain/HTTPS setup, production configuration, privacy operations and pilot acceptance. The user has no domain yet. Real-data release still requires school-approved privacy/consent/retention, independent security and manual accessibility review, actual-host deployment/restore acceptance and a controlled pilot. These external gates remain open in the plan.
+
+Validation: final release verifier passed all 60 API tests, production build, all 54 browser scenarios (18 each in Chromium, Firefox and WebKit), and the isolated capacity check. Dependency audit reported zero vulnerabilities. Disposable MySQL operations checks passed privacy metadata roundtrips; development database preflight and local health/readiness probes passed. Visually inspected the dark privacy screen for spacing and readability. The report records the pre-commit revision and dirty working tree explicitly rather than claiming clean commit evidence.
+
+Firefox/WebKit installs exposed a full C: drive. Only browser caches installed during this work were removed, and test browsers were installed in ignored apps/api/data/browsers on D:. C: remains nearly full; free system-drive space before further Docker work. No school database or user files were deleted. Remote CI, live HTTPS and container verification are not claimed as passed.

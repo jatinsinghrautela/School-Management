@@ -5,6 +5,7 @@ export function useDialogLock() {
   useEffect(() => {
     let current = null,
       previousFocus = null,
+      pointerOpener = null,
       previousOverflow = "";
     const focusable = () =>
       current
@@ -21,7 +22,10 @@ export function useDialogLock() {
       const next = dialogs[dialogs.length - 1] || null;
       if (next === current) return;
       if (!current && next) {
-        previousFocus = document.activeElement;
+        previousFocus = pointerOpener?.isConnected
+          ? pointerOpener
+          : document.activeElement;
+        pointerOpener = null;
         previousOverflow = document.body.style.overflow;
         document.body.style.overflow = "hidden";
       }
@@ -33,7 +37,10 @@ export function useDialogLock() {
       }
     };
     const keydown = (e) => {
-      if (!current) return;
+      if (!current) {
+        pointerOpener = null;
+        return;
+      }
       if (e.key === "Escape") {
         const close = current.querySelector('[aria-label^="Close"]');
         if (close) {
@@ -65,12 +72,20 @@ export function useDialogLock() {
       }
     };
     const observer = new MutationObserver(sync);
+    // WebKit does not focus buttons on pointer click by default. Remember the
+    // pointer opener; keyboard actions use the actual focused element instead.
+    const pointerdown = (e) => {
+      const target = e.target.closest?.("button:not(:disabled),a[href]");
+      if (!current) pointerOpener = target;
+    };
     observer.observe(document.body, { childList: true, subtree: true });
     sync();
     document.addEventListener("keydown", keydown);
+    document.addEventListener("pointerdown", pointerdown, true);
     return () => {
       observer.disconnect();
       document.removeEventListener("keydown", keydown);
+      document.removeEventListener("pointerdown", pointerdown, true);
       if (current) document.body.style.overflow = previousOverflow;
     };
   }, []);

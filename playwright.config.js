@@ -6,6 +6,10 @@ export default defineConfig({
   workers: 1,
   retries: 0,
   reporter: "list",
+  projects: (process.env.BROWSER_MATRIX === "all"
+    ? ["chromium", "firefox", "webkit"]
+    : ["chromium"]
+  ).map((browserName) => ({ name: browserName, use: { browserName } })),
   use: {
     baseURL: "http://127.0.0.1:4100",
     viewport: { width: 1280, height: 800 },
