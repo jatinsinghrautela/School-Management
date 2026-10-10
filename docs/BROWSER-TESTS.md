@@ -11,3 +11,5 @@ Five additional accessibility tests use the pinned free axe-core checker with WC
 Failure traces are saved under ignored `test-results/`. Open a specific trace with `npx playwright show-trace <trace.zip>`. Keep these checks synthetic; traces can contain page content and must not be collected against real student records.
 
 This suite complements API and isolated MySQL checks. It is a Chromium regression baseline, not a complete accessibility audit, cross-browser certification or production deployment acceptance. Screen-reader review, further contrast coverage, additional viewport/content combinations and actual HTTPS proxy testing remain release work.
+
+Two theme tests verify the default system setting, live OS preference changes, persistent explicit overrides and automated dark-mode contrast checks on login, the principal dashboard and publishing dialog. Theme preferences are local browser settings, independent of account credentials.

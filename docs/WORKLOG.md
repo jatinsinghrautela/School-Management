@@ -254,3 +254,9 @@ Validation: production web build passed; all six browser tests passed. Dependenc
 Added five pinned axe-core/Playwright accessibility tests with WCAG 2 A/AA and 2.1 A/AA tags across login at desktop/mobile sizes, four role dashboards, notice views and publishing dialogs. Fixed detected low contrast in sidebar connection text, role text, avatar initials, form labels and modal legends. Tests use the existing isolated synthetic server and run in the existing CI command without paid services. No rule suppressions. Automated scans complement rather than replace screen-reader and broader accessibility review.
 
 Validation: production web build passed; all 11 browser tests passed (six workflow regressions and five accessibility tests). Dependency audit reported zero vulnerabilities.
+
+## 2026-10-10 — System, light and dark themes
+
+Added a keyboard-accessible Theme selector on login, the workspace header and mandatory-password setup. System is the default and follows OS preference changes live. Explicit light/dark choices persist in browser local storage, synchronize across tabs and remain usable when storage is blocked. Theme changes use CSS without animation loops, network services or new packages. Dark surfaces include navigation, panels, forms, dialogs, tables and operation controls; contrast scans caught and corrected inherited light-theme text. Exported documents retain their own formatting. Added browser checks for system tracking, persistence and dark login/dashboard/dialog accessibility.
+
+Validation: all 13 browser tests passed, including theme behavior and dark-mode axe scans. Final web build passed after extending dark styles to operational helper surfaces.

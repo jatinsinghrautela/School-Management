@@ -27,6 +27,7 @@ import {
 import "./styles.css";
 import { Academics, ExamResults } from "./academics.jsx";
 import "./glass.css";
+import { ThemeProvider, ThemeSwitch } from "./theme.jsx";
 import { BRAND_NAME } from "./brand.js";
 import { useDialogLock } from "./use-dialog-lock.js";
 import { Timetable } from "./timetable.jsx";
@@ -347,6 +348,7 @@ function App() {
   if (user.passwordChangeRequired && !support)
     return (
       <main className="password-gate-page">
+        <ThemeSwitch />
         <Security
           api={api}
           required
@@ -518,6 +520,7 @@ function App() {
             </span>
           </div>
           <div className="top-actions">
+            <ThemeSwitch />
             {mode === "demo" && (
               <span className="demo-pill">DEMO · ephemeral data</span>
             )}
@@ -2199,6 +2202,7 @@ function Login({ api, onLogin, error }) {
   }
   return (
     <div className="login-page">
+      <ThemeSwitch />
       <section className="login-story">
         <a className="brand" href="#">
           <span className="brand-icon">
@@ -2905,4 +2909,8 @@ function Editor({
     </div>
   );
 }
-createRoot(document.getElementById("root")).render(<App />);
+createRoot(document.getElementById("root")).render(
+  <ThemeProvider>
+    <App />
+  </ThemeProvider>,
+);
