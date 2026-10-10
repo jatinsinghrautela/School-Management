@@ -98,9 +98,25 @@ export function ThemeSwitch() {
             <stop offset="1" stopColor="#f4ad43" />
           </radialGradient>
           <clipPath id={`${sceneId}-clip`}>
-            <rect x="2" y="5" width="176" height="78" rx="39" />
+            <rect x="8" y="8" width="164" height="72" rx="36" />
           </clipPath>
+          <clipPath id={`${sceneId}-ball`}>
+            <circle cx="44" cy="44" r="35" />
+          </clipPath>
+          <linearGradient id={`${sceneId}-rim`} x2="1" y2="1">
+            <stop stopColor="#ffdbab" />
+            <stop offset=".45" stopColor="#5869a9" />
+            <stop offset="1" stopColor="#05b9ed" />
+          </linearGradient>
         </defs>
+        <rect
+          x="2"
+          y="2"
+          width="176"
+          height="84"
+          rx="42"
+          fill={`url(#${sceneId}-rim)`}
+        />
         <g clipPath={`url(#${sceneId}-clip)`}>
           <rect
             x="2"
@@ -143,22 +159,24 @@ export function ThemeSwitch() {
         </g>
         <g className="scene-thumb">
           <g className="scene-ball">
-            <circle cx="44" cy="44" r="37" fill="#0b2850" />
-            <circle cx="44" cy="44" r="32" fill={`url(#${sceneId}-pearl)`} />
-            <circle
-              className="scene-sun"
-              cx="44"
-              cy="44"
-              r="32"
-              fill={`url(#${sceneId}-sun)`}
-            />
-            <circle
-              className="scene-phase"
-              cx="35"
-              cy="33"
-              r="27"
-              fill="#153b56"
-            />
+            <circle cx="44" cy="44" r="42" fill="#071d3d" />
+            <g clipPath={`url(#${sceneId}-ball)`}>
+              <circle cx="44" cy="44" r="35" fill={`url(#${sceneId}-pearl)`} />
+              <circle
+                className="scene-sun"
+                cx="44"
+                cy="44"
+                r="35"
+                fill={`url(#${sceneId}-sun)`}
+              />
+              <circle
+                className="scene-phase"
+                cx="35"
+                cy="33"
+                r="27"
+                fill="#153b56"
+              />
+            </g>
           </g>
         </g>
       </svg>

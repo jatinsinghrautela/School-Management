@@ -14,6 +14,9 @@ test("two-option appearance toggle stays responsive", async ({ page }) => {
     .getByRole("button", { name: "Sign in to Schoolglass Desk" })
     .click();
   await expect(page.getByRole("button", { name: "Toggle menu" })).toBeVisible();
+  expect(
+    (await page.getByRole("switch", { name: "Dark mode" }).boundingBox()).width,
+  ).toBeLessThanOrEqual(76);
   for (const width of [320, 390, 768]) {
     await page.setViewportSize({ width, height: 844 });
     const header = await page.locator(".topbar").boundingBox();
