@@ -8,7 +8,10 @@ export function requestMonitor(clock = Date.now) {
   }
   return {
     middleware(req, res, next) {
-      if (!req.path.startsWith("/api/") || req.path === "/api/health")
+      if (
+        !req.path.startsWith("/api/") ||
+        ["/api/health", "/api/ready"].includes(req.path)
+      )
         return next();
       const begin = clock();
       res.once("finish", () => {

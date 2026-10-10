@@ -83,6 +83,8 @@ export async function createStore(
           password: process.env.MYSQL_PASSWORD,
           database: process.env.MYSQL_DATABASE || "orbit_school",
           connectionLimit: 5,
+          connectTimeout: 5000,
+          queueLimit: 20,
           dateStrings: true,
         })
       : null;
@@ -163,6 +165,21 @@ export async function createStore(
   }
   return {
     mode,
+    async healthCheck() {
+      if (!pool) return true;
+      const connection = await pool.getConnection();
+      let healthy = false;
+      try {
+        await connection.query({ sql: "SELECT 1", timeout: 1500 });
+        healthy = true;
+        return true;
+      } catch {
+        return false;
+      } finally {
+        if (healthy) connection.release();
+        else connection.destroy();
+      }
+    },
     async findUser(field, value) {
       if (!["id", "email"].includes(field))
         throw new Error("Invalid user lookup");

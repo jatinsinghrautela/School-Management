@@ -1,3 +1,4 @@
+import { readinessProbe } from "./readiness.js";
 import { requestMonitor, platformMetrics } from "./monitoring.js";
 import {
   createCalendarRouter,
@@ -59,6 +60,10 @@ export function createApp(
   const app = express(),
     sessions = tokenRepository(store, "session"),
     resets = tokenRepository(store, "reset");
+  const production = process.env.NODE_ENV === "production";
+  if (production) app.set("trust proxy", "loopback");
+  const readiness = readinessProbe(() => store.healthCheck());
+  app.locals.readiness = readiness;
   const monitor = requestMonitor();
   app.use(monitor.middleware);
   app.use(
@@ -67,10 +72,22 @@ export function createApp(
         directives: {
           "style-src": ["'self'"],
           "font-src": ["'self'"],
+          "upgrade-insecure-requests": production ? [] : null,
         },
       },
     }),
   );
+  app.use((req, res, next) => {
+    if (req.path.startsWith("/api/"))
+      res.setHeader("Cache-Control", "private, no-store");
+    if (
+      production &&
+      !req.secure &&
+      !["/api/health", "/api/ready"].includes(req.path)
+    )
+      return res.status(403).json({ error: "HTTPS is required" });
+    next();
+  });
   app.use(express.json({ limit: "100kb" }));
   app.use((req, res, next) => {
     if (
@@ -202,6 +219,10 @@ export function createApp(
   app.get("/api/health", (req, res) =>
     res.json({ status: "ok", mode: store.mode }),
   );
+  app.get("/api/ready", async (req, res) => {
+    const report = await readiness.read();
+    res.status(report.status === "ready" ? 200 : 503).json(report);
+  });
   app.use(
     "/api/auth",
     rateLimit({

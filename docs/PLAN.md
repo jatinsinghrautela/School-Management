@@ -92,7 +92,8 @@ Phase 3 publishing follow-up also implements multiple class/section notices with
 - [ ] Unit/integration/E2E test suite including MySQL and keyboard/accessibility tests.
 - [x] Owner-only monitoring foundation: enabled accounts, independent schools, retained audit totals, recent audited activity, upload bytes, request failures and latency. Bounded process-local counters and explicit service configuration states; external alerts and deployment acceptance remain below.
 - [ ] Production monitoring acceptance: uptime probes, actionable alerts, multi-instance aggregation and capacity testing.
-- [ ] Secure HTTPS deployment, infrastructure secrets, CSP tuned to production assets, database isolation.
+- [x] Production configuration preflight, loopback-proxy HTTPS gate, uncached database readiness, bounded pool/probes and shutdown handling. See DEPLOYMENT-CHECKS.md.
+- [ ] Actual HTTPS deployment, infrastructure secret/network isolation and production CSP/browser acceptance.
 - [ ] Pilot with synthetic data first, then a controlled school trial after release checks.
 
 ## Phase 5: Mobile — after web acceptance

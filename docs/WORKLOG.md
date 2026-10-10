@@ -234,3 +234,11 @@
 - Rechecked actor/target permissions inside account status/profile/access/recovery transactions, validated proposed assignments against the refreshed actor and made assisted token creation/audit atomic. Support sessions now require the initiating owner role to remain current. Raw API exception text is no longer logged.
 - Added adversarial independent-school, guessed-ID, client-scope injection, cross-school notice and account-movement regression tests. Added a synthetic MySQL restricted-account drill and CI coverage.
 - Validation: 54 API tests, production build, restricted-account MySQL drill, persistent authentication checks and recovery compatibility drill (57 tables/154 foreign keys) pass. Updated runtime-security operating guide, architecture, README, environment configuration and Phase 4 checklist. Independent penetration review and actual production privilege/audit retention acceptance remain open.
+
+## 2026-10-10 — Deployment preflight and readiness milestone
+
+- Added production configuration checks before store startup and an operator deploy:check command with optional read-only schema/connectivity checks. Invalid/demo/default-secret, public-bind, proxy, URL, partial SMTP and runtime recovery-secret settings are rejected without printing values.
+- Added trusted loopback-proxy HTTPS enforcement for production application traffic, preserved CSP and disabled insecure-request upgrades only in development. API responses now prohibit caching.
+- Added a separate database readiness endpoint with five-second caching, shared concurrent probes, a two-second deadline and bounded retries while a dependency remains pending. Failed probe connections are discarded; pool connect time and queue are bounded. Liveness remains separate and both probes are excluded from request KPIs.
+- Added SIGINT/SIGTERM readiness draining, maintenance cancellation and connection/store shutdown with a ten-second failure deadline. Actual service-manager signal acceptance remains external work.
+- Validation: 58 API tests and production build pass; development/read-only MySQL preflight passes, production preflight correctly rejects current development settings and live demo readiness reports ready. Updated deployment guide, configuration, README and Phase 4 checklist. Actual HTTPS deployment and remaining host/school release checks are still pending.

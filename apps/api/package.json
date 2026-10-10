@@ -17,7 +17,8 @@
     "backup:restore": "node src/backup-cli.js restore",
     "db:recovery": "node src/check-recovery.js",
     "db:grants": "node src/database-grants-cli.js",
-    "db:permissions": "node src/check-permissions.js"
+    "db:permissions": "node src/check-permissions.js",
+    "deploy:check": "node src/deployment-check-cli.js"
   },
   "dependencies": {
     "bcryptjs": "^3.0.2",

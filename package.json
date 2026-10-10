@@ -23,7 +23,8 @@
     "backup:restore": "npm run backup:restore -w apps/api --",
     "db:recovery": "npm run db:recovery -w apps/api",
     "db:grants": "npm run db:grants -w apps/api --",
-    "db:permissions": "npm run db:permissions -w apps/api"
+    "db:permissions": "npm run db:permissions -w apps/api",
+    "deploy:check": "npm run deploy:check -w apps/api --"
   },
   "devDependencies": {
     "concurrently": "^9.2.0",
