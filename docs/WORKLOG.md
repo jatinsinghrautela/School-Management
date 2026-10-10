@@ -330,3 +330,7 @@ Firefox/WebKit installs exposed a full C: drive. Only browser caches installed d
 ## 2026-10-10 - Login demo guidance and footer spacing
 
 Login now checks the backend health mode and only renders demo shortcuts when it explicitly reports demo mode. MySQL and unavailable backends expose no demo credentials. Moved the login footer into normal document flow with a 24px gap so expanding content cannot overlap it. Validation: production build passed; Chromium checks against the running MySQL app at 1366x600 and 390x700 confirmed hidden demo guidance and a 24px gap below the login card.
+
+## 2026-10-10 - Fictional school account import workbooks
+
+Filled the supplied People import template with two separate sets of 24 fictional Indian students and 6 teachers, using unique name-based @whss.sgd and @sas.sgd identifiers. Each set spans Grades 6, 7 and 8, sections A/B, academic year 2026–2027. The supplied class lookup was empty, so these are proposed class choices that must be created with matching labels in each target school before import. Preserved import headers and role validation, original workbook sheets and first-school identity; the second workbook uses SAS Demo School. Verified saved row counts, plain-text fields, unique domains/class choices, and rendered readability. No accounts were imported. Current bulk import requires administrator-assisted recovery before users can set their initial password and log in; these identifiers do not provide mailboxes.
