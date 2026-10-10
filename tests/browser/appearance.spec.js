@@ -22,9 +22,25 @@ test("toggle follows system initially and remembers an explicit choice", async (
   await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
   await page.emulateMedia({ colorScheme: "light" });
   await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+  await expect(toggle.locator(".scene-day-sky")).toHaveCSS("opacity", "1");
+  await expect(toggle.locator(".scene-sun")).toHaveCSS("opacity", "1");
+  await expect(toggle.locator(".scene-night-details")).toHaveCSS(
+    "opacity",
+    "0",
+  );
+  await expect(toggle.locator(".scene-ball")).not.toHaveCSS(
+    "transform",
+    "none",
+  );
+  await toggle.screenshot({ path: "apps/api/data/toggle-day-review.png" });
   await toggle.click();
   await page.reload();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+  await expect(toggle.locator(".scene-day-sky")).toHaveCSS("opacity", "0");
+  await expect(toggle.locator(".scene-night-details")).toHaveCSS(
+    "opacity",
+    "1",
+  );
 });
 
 for (const colorScheme of ["light", "dark"]) {
