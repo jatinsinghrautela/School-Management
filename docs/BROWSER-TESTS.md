@@ -6,6 +6,8 @@ Install dependencies with `npm ci`, install the local browser with `npx playwrig
 
 Coverage includes built-app script errors, desktop logout visibility at 1280 × 800, mobile menu/logout and horizontal overflow at 390 × 844, dialog focus entry/wrapping/Escape/restoration and scroll locking, assigned-school switching, teacher notice targeting, disabled resource uploads and student read-only actions.
 
+Five additional accessibility tests use the pinned free axe-core checker with WCAG 2 A/AA and 2.1 A/AA rule tags. They scan desktop/mobile login, owner/principal/teacher/student dashboards, school-role notice screens and principal/teacher publishing dialogs. Scans fail on any detected violation; rules are not excluded to hide failures. Automated checks cannot establish complete WCAG conformance.
+
 Failure traces are saved under ignored `test-results/`. Open a specific trace with `npx playwright show-trace <trace.zip>`. Keep these checks synthetic; traces can contain page content and must not be collected against real student records.
 
-This suite complements API and isolated MySQL checks. It is a Chromium regression baseline, not a complete accessibility audit, cross-browser certification or production deployment acceptance. Screen-reader review, contrast checks, additional viewport/content combinations and actual HTTPS proxy testing remain release work.
+This suite complements API and isolated MySQL checks. It is a Chromium regression baseline, not a complete accessibility audit, cross-browser certification or production deployment acceptance. Screen-reader review, further contrast coverage, additional viewport/content combinations and actual HTTPS proxy testing remain release work.

@@ -201,7 +201,7 @@ nav {
   display: block;
   margin: 9px 0 0;
   font-size: 9px;
-  color: #a4a8b5;
+  color: #596577;
 }
 .profile {
   display: flex;
@@ -218,7 +218,7 @@ nav {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #b58355;
+  color: #80532c;
   font-size: 11px;
   font-weight: 700;
 }
@@ -229,7 +229,7 @@ nav {
 }
 .profile small {
   text-transform: capitalize;
-  color: #a1a5b3;
+  color: #596577;
   font-size: 9px;
   display: block;
   margin-top: 4px;
@@ -946,7 +946,7 @@ td:first-child {
   margin-bottom: 17px;
   font-size: 11px;
   font-weight: 550;
-  color: #737788;
+  color: #596577;
 }
 .modal input,
 .modal select,
@@ -978,7 +978,7 @@ td:first-child {
 }
 .modal legend {
   font-size: 11px;
-  color: #838397;
+  color: #596577;
 }
 .checkbox {
   display: flex;

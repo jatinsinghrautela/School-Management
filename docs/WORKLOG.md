@@ -248,3 +248,9 @@
 Added pinned free Playwright tooling, six Chromium checks against the built web app served by an isolated demo API on port 4100, and GitHub Actions browser execution. Checks cover script errors, desktop/mobile logout visibility, horizontal overflow, dialog keyboard focus wrapping/Escape/restoration/scroll locking, assigned school switching, teacher notice targeting, disabled uploads and student read-only actions. No live preview or MySQL data is changed.
 
 Validation: production web build passed; all six browser tests passed. Dependency audit reported zero vulnerabilities. Initial runner launch overlapped the browser download; rerun after installation and corrected seeded-fixture expectations passed. No product code changes were needed for the covered behaviors. Broader accessibility, cross-browser and actual HTTPS deployment checks remain open. See BROWSER-TESTS.md.
+
+## 2026-10-10 — Automated accessibility and text contrast
+
+Added five pinned axe-core/Playwright accessibility tests with WCAG 2 A/AA and 2.1 A/AA tags across login at desktop/mobile sizes, four role dashboards, notice views and publishing dialogs. Fixed detected low contrast in sidebar connection text, role text, avatar initials, form labels and modal legends. Tests use the existing isolated synthetic server and run in the existing CI command without paid services. No rule suppressions. Automated scans complement rather than replace screen-reader and broader accessibility review.
+
+Validation: production web build passed; all 11 browser tests passed (six workflow regressions and five accessibility tests). Dependency audit reported zero vulnerabilities.
