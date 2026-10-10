@@ -261,9 +261,14 @@ Added a keyboard-accessible Theme selector on login, the workspace header and ma
 
 Validation: all 13 browser tests passed, including theme behavior and dark-mode axe scans. Final web build passed after extending dark styles to operational helper surfaces.
 
-
 ## 2026-10-10 — Responsive theme controls and dark dropdowns
 
 Removed absolute positioning from the mobile login theme control and gave it its own grid row. Workspace headers below 1000px now grow with wrapped controls, keeping the school selector and theme control above content rather than overlapping cards. Added dark option backgrounds/text and contrasting hover/selected/checkmark formatting across dropdowns. Theme selects reserve space for their arrow. Added a regression checking login separation, header/content boundaries and horizontal overflow at 320/390/768px, plus dark option colors.
 
 Validation: web build and all 14 browser tests passed, including the new responsive layout and dark option regression.
+
+## 2026-10-10 - School-first workspace branding
+
+School workspaces now use their own display name and scanned uploaded logo in the main brand position, with an original initials-based fallback logo. The platform owner portal and shared login retain platform identity. A small Powered by Schoolglass Desk credit remains in the sidebar. Existing audited school-scoped accent settings drive buttons, navigation, sidebar/header tint and hero decoration, with calculated black/white text contrast. Managers can choose Forest, Ocean, Violet, Rose or Amber presets in Settings, or keep a custom hex accent. Personal System/Light/Dark brightness preferences remain independent. Added a principal-to-student palette persistence test and kept school-switch checks. Navigation background fading was removed to keep text contrast stable during selection.
+
+Validation: production web build and all 15 browser tests passed, including school palette sharing, school switching, responsive layouts and light/dark accessibility scans.

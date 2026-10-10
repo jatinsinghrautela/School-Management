@@ -9,6 +9,7 @@ async function check(page) {
     results.violations.map(({ id, nodes }) => ({
       id,
       targets: nodes.map((node) => node.target),
+      details: nodes.map((node) => node.any.map((check) => check.message)),
     })),
   ).toEqual([]);
 }

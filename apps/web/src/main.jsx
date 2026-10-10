@@ -28,6 +28,7 @@ import "./styles.css";
 import { Academics, ExamResults } from "./academics.jsx";
 import "./glass.css";
 import { ThemeProvider, ThemeSwitch } from "./theme.jsx";
+import { SchoolIdentity, schoolColors } from "./school-brand.jsx";
 import { BRAND_NAME } from "./brand.js";
 import { useDialogLock } from "./use-dialog-lock.js";
 import { Timetable } from "./timetable.jsx";
@@ -373,8 +374,8 @@ function App() {
     : null;
   return (
     <div
-      className="shell"
-      style={{ "--school-accent": data?.schoolSettings?.accent || "#11796f" }}
+      className={owner ? "shell" : "shell school-branded"}
+      style={schoolColors(data?.schoolSettings?.accent)}
     >
       {mobile && narrow && (
         <button
@@ -395,11 +396,24 @@ function App() {
             setPage(user.role === "parent" ? "Family" : "Overview");
           }}
         >
-          <span className="brand-icon">
-            <Orbit size={25} />
-          </span>
-          {BRAND_NAME}
-          <span className="brand-dot">.</span>
+          {owner ? (
+            <>
+              <span className="brand-icon">
+                <Orbit size={25} />
+              </span>
+              {BRAND_NAME}
+              <span className="brand-dot">.</span>
+            </>
+          ) : (
+            <SchoolIdentity
+              name={
+                data?.schoolSettings?.displayName ||
+                school?.name ||
+                "Your school"
+              }
+              logo={data?.schoolSettings?.logoDataUri}
+            />
+          )}
         </a>
         <div className="workspace-tag">
           {owner ? "PLATFORM CONSOLE" : "SCHOOL WORKSPACE"}
@@ -462,6 +476,9 @@ function App() {
           })}
         </nav>
         <div className="sidebar-bottom">
+          {!owner && (
+            <small className="powered-by">Powered by {BRAND_NAME}</small>
+          )}
           <div className="connected">
             <span />
             All systems connected
@@ -1242,6 +1259,7 @@ function App() {
                   key={sid}
                   api={api}
                   schoolId={sid}
+                  schoolName={school?.name}
                   readOnly={!!support}
                   refresh={refresh}
                 />

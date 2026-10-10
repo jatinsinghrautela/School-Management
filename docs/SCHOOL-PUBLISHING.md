@@ -42,10 +42,21 @@ Photos accept PNG/JPEG up to **5 MB**, **4096 × 4096**, and **16 megapixels**. 
 
 Migration **v9** adds the gallery table and scoped file/school/user foreign keys; existing notices use metadata extensions for their multiple targets. Back up before upgrading.
 
-- `npm test`: 46 passing tests, including teacher scope, parent notice isolation, atomic guardian onboarding/reuse/rollback, image dimensions/pixel checks, metadata removal, branded downloads/exports and unavailable-scanner failure.
-- `npm run build`: production build passes; no PDF library was added to the frontend bundle.
-- `npm run db:operations`: typed gallery boolean round-trip and cross-school file constraint checks pass using disposable fixtures.
+-
+
+pm test`: 46 passing tests, including teacher scope, parent notice isolation, atomic guardian onboarding/reuse/rollback, image dimensions/pixel checks, metadata removal, branded downloads/exports and unavailable-scanner failure.
+-
+
+pm run build`: production build passes; no PDF library was added to the frontend bundle.
+-
+
+pm run db:operations`: typed gallery boolean round-trip and cross-school file constraint checks pass using disposable fixtures.
+
 - Browser: multiple class selection/publication, teacher-only assigned-class choices and own publication visibility, focused fee ledger, integrated guardian review and disabled gallery/logo upload controls reviewed. Screenshot evidence is in docs/screenshots.
 - A synthetic two-page branded resource PDF was rendered and both pages reviewed. No real student images or records were used.
 
 SMTP/ClamAV infrastructure acceptance checks remain pending configuration. Phase 4 release requirements still apply before real student data.
+
+## School workspace identity
+
+After login, the workspace uses the selected school display name and uploaded logo, or an original initials-based fallback. Settings offers Forest, Ocean, Violet, Rose and Amber school palettes alongside custom hex accent configuration. Palette changes use the existing school-scoped, versioned settings save and apply to all members; personal Light/Dark/System preferences still control brightness. The shared login and owner console retain platform branding, while school workspaces show a small Powered by Schoolglass Desk credit.

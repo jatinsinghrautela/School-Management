@@ -1,4 +1,5 @@
 import { LogoUpload } from "./school-media.jsx";
+import { schoolPalettes } from "./school-brand.jsx";
 import React, { useEffect, useRef, useState, useId } from "react";
 const f = (name, label, type = "text", options = null) => ({
   name,
@@ -1337,7 +1338,13 @@ export function Family({
     </div>
   );
 }
-export function SchoolSettings({ api, schoolId, readOnly, refresh }) {
+export function SchoolSettings({
+  api,
+  schoolId,
+  schoolName,
+  readOnly,
+  refresh,
+}) {
   const [data, setData] = useState(null),
     [error, setError] = useState(""),
     [message, setMessage] = useState(""),
@@ -1423,6 +1430,36 @@ export function SchoolSettings({ api, schoolId, readOnly, refresh }) {
             }}
           />
         )}
+        {data && !readOnly && (
+          <div
+            className="school-palette-options"
+            role="group"
+            aria-label="School theme palettes"
+          >
+            {schoolPalettes.map(([name, accent]) => (
+              <button
+                key={name}
+                className="secondary"
+                disabled={busy}
+                aria-pressed={data.accent === accent}
+                onClick={() =>
+                  save({
+                    ...data,
+                    displayName:
+                      data.displayName || schoolName || "Your school",
+                    accent,
+                  })
+                }
+              >
+                {name} theme
+              </button>
+            ))}
+          </div>
+        )}
+        <p>
+          The school palette and logo apply to all members of this school.
+          Personal Light, Dark and System preferences control brightness.
+        </p>
         {data && !readOnly && (
           <Form
             key={data.version}
