@@ -1,4 +1,119 @@
 /* One shared appearance; compact controls and responsive workspace header. */
+.sidebar .nav-item {
+  transition: none;
+}
+.appearance-toggle {
+  position: relative;
+  display: inline-flex;
+  flex: 0 0 auto;
+  padding: 4px;
+  border: 1px solid #b8cbc6;
+  border-radius: 999px;
+  background: #e5efeb;
+  isolation: isolate;
+}
+[data-theme="light"] .academic-intro :is(strong, p),
+[data-theme="light"] .exam-hint {
+  color: #435365;
+}
+[data-theme="light"] th {
+  color: #435365;
+}
+[data-theme="dark"] :is(.academic-intro, .exam-hint) {
+  background: #20353b;
+  border-color: #526e6c;
+  color: #d3e4df;
+}
+[data-theme="dark"] .academic-intro :is(strong, p) {
+  color: #d3e4df;
+}
+[data-theme="dark"] :is(.report-actions, .report-totals) {
+  background: #20353b;
+}
+[data-theme="dark"] :is(.report-identity, .report-totals) :is(small, strong) {
+  color: #d3e4df;
+}
+[data-theme="dark"]
+  :is(.calendar-toolbar button:not(.primary), .calendar-entry button) {
+  background: #20353b;
+  color: #d3e4df;
+  border-color: #526e6c;
+}
+.password-gate-page > .appearance-toggle {
+  margin-bottom: 20px;
+}
+.appearance-toggle button {
+  position: relative;
+  z-index: 1;
+  min-width: 74px;
+  min-height: 34px;
+  border-radius: 999px;
+  background: transparent;
+  color: #294a40;
+  font-size: 12px;
+}
+.toggle-indicator {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  bottom: 4px;
+  width: calc((100% - 8px) / 2);
+  border-radius: 999px;
+  background: #fff;
+  box-shadow: 0 2px 6px #0002;
+  transition: transform 0.22s ease;
+}
+.toggle-indicator.dark {
+  transform: translateX(100%);
+}
+.login-side > .appearance-toggle {
+  align-self: flex-end;
+  margin-bottom: 22px;
+}
+[data-theme="dark"] .appearance-toggle {
+  background: #13262c;
+  border-color: #526e6c;
+}
+[data-theme="dark"] .appearance-toggle button {
+  color: #e3f0ed;
+}
+[data-theme="dark"] .toggle-indicator {
+  background: #34534e;
+}
+[data-theme="dark"] :is(.panel, .content, .modal) :is(p, small, .label) {
+  color: #d3e4df;
+}
+[data-theme="dark"]
+  :is(
+    .school-badge,
+    .staff-history,
+    .operation-record details p,
+    .school-brand-preview
+  ) {
+  background: #20353b;
+  color: #d3e4df;
+}
+[data-theme="dark"] .school-badge :is(strong, small),
+[data-theme="dark"] .text-button {
+  color: #d3e4df;
+}
+[data-theme="dark"] select option {
+  background: #102126;
+  color: #edf6f3;
+}
+[data-theme="dark"] select option:is(:hover, :focus, :checked) {
+  background: #30564f;
+  color: #fff;
+}
+[data-theme="dark"] select::picker-icon,
+[data-theme="dark"] select option::checkmark {
+  color: #b8f1df;
+}
+@media (prefers-reduced-motion: reduce) {
+  .toggle-indicator {
+    transition: none;
+  }
+}
 [data-theme] select {
   min-height: 34px;
   padding-block: 7px !important;
@@ -38,4 +153,126 @@
     max-width: 100%;
     min-width: 0;
   }
+}
+
+html[data-theme="dark"] {
+  --purple: #74dac7;
+  --muted: #b4c9c5;
+  --border: #3b5654;
+  color: #edf6f3;
+  background: #101d21;
+}
+html[data-theme="dark"] body {
+  background:
+    radial-gradient(ellipse at 10% 5%, #193b3c, transparent 48%),
+    radial-gradient(ellipse at 95% 25%, #2c293b, transparent 42%), #101d21;
+}
+[data-theme="dark"]
+  :is(
+    .sidebar,
+    .topbar,
+    .panel,
+    .stat-card,
+    .login-form,
+    .school-card,
+    .day-column,
+    .schedule-period,
+    .sidebar-bottom,
+    .password-gate,
+    .operation-card
+  ) {
+  background: #192b30ef;
+  color: #edf6f3;
+  border-color: #3b5654;
+  box-shadow: 0 8px 26px #0002;
+}
+[data-theme="dark"] :is(.modal, .academic-dialog, .report-modal) {
+  background: #192b30 !important;
+  color: #edf6f3;
+  border-color: #3b5654;
+}
+[data-theme="dark"] :is(input, textarea, select),
+[data-theme="dark"] select::picker(select) {
+  background: #102126 !important;
+  color: #edf6f3 !important;
+  border-color: #526e6c;
+}
+[data-theme="dark"]
+  :is(
+    h1,
+    h2,
+    h3,
+    h4,
+    td,
+    th,
+    label,
+    legend,
+    .muted,
+    .breadcrumb,
+    .nav-label,
+    .nav-item,
+    .profile small,
+    .connected small,
+    .stat-card p,
+    .stat-card small,
+    .stat-card strong,
+    .school-card p,
+    .school-card small,
+    .schedule-period p,
+    .schedule-period strong,
+    .schedule-period small,
+    .schedule-empty,
+    .date-label,
+    .theme-switch
+  ) {
+  color: #d3e4df;
+}
+[data-theme="dark"]
+  :is(
+    .panel-heading,
+    .school-card-footer,
+    thead,
+    th,
+    .secondary,
+    .schedule-period,
+    .calendar-day,
+    .calendar-form,
+    .fee-entry,
+    .student-records-body,
+    .staff-body,
+    .operation-form
+  ) {
+  background: #20353b;
+  border-color: #3b5654;
+}
+[data-theme="dark"] .secondary {
+  color: #e3f3ed;
+}
+[data-theme="dark"] :is(.nav-item.active, .primary) {
+  background: #246c60;
+  color: #fff;
+}
+[data-theme="dark"] .nav-item:hover {
+  background: #2b454a;
+}
+[data-theme="dark"] .avatar {
+  background: #344b47;
+  color: #fff0d9;
+  border-color: #61756c;
+}
+[data-theme="dark"] :is(.badge, .demo-pill, .brand-icon) {
+  background: #294940;
+  color: #cef5e5;
+  border-color: #526e6c;
+}
+[data-theme="dark"] :is(.alert, .success, .support-banner) {
+  background: #263c3b;
+  color: #f1e5d1;
+  border-color: #64766b;
+}
+[data-theme="dark"] .login-side {
+  background: transparent;
+}
+[data-theme="dark"] :is(button, a, input, select, textarea):focus-visible {
+  outline-color: #9fe8d7;
 }

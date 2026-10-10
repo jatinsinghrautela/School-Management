@@ -1,15 +1,10 @@
 import { test, expect } from "@playwright/test";
 
-test("shared appearance ignores retired theme preferences and stays responsive", async ({
-  page,
-}) => {
-  await page.addInitScript(() =>
-    localStorage.setItem("schoolglass-theme", "dark"),
-  );
+test("two-option appearance toggle stays responsive", async ({ page }) => {
   await page.emulateMedia({ colorScheme: "dark" });
   await page.setViewportSize({ width: 320, height: 844 });
   await page.goto("/");
-  await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
   await expect(page.getByRole("combobox", { name: "Color theme" })).toHaveCount(
     0,
   );

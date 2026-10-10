@@ -40,7 +40,7 @@ import {
 import "./styles.css";
 import { Academics, ExamResults } from "./academics.jsx";
 import "./glass.css";
-import "./theme.css";
+import { ThemeProvider, ThemeSwitch } from "./theme.jsx";
 import { SchoolIdentity } from "./school-brand.jsx";
 import { BRAND_NAME } from "./brand.js";
 import { useDialogLock } from "./use-dialog-lock.js";
@@ -60,8 +60,6 @@ import {
 } from "./operations.jsx";
 import { Staff } from "./staff.jsx";
 import { Fees } from "./fees.jsx";
-document.documentElement.dataset.theme = "light";
-document.documentElement.style.colorScheme = "light";
 document.title = `${BRAND_NAME} · School workspace`;
 const icons = {
   Overview: LayoutDashboard,
@@ -364,6 +362,7 @@ function App() {
   if (user.passwordChangeRequired && !support)
     return (
       <main className="password-gate-page">
+        <ThemeSwitch />
         <Security
           api={api}
           required
@@ -548,6 +547,7 @@ function App() {
             </span>
           </div>
           <div className="top-actions">
+            <ThemeSwitch />
             {mode === "demo" && (
               <span className="demo-pill">DEMO · ephemeral data</span>
             )}
@@ -2257,6 +2257,7 @@ function Login({ api, onLogin, error }) {
         <small>ONE PLATFORM. YOUR ENTIRE SCHOOL COMMUNITY.</small>
       </section>
       <section className="login-side">
+        <ThemeSwitch />
         <div className="login-form">
           <span className="eyebrow">YOUR WORKSPACE AWAITS</span>
           <h2>
@@ -2935,4 +2936,8 @@ function Editor({
     </div>
   );
 }
-createRoot(document.getElementById("root")).render(<App />);
+createRoot(document.getElementById("root")).render(
+  <ThemeProvider>
+    <App />
+  </ThemeProvider>,
+);
