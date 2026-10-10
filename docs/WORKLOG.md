@@ -260,3 +260,10 @@ Validation: production web build passed; all 11 browser tests passed (six workfl
 Added a keyboard-accessible Theme selector on login, the workspace header and mandatory-password setup. System is the default and follows OS preference changes live. Explicit light/dark choices persist in browser local storage, synchronize across tabs and remain usable when storage is blocked. Theme changes use CSS without animation loops, network services or new packages. Dark surfaces include navigation, panels, forms, dialogs, tables and operation controls; contrast scans caught and corrected inherited light-theme text. Exported documents retain their own formatting. Added browser checks for system tracking, persistence and dark login/dashboard/dialog accessibility.
 
 Validation: all 13 browser tests passed, including theme behavior and dark-mode axe scans. Final web build passed after extending dark styles to operational helper surfaces.
+
+
+## 2026-10-10 — Responsive theme controls and dark dropdowns
+
+Removed absolute positioning from the mobile login theme control and gave it its own grid row. Workspace headers below 1000px now grow with wrapped controls, keeping the school selector and theme control above content rather than overlapping cards. Added dark option backgrounds/text and contrasting hover/selected/checkmark formatting across dropdowns. Theme selects reserve space for their arrow. Added a regression checking login separation, header/content boundaries and horizontal overflow at 320/390/768px, plus dark option colors.
+
+Validation: web build and all 14 browser tests passed, including the new responsive layout and dark option regression.
