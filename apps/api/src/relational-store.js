@@ -1,3 +1,4 @@
+import { auditImmutable } from "./schema-policy.js";
 const OPERATIONS_COLLECTIONS = [
   "libraryBooks",
   "libraryLoans",
@@ -842,6 +843,7 @@ export async function relationalPut(db, kind, row, arrays = true) {
       `SELECT id FROM ${tableFor(kind)} WHERE id=?`,
       [row.id],
     );
+    if (kind === "audit" && old.length) throw auditImmutable();
     if (old.length)
       await db.execute(
         `UPDATE ${tableFor(kind)} SET ${columns

@@ -53,3 +53,4 @@ jobs:
       - run: npm run db:relational
       - run: npm run db:operations
       - run: npm run db:recovery
+      - run: npm run db:permissions

@@ -126,6 +126,7 @@ export function createApp(
         parent.expires < Date.now() ||
         !parentUser ||
         parentUser.active === false ||
+        parentUser.role !== "owner" ||
         (parent.userVersion || 0) !== (parentUser.authVersion || 0)
       )
         return fail(res, 401, "Support session ended");
@@ -161,6 +162,35 @@ export function createApp(
     req.user.role === "owner"
       ? next()
       : fail(res, 403, "Platform owner access required");
+  const managedAccount = async (tx, req, target) => {
+    await tx.lockUsers([req.user.id]);
+    const actor = (await tx.all("users")).find((u) => u.id === req.user.id);
+    const schools = await tx.all("schools");
+    if (
+      !actor ||
+      actor.active === false ||
+      (actor.authVersion || 0) !== (req.user.authVersion || 0) ||
+      !target ||
+      target.role === "owner" ||
+      target.id === actor.id ||
+      !(
+        actor.role === "owner" ||
+        (managers.includes(actor.role) &&
+          ["teacher", "student", "staff", "parent"].includes(target.role) &&
+          target.schoolIds.length > 0 &&
+          target.schoolIds.every((sid) =>
+            schools.some(
+              (school) => school.id === sid && canAccessSchool(actor, school),
+            ),
+          ))
+      )
+    )
+      throw Object.assign(
+        new Error("Account permissions changed; reload and try again"),
+        { status: 403 },
+      );
+    return actor;
+  };
   const manage = (req, res, next) =>
     managers.includes(req.user.role)
       ? next()
@@ -394,7 +424,7 @@ export function createApp(
       legacyHeaders: false,
     }),
     async (req, res) => {
-      const target = (await store.all("users")).find(
+      let target = (await store.all("users")).find(
         (u) => u.id === req.params.userId,
       );
       if (!target) return fail(res, 404, "Account not found");
@@ -418,16 +448,27 @@ export function createApp(
           "Configure SMTP before sending email. Assisted recovery remains available.",
         );
       const token = randomBytes(32).toString("hex");
-      await resets.set(hash(token), {
-        userId: target.id,
-        userVersion: target.authVersion || 0,
-        expires: Date.now() + 15 * 60 * 1000,
+      target = await store.userTransaction(target.id, async (tx) => {
+        const current = (await tx.all("users")).find((u) => u.id === target.id);
+        await managedAccount(tx, req, current);
+        if (current.active === false)
+          throw Object.assign(new Error("Account is no longer active"), {
+            status: 409,
+          });
+        await tokenRepository(tx, "reset").set(hash(token), {
+          userId: current.id,
+          userVersion: current.authVersion || 0,
+          expires: Date.now() + 15 * 60 * 1000,
+        });
+        await tx.put("audit", {
+          id: id(),
+          actorId: req.user.id,
+          action: "user.recovery-issued",
+          schoolId: current.schoolIds[0] || null,
+          createdAt: new Date().toISOString(),
+        });
+        return current;
       });
-      await audit(
-        req.user,
-        "user.recovery-issued",
-        target.schoolIds[0] || null,
-      );
       if (req.body.delivery === "email") {
         try {
           await mailer(target, token, req.body.invitation === true);
@@ -601,6 +642,7 @@ export function createApp(
       return fail(res, 403, "You cannot change this account status");
     await store.userTransaction(target.id, async (tx) => {
       const current = (await tx.all("users")).find((u) => u.id === target.id);
+      await managedAccount(tx, req, current);
       await tx.put("users", {
         ...current,
         active: req.body.active,
@@ -611,7 +653,7 @@ export function createApp(
         actorId: req.user.id,
         targetUserId: target.id,
         action: req.body.active ? "user.reactivated" : "user.suspended",
-        schoolId: target.schoolIds[0],
+        schoolId: current.schoolIds[0],
         createdAt: new Date().toISOString(),
       });
     });
@@ -666,6 +708,15 @@ export function createApp(
     const result = await store
       .userTransaction(target.id, async (tx) => {
         const current = (await tx.all("users")).find((u) => u.id === target.id);
+        await managedAccount(tx, req, current);
+        if (
+          current.email.toLowerCase() !== email.toLowerCase() &&
+          emailReason.trim().length < 5
+        )
+          throw Object.assign(
+            new Error("Provide a reason for the current login email change"),
+            { status: 409 },
+          );
         if (
           (await tx.all("users")).some(
             (u) =>
@@ -697,7 +748,7 @@ export function createApp(
           action: "user.profile-updated",
           emailChanged: current.email.toLowerCase() !== email.toLowerCase(),
           emailReason: emailReason.trim(),
-          schoolId: target.schoolIds[0],
+          schoolId: current.schoolIds[0],
           createdAt: new Date().toISOString(),
         });
         return updated;
@@ -737,19 +788,20 @@ export function createApp(
         };
         if (!target || target.role === "owner" || target.id === req.user.id)
           reject(403, "Owner and own access cannot be edited here");
+        const actor = await managedAccount(tx, req, target);
         const schools = await tx.all("schools");
         if (
-          req.user.role !== "owner" &&
-          (!managers.includes(req.user.role) ||
+          actor.role !== "owner" &&
+          (!managers.includes(actor.role) ||
             !["teacher", "student", "staff", "parent"].includes(target.role) ||
             !["teacher", "student", "staff", "parent"].includes(role) ||
             !target.schoolIds.every((sid) =>
-              schools.some((s) => s.id === sid && canAccessSchool(req.user, s)),
+              schools.some((s) => s.id === sid && canAccessSchool(actor, s)),
             ))
         )
           reject(403, "You cannot edit this account’s access");
         const selected = schoolIds.map((sid) =>
-          schools.find((s) => s.id === sid && canAccessSchool(req.user, s)),
+          schools.find((s) => s.id === sid && canAccessSchool(actor, s)),
         );
         if (
           selected.some((s) => !s) ||
@@ -1521,23 +1573,25 @@ export function createApp(
     );
   }
   app.use((err, req, res, next) => {
-    console.error(err.message);
+    if (!err.status || err.status >= 500) console.error("API request failed");
     if (res.headersSent) return next(err);
     const status =
       err instanceof multer.MulterError
         ? 400
-        : [400, 413].includes(err.status)
+        : [400, 403, 404, 409, 413].includes(err.status)
           ? err.status
           : 500;
     res.status(status).json({
       error:
         err instanceof multer.MulterError
           ? "Upload rejected. Maximum one file, 5 MB."
-          : status === 400
-            ? "Invalid JSON request."
-            : status === 413
-              ? "Request exceeds the size limit."
-              : "The request could not be completed.",
+          : [403, 404, 409].includes(status)
+            ? err.message
+            : status === 400
+              ? "Invalid JSON request."
+              : status === 413
+                ? "Request exceeds the size limit."
+                : "The request could not be completed.",
     });
   });
   return app;

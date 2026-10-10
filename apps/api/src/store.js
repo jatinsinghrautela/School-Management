@@ -1,3 +1,8 @@
+import {
+  runtimeMigrations,
+  requireCurrentSchema,
+  auditImmutable,
+} from "./schema-policy.js";
 import mysql from "mysql2/promise";
 import {
   migrateRelational,
@@ -60,7 +65,10 @@ export const collections = [
   "calendarImports",
   "calendarPolicies",
 ];
-export async function createStore(mode = process.env.DATA_MODE || "mysql") {
+export async function createStore(
+  mode = process.env.DATA_MODE || "mysql",
+  { migrate = runtimeMigrations() } = {},
+) {
   if (!["mysql", "demo"].includes(mode))
     throw new Error("DATA_MODE must be mysql or demo");
   if (mode === "demo" && process.env.NODE_ENV === "production")
@@ -78,11 +86,20 @@ export async function createStore(mode = process.env.DATA_MODE || "mysql") {
           dateStrings: true,
         })
       : null;
-  if (pool)
-    await pool.query(
-      `CREATE TABLE IF NOT EXISTS records (id VARCHAR(36) PRIMARY KEY, kind VARCHAR(24) NOT NULL, school_id VARCHAR(36), payload JSON NOT NULL, INDEX scope_index(kind, school_id))`,
-    );
-  if (pool) await migrateRelational(pool, collections);
+  if (pool) {
+    try {
+      if (migrate) {
+        await pool.query(
+          `CREATE TABLE IF NOT EXISTS records (id VARCHAR(36) PRIMARY KEY, kind VARCHAR(24) NOT NULL, school_id VARCHAR(36), payload JSON NOT NULL, INDEX scope_index(kind, school_id))`,
+        );
+        await migrateRelational(pool, collections);
+      }
+      await requireCurrentSchema(pool);
+    } catch (error) {
+      await pool.end();
+      throw error;
+    }
+  }
   let demoQueue = Promise.resolve();
   function adapter(db, data, pending = null) {
     return {
@@ -110,16 +127,18 @@ export async function createStore(mode = process.env.DATA_MODE || "mysql") {
       },
       async put(kind, row) {
         if (!collections.includes(kind)) throw new Error("Unknown collection");
-        if (pending) pending.push({ kind, row: structuredClone(row) });
         if (db) await relationalPut(db, kind, row);
         else {
           const at = data[kind].findIndex((r) => r.id === row.id);
+          if (kind === "audit" && at >= 0) throw auditImmutable();
           if (at < 0) data[kind].push(structuredClone(row));
           else data[kind][at] = structuredClone(row);
         }
+        if (pending) pending.push({ kind, row: structuredClone(row) });
         return row;
       },
       async remove(kind, rowId) {
+        if (kind === "audit") throw auditImmutable();
         if (!collections.includes(kind)) throw new Error("Unknown collection");
         if (pending) pending.push({ kind, row: { id: rowId }, deleted: true });
         if (db)
@@ -167,6 +186,13 @@ export async function createStore(mode = process.env.DATA_MODE || "mysql") {
           const draft = structuredClone(memory);
           const pending = [];
           const result = await work(adapter(null, draft, pending));
+          if (
+            pending.some(
+              ({ kind, row }) =>
+                kind === "audit" && memory.audit.some((a) => a.id === row.id),
+            )
+          )
+            throw auditImmutable();
           for (const { kind, row, deleted } of pending) {
             const at = memory[kind].findIndex((r) => r.id === row.id);
             if (deleted) {
@@ -234,6 +260,7 @@ export async function createStore(mode = process.env.DATA_MODE || "mysql") {
         }
       } else {
         const at = memory[kind].findIndex((r) => r.id === row.id);
+        if (kind === "audit" && at >= 0) throw auditImmutable();
         if (at < 0) memory[kind].push(structuredClone(row));
         else memory[kind][at] = structuredClone(row);
       }

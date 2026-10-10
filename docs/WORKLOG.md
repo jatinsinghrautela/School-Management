@@ -226,3 +226,11 @@
 - Added a disposable synthetic MySQL drill covering restored memberships, school isolation, files, audit history, token revocation, existing-target refusal and inconsistent-foreign-key rejection. Added a MySQL CI job for security, relational, operations and recovery checks; remote execution is not claimed from local validation.
 - Validation: 50 API tests pass, production web build passes and local MySQL recovery drill passes. Added backup/recovery and incident-response guides, environment configuration, scripts and Phase 4 checklist updates. No paid service or new package dependency added.
 - Actual-host recovery acceptance, school-controlled off-device storage/key custody, retention/privacy/export/deletion rules and deployment acceptance remain Phase 4 work. The demo application remains running.
+
+## 2026-10-10 — Runtime permissions and school-isolation review
+
+- Production API startup now skips schema creation/migrations regardless of the development auto-migrate flag and verifies current migration versions; db:init explicitly owns migration/bootstrap work. Failed schema initialization closes the pool.
+- Enforced append-only audit records in direct/transactional stores, including caught demo transaction failures, and supplied reviewable table-specific runtime grants with SELECT/INSERT-only audit and read-only legacy/migration tables. No real account privileges were modified.
+- Rechecked actor/target permissions inside account status/profile/access/recovery transactions, validated proposed assignments against the refreshed actor and made assisted token creation/audit atomic. Support sessions now require the initiating owner role to remain current. Raw API exception text is no longer logged.
+- Added adversarial independent-school, guessed-ID, client-scope injection, cross-school notice and account-movement regression tests. Added a synthetic MySQL restricted-account drill and CI coverage.
+- Validation: 54 API tests, production build, restricted-account MySQL drill, persistent authentication checks and recovery compatibility drill (57 tables/154 foreign keys) pass. Updated runtime-security operating guide, architecture, README, environment configuration and Phase 4 checklist. Independent penetration review and actual production privilege/audit retention acceptance remain open.

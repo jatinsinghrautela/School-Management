@@ -84,7 +84,8 @@ Phase 3 publishing follow-up also implements multiple class/section notices with
 
 ## Phase 4: Release quality — required before real student data
 
-- [ ] Cross-tenant penetration review, durable audit logs, restrictive database permissions.
+- [x] Targeted school-isolation security review/regressions, append-only persistent audit writes, production migration separation and tested table-specific runtime grants. See RUNTIME-SECURITY.md.
+- [ ] Independent penetration review, actual production privilege verification and externally protected audit retention.
 - [ ] Data retention rules, consent and privacy notices appropriate to operating jurisdictions.
 - [x] Offline encrypted MySQL/upload backup, authenticated verification, isolated synthetic MySQL restore drill and incident-response runbook. See BACKUP-RECOVERY.md and INCIDENT-RESPONSE.md.
 - [ ] Actual-host recovery acceptance, off-device storage/key custody and school-approved backup objectives/retention; verified export/deletion process.

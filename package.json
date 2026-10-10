@@ -21,7 +21,9 @@
     "backup:create": "npm run backup:create -w apps/api",
     "backup:verify": "npm run backup:verify -w apps/api --",
     "backup:restore": "npm run backup:restore -w apps/api --",
-    "db:recovery": "npm run db:recovery -w apps/api"
+    "db:recovery": "npm run db:recovery -w apps/api",
+    "db:grants": "npm run db:grants -w apps/api --",
+    "db:permissions": "npm run db:permissions -w apps/api"
   },
   "devDependencies": {
     "concurrently": "^9.2.0",
