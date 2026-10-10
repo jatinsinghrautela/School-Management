@@ -6,22 +6,23 @@ test("toggle follows system initially and remembers an explicit choice", async (
 }) => {
   await page.emulateMedia({ colorScheme: "dark" });
   await page.goto("/");
-  const toggle = page.getByRole("group", { name: "Color theme" });
-  await expect(toggle.getByRole("button")).toHaveCount(2);
-  expect((await toggle.boundingBox()).width).toBeLessThanOrEqual(80);
-  await expect(toggle.locator(".theme-symbol.dark")).toHaveCSS(
+  const toggle = page.getByRole("switch", { name: "Dark mode" });
+  await expect(toggle).toHaveAttribute("aria-checked", "true");
+  await toggle.screenshot({ path: "apps/api/data/toggle-review.png" });
+  expect((await toggle.boundingBox()).width).toBeLessThanOrEqual(100);
+  await expect(toggle.locator(".scene-stars")).toHaveCSS(
     "animation-name",
-    "moon-drift",
+    "scene-twinkle",
   );
   await page.emulateMedia({ reducedMotion: "reduce" });
-  await expect(toggle.locator(".theme-symbol.dark")).toHaveCSS(
+  await expect(toggle.locator(".scene-stars")).toHaveCSS(
     "animation-name",
     "none",
   );
   await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
   await page.emulateMedia({ colorScheme: "light" });
   await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
-  await toggle.getByRole("button", { name: "Dark", exact: true }).click();
+  await toggle.click();
   await page.reload();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
 });

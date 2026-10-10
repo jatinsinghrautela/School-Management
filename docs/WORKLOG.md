@@ -294,3 +294,9 @@ Validation: web build passed. Complete browser run passed 16 checks and found on
 ## 2026-10-10 - Sidebar identity and compact idle toggle
 
 Removed the duplicate school badge/name/logo from school sidebars; the main identity is followed by the city. Owner mission-control details remain. Replaced wide text labels on appearance buttons with compact sun/moon symbols and accessible Light/Dark labels. The selected sun rotates slowly and the selected moon drifts continuously, using CSS transforms only; reduced motion disables both. The Pinterest page was inaccessible, so this is an original design rather than a copied animation. Validation: web build and nine targeted workspace/branding/responsive tests passed; compact-width, animation, reduced-motion and preference test passed.
+
+## 2026-10-10 - Recorded day/night scene switch
+
+Inspected frames from the user-provided MP4. Recreated its oval scene, layered rings, moving crescent/sun thumb, skyline, window lights, clouds and twinkling stars using original inline SVG/CSS rather than embedding or redistributing the reference media. A single accessible Dark mode switch provides light/dark states in a 96 by 48 pixel control, with system default, remembered choice and reduced-motion support. SVG gradients/clipping have unique instance IDs. Reference frames and decoder tools remain in ignored local data. Preview rendering was inspected locally.
+
+Validation: final web build and scene-switch behavior passed; both complete principal-page appearance scans and responsive check passed. Final thumb-direction preview was visually inspected.

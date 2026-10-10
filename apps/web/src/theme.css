@@ -1,4 +1,66 @@
 /* One shared appearance; compact controls and responsive workspace header. */
+.scene-toggle {
+  width: 96px;
+  height: 48px;
+  flex: 0 0 auto;
+  padding: 0;
+  background: transparent;
+  border-radius: 999px;
+  filter: drop-shadow(0 3px 4px #0002);
+}
+.scene-toggle svg {
+  width: 96px;
+  height: 48px;
+  display: block;
+  overflow: visible;
+}
+.scene-thumb {
+  transition: transform 0.65s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.scene-toggle.day .scene-thumb {
+  transform: translateX(92px);
+}
+.scene-toggle.day .scene-phase {
+  opacity: 0;
+}
+.scene-phase {
+  transition: opacity 0.5s ease;
+  animation: scene-phase 6s ease-in-out infinite;
+}
+.scene-stars {
+  animation: scene-twinkle 3s ease-in-out infinite;
+}
+.scene-clouds {
+  animation: scene-clouds 6s ease-in-out infinite;
+}
+.login-side > .scene-toggle {
+  align-self: flex-end;
+  margin-bottom: 22px;
+}
+.password-gate-page > .scene-toggle {
+  margin-bottom: 20px;
+}
+@keyframes scene-twinkle {
+  50% {
+    opacity: 0.35;
+  }
+}
+@keyframes scene-clouds {
+  50% {
+    transform: translateX(4px);
+  }
+}
+@keyframes scene-phase {
+  50% {
+    transform: translate(4px, 3px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .scene-toggle * {
+    animation: none !important;
+    transition: none !important;
+  }
+}
 .sidebar .nav-item {
   transition: none;
 }
