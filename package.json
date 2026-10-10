@@ -17,7 +17,11 @@
     "format": "prettier --write apps docs README.md package.json compose.yaml .github/workflows/ci.yml",
     "db:security": "npm run db:security -w apps/api",
     "db:relational": "npm run db:relational -w apps/api",
-    "db:operations": "npm run db:operations -w apps/api"
+    "db:operations": "npm run db:operations -w apps/api",
+    "backup:create": "npm run backup:create -w apps/api",
+    "backup:verify": "npm run backup:verify -w apps/api --",
+    "backup:restore": "npm run backup:restore -w apps/api --",
+    "db:recovery": "npm run db:recovery -w apps/api"
   },
   "devDependencies": {
     "concurrently": "^9.2.0",

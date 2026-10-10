@@ -217,3 +217,12 @@
 - Added bounded minute buckets for completed API requests, client rejections, server failures, mean/maximum latency and process uptime. Counters store no request paths, identities, headers or payloads; health probes are excluded.
 - Displayed explicit SMTP/scanner configuration states and ephemeral versus persistent storage. Configuration is not represented as successful infrastructure acceptance.
 - Validation: 48 API tests pass, frontend production build passes. No database schema or paid services added. Production alerts, restore drills, privacy decisions and deployment acceptance remain unfinished Phase 4 items.
+
+## 2026-10-10 — Encrypted backup and isolated recovery milestone
+
+- Added offline repeatable-read MySQL snapshots of all 57 release tables plus tracked upload bytes, with exact table/engine checks and a 128 MB pilot limit. No plaintext backup files or secret arguments are written.
+- Added built-in scrypt/AES-256-GCM encrypted bundles with authenticated headers, bounded decompression, row/file checksum and manifest verification; wrong keys and tampering fail closed.
+- Added restore into new sg_restore_ databases/upload directories only, release-schema checks, parameterized inserts, explicit validation of 154 foreign-key constraints and mandatory session/reset revocation. Existing databases and live uploads are not overwritten or served.
+- Added a disposable synthetic MySQL drill covering restored memberships, school isolation, files, audit history, token revocation, existing-target refusal and inconsistent-foreign-key rejection. Added a MySQL CI job for security, relational, operations and recovery checks; remote execution is not claimed from local validation.
+- Validation: 50 API tests pass, production web build passes and local MySQL recovery drill passes. Added backup/recovery and incident-response guides, environment configuration, scripts and Phase 4 checklist updates. No paid service or new package dependency added.
+- Actual-host recovery acceptance, school-controlled off-device storage/key custody, retention/privacy/export/deletion rules and deployment acceptance remain Phase 4 work. The demo application remains running.

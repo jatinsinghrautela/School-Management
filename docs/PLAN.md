@@ -86,7 +86,8 @@ Phase 3 publishing follow-up also implements multiple class/section notices with
 
 - [ ] Cross-tenant penetration review, durable audit logs, restrictive database permissions.
 - [ ] Data retention rules, consent and privacy notices appropriate to operating jurisdictions.
-- [ ] Backup encryption, restore drill, export/deletion process and incident response.
+- [x] Offline encrypted MySQL/upload backup, authenticated verification, isolated synthetic MySQL restore drill and incident-response runbook. See BACKUP-RECOVERY.md and INCIDENT-RESPONSE.md.
+- [ ] Actual-host recovery acceptance, off-device storage/key custody and school-approved backup objectives/retention; verified export/deletion process.
 - [ ] Unit/integration/E2E test suite including MySQL and keyboard/accessibility tests.
 - [x] Owner-only monitoring foundation: enabled accounts, independent schools, retained audit totals, recent audited activity, upload bytes, request failures and latency. Bounded process-local counters and explicit service configuration states; external alerts and deployment acceptance remain below.
 - [ ] Production monitoring acceptance: uptime probes, actionable alerts, multi-instance aggregation and capacity testing.
