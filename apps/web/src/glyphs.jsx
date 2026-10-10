@@ -67,3 +67,28 @@ export const LockKeyhole = glyph(
   "M7 10V7a5 5 0 0 1 10 0v3M4 10h16v11H4zM12 14v3",
 );
 export const RotateCcw = glyph("M4 4v6h6M4 10a8 8 0 1 1 0 6");
+export const Wallet = glyph("M4 6h15v14H4zM4 6V3h12v3M14 10h7v6h-7zM17 13h1");
+export const StaffBadge = glyph(
+  "M5 5h14v16H5zM9 3h6v4H9zM9 11a3 3 0 1 0 6 0a3 3 0 1 0-6 0M8 18q4-4 8 0",
+);
+export const LibraryShelf = glyph(
+  "M3 4h4v16H3zM9 6h4v14H9zM15 5l4-1 3 15-4 1zM2 22h20",
+);
+export const SchoolBus = glyph(
+  "M4 5q8-4 16 0v13H4zM4 11h16M9 5v6m6-6v6M7 18v3m10-3v3M7 15h1m8 0h1",
+);
+export const Toolbox = glyph("M3 9h18v12H3zM8 9V5h8v4M3 14h18M10 12h4v4h-4z");
+export const Envelope = glyph("M3 6h18v14H3zM3 6l9 8 9-8");
+export const Picture = glyph("M3 3h18v18H3zM3 18l6-7 5 5 3-3 4 5M15 7h2v2h-2z");
+export const FamilyHeart = glyph(
+  "M12 21 3 12Q-1 4 6 4q4 0 6 4 2-4 6-4 7 0 3 8z",
+);
+export const SettingsSliders = glyph(
+  "M3 6h18M3 12h18M3 18h18M7 3v6m10 0v6M9 15v6",
+);
+export const AcademicStack = glyph(
+  "M4 5h13v13H4zM7 2h13v13M7 9h7M7 13h5M7 18v4l4-2 4 2v-4",
+);
+export const ScheduleClock = glyph(
+  "M3 4h12v15H3zM6 2v4m6-4v4M3 8h12M16 13a5 5 0 1 0 0 10a5 5 0 1 0 0-10M16 15v3l2 1",
+);

@@ -23,6 +23,19 @@ import {
   Check,
   FileText,
   Activity,
+  Wallet,
+  StaffBadge,
+  LibraryShelf,
+  SchoolBus,
+  Toolbox,
+  Envelope,
+  Picture,
+  FamilyHeart,
+  SettingsSliders,
+  AcademicStack,
+  ScheduleClock,
+  CalendarDays,
+  LockKeyhole,
 } from "./glyphs.jsx";
 import "./styles.css";
 import { Academics, ExamResults } from "./academics.jsx";
@@ -52,23 +65,23 @@ const icons = {
   Overview: LayoutDashboard,
   Schools: Building2,
   People: Users,
-  Fees: FileText,
-  Staff: Users,
-  Library: BookOpen,
-  Transport: Building2,
-  Operations: FileText,
-  Inbox: Megaphone,
-  Gallery: Sparkles,
-  Family: Users,
-  Settings: ShieldCheck,
+  Fees: Wallet,
+  Staff: StaffBadge,
+  Library: LibraryShelf,
+  Transport: SchoolBus,
+  Operations: Toolbox,
+  Inbox: Envelope,
+  Gallery: Picture,
+  Family: FamilyHeart,
+  Settings: SettingsSliders,
   Attendance: CalendarCheck,
   Results: GraduationCap,
   Learning: BookOpen,
   Notices: Megaphone,
-  Academics: BookOpen,
-  Timetable: CalendarCheck,
-  Calendar: CalendarCheck,
-  Security: ShieldCheck,
+  Academics: AcademicStack,
+  Timetable: ScheduleClock,
+  Calendar: CalendarDays,
+  Security: LockKeyhole,
 };
 const today = () => new Date().toLocaleDateString("en-CA");
 function App() {
@@ -541,7 +554,7 @@ function App() {
             {mode === "demo" && (
               <span className="demo-pill">DEMO · ephemeral data</span>
             )}
-            {!owner && (
+            {!owner && schools.length > 1 && (
               <select
                 aria-label="Choose school"
                 value={sid}

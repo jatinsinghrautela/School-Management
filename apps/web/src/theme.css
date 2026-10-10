@@ -7,12 +7,28 @@
 }
 .theme-switch select {
   width: auto;
-  min-width: 90px;
+  min-width: 84px;
   padding: 8px 32px 8px 10px;
   border: 1px solid #b9d2c8;
   border-radius: 12px;
   background: #f8fcf9;
   color: #173c2e;
+}
+select {
+  min-height: 34px;
+  padding-block: 7px !important;
+  font-size: 12px;
+}
+[data-theme] select option {
+  padding: 7px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  line-height: 1.35;
+}
+[data-theme] select::picker(select) {
+  max-height: min(240px, 60dvh);
+  padding: 4px;
+  border-radius: 10px;
 }
 .login-page > .theme-switch {
   position: absolute;
