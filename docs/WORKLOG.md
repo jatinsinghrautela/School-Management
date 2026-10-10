@@ -304,3 +304,8 @@ Validation: final web build and scene-switch behavior passed; both complete prin
 ## 2026-10-10 - Rolling ball and complete scene transition
 
 Corrected the reference switch mechanics based on the user's explanation: the ball now rotates 150 degrees as it travels, rotating the crescent with it. A warm sun gradient replaces the pearl/moon while the crescent withdraws and fades. The whole exposed track crossfades to a sunny sky with clouds and blue buildings; stars and illuminated windows fade out, and reverse when returning to night. Movement and scene morphing share an 850ms transition. Idle stars/clouds remain animated; reduced motion disables travel animations and applies end states immediately. Validation: web build passed; preference/animation regression passed with day/night background, sun, rotation and star-layer endpoint assertions. Both rendered endpoint previews were inspected.
+
+
+## 2026-10-10 - Remove toggle divider
+
+Removed the stationary yellow and pale-blue arcs highlighted by the user, leaving continuous day/night scenery behind the rolling ball. Ball rotation, moon/sun morphing and scene transitions are preserved.

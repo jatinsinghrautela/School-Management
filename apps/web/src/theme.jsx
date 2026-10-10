@@ -117,22 +117,6 @@ export function ThemeSwitch() {
             height="78"
             fill={`url(#${sceneId}-day)`}
           />
-          <circle
-            cx="44"
-            cy="44"
-            r="51"
-            fill="none"
-            stroke="#ffe3ad"
-            strokeWidth="13"
-          />
-          <circle
-            cx="44"
-            cy="44"
-            r="39"
-            fill="none"
-            stroke="#d0ebf9"
-            strokeWidth="9"
-          />
           <g className="scene-clouds" fill="#eaf6ff" opacity=".7">
             <path d="M10 60q4-8 10-3 5-11 12-2 8-2 10 5zM30 23q5-8 11-2 5-9 11 2z" />
           </g>
