@@ -40,8 +40,8 @@ import {
 import "./styles.css";
 import { Academics, ExamResults } from "./academics.jsx";
 import "./glass.css";
-import { ThemeProvider, ThemeSwitch } from "./theme.jsx";
-import { SchoolIdentity, schoolColors } from "./school-brand.jsx";
+import "./theme.css";
+import { SchoolIdentity } from "./school-brand.jsx";
 import { BRAND_NAME } from "./brand.js";
 import { useDialogLock } from "./use-dialog-lock.js";
 import { Timetable } from "./timetable.jsx";
@@ -60,6 +60,8 @@ import {
 } from "./operations.jsx";
 import { Staff } from "./staff.jsx";
 import { Fees } from "./fees.jsx";
+document.documentElement.dataset.theme = "light";
+document.documentElement.style.colorScheme = "light";
 document.title = `${BRAND_NAME} · School workspace`;
 const icons = {
   Overview: LayoutDashboard,
@@ -362,7 +364,6 @@ function App() {
   if (user.passwordChangeRequired && !support)
     return (
       <main className="password-gate-page">
-        <ThemeSwitch />
         <Security
           api={api}
           required
@@ -386,10 +387,7 @@ function App() {
       )
     : null;
   return (
-    <div
-      className={owner ? "shell" : "shell school-branded"}
-      style={schoolColors(data?.schoolSettings?.accent)}
-    >
+    <div className="shell" style={{ "--school-accent": "#11796f" }}>
       {mobile && narrow && (
         <button
           className="drawer-overlay"
@@ -550,7 +548,6 @@ function App() {
             </span>
           </div>
           <div className="top-actions">
-            <ThemeSwitch />
             {mode === "demo" && (
               <span className="demo-pill">DEMO · ephemeral data</span>
             )}
@@ -1272,7 +1269,6 @@ function App() {
                   key={sid}
                   api={api}
                   schoolId={sid}
-                  schoolName={school?.name}
                   readOnly={!!support}
                   refresh={refresh}
                 />
@@ -2233,7 +2229,6 @@ function Login({ api, onLogin, error }) {
   }
   return (
     <div className="login-page">
-      <ThemeSwitch />
       <section className="login-story">
         <a className="brand" href="#">
           <span className="brand-icon">
@@ -2940,8 +2935,4 @@ function Editor({
     </div>
   );
 }
-createRoot(document.getElementById("root")).render(
-  <ThemeProvider>
-    <App />
-  </ThemeProvider>,
-);
+createRoot(document.getElementById("root")).render(<App />);

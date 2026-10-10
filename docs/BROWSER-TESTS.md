@@ -12,4 +12,4 @@ Failure traces are saved under ignored `test-results/`. Open a specific trace wi
 
 This suite complements API and isolated MySQL checks. It is a Chromium regression baseline, not a complete accessibility audit, cross-browser certification or production deployment acceptance. Screen-reader review, further contrast coverage, additional viewport/content combinations and actual HTTPS proxy testing remain release work.
 
-Two theme tests verify the default system setting, live OS preference changes, persistent explicit overrides and automated dark-mode contrast checks on login, the principal dashboard and publishing dialog. Theme preferences are local browser settings, independent of account credentials.
+The shared-appearance regression verifies that retired browser theme preferences and OS dark mode do not change the fixed light appearance. It checks mobile header/content separation and overflow at 320, 390 and 768 pixels. School-brand tests verify identity, absence of palette controls, single-school picker hiding, distinct icons and stable sidebar scrolling.

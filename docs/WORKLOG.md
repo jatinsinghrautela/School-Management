@@ -278,3 +278,9 @@ Validation: production web build and all 15 browser tests passed, including scho
 Unified school palette surfaces across the shell, panel/header/table backgrounds, badges, statistic icons, hero planet/rings/chips, dropdown highlights and neutral readable text. Compact select controls and popup options use smaller padding and bounded popup height. Only users assigned multiple schools see the school picker. Navigation uses eleven additional original SVG glyphs so each section has a distinct icon. Sidebar navigation reserves scrollbar space, disables horizontal overflow/scroll anchoring/end overscroll and removes hover translation to avoid end-of-list jitter. Browser checks cover distinct glyph geometry, scroll end stability, visible logout, single-school picker absence and multi-school switching.
 
 Validation: all 16 browser tests passed; after final select/overscroll adjustments the five targeted school-brand/theme tests and final web build passed.
+
+## 2026-10-10 - Shared appearance fallback
+
+Applied the user-authorized fallback after dynamic appearance proved inconsistent. Removed school palette/custom accent controls and personal System/Light/Dark selectors, deleted the theme controller and broad dynamic CSS overrides, and fixed all workspaces to the original light appearance. Old stored accents and browser preferences cannot alter it. Kept school names/uploaded logos/fallback monograms, platform credit, compact selects, responsive header, distinct icons, stable sidebar scroll and conditional school switching. Regional settings saves retain the API-compatible fixed accent. Replaced retired theme tests with a regression for the shared appearance under an OS dark preference and old stored dark setting.
+
+Validation: production web build and all 14 browser tests passed, including role accessibility, shared appearance under retired dark preferences, responsive layout and sidebar stability.

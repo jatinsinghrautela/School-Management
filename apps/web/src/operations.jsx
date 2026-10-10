@@ -1,5 +1,4 @@
 import { LogoUpload } from "./school-media.jsx";
-import { schoolPalettes } from "./school-brand.jsx";
 import React, { useEffect, useRef, useState, useId } from "react";
 const f = (name, label, type = "text", options = null) => ({
   name,
@@ -1367,7 +1366,10 @@ export function SchoolSettings({
     setBusy(true);
     setError("");
     try {
-      const r = await api(base + "/school-settings", body);
+      const r = await api(base + "/school-settings", {
+        ...body,
+        accent: "#11796f",
+      });
       setData({ ...r, ...(await api(base + "/school-settings")) });
       await refresh();
       setMessage("School appearance and regional settings saved.");
@@ -1399,7 +1401,7 @@ export function SchoolSettings({
           <div className="school-brand-preview">
             <span
               className="school-monogram"
-              style={{ borderColor: data.accent }}
+              style={{ borderColor: "#11796f" }}
             >
               {(data.displayName || "School")
                 .split(/\s+/)
@@ -1413,7 +1415,7 @@ export function SchoolSettings({
               <p>
                 {data.locale} · {data.timeZone}
               </p>
-              <small>Original generated monogram · {data.accent}</small>
+              <small>Original generated monogram</small>
             </div>
           </div>
         )}
@@ -1430,35 +1432,9 @@ export function SchoolSettings({
             }}
           />
         )}
-        {data && !readOnly && (
-          <div
-            className="school-palette-options"
-            role="group"
-            aria-label="School theme palettes"
-          >
-            {schoolPalettes.map(([name, accent]) => (
-              <button
-                key={name}
-                className="secondary"
-                disabled={busy}
-                aria-pressed={data.accent === accent}
-                onClick={() =>
-                  save({
-                    ...data,
-                    displayName:
-                      data.displayName || schoolName || "Your school",
-                    accent,
-                  })
-                }
-              >
-                {name} theme
-              </button>
-            ))}
-          </div>
-        )}
         <p>
-          The school palette and logo apply to all members of this school.
-          Personal Light, Dark and System preferences control brightness.
+          All schools use the same workspace appearance. Your school name and
+          uploaded logo identify your school.
         </p>
         {data && !readOnly && (
           <Form
@@ -1466,7 +1442,6 @@ export function SchoolSettings({
             title="Edit school settings"
             fields={[
               f("displayName", "School display name"),
-              f("accent", "Accent color (#RRGGBB)"),
               f("locale", "Regional format / parent labels", "select", [
                 ["en-IN", "English · India"],
                 ["en-GB", "English · UK"],
