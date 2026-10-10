@@ -229,6 +229,11 @@ export function createDataToolsRouter(store) {
         errors = [],
         entries = [],
         seen = new Set();
+      if (!classes.length)
+        fail(
+          400,
+          "This school has no classes yet. Create an academic year and its classes/sections in Academics, then download a fresh people template and use its Classes sheet choices.",
+        );
       for (let n = 2; n <= sheet.rowCount; n++) {
         const cells = [1, 2, 3, 4].map(
           (i) => sheet.getRow(n).getCell(i).value ?? "",
@@ -245,20 +250,22 @@ export function createDataToolsRouter(store) {
             `${c.name} | ${years.find((y) => y.id === c.academicYearId)?.name || "Legacy"}` ===
             label,
         );
-        if (
-          !name ||
-          name.length > 200 ||
-          email.length > 200 ||
-          !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ||
-          !["student", "teacher", "staff"].includes(role) ||
-          (label && cls.length !== 1) ||
-          (role === "student" && cls.length !== 1) ||
-          seen.has(email.toLowerCase()) ||
-          users.some((u) => u.email.toLowerCase() === email.toLowerCase())
-        )
-          errors.push(
-            `Row ${n}: check name, unique email, role and class choice`,
+        const issues = [];
+        if (!name || name.length > 200)
+          issues.push("name is required and must be at most 200 characters");
+        if (email.length > 200 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
+          issues.push("enter a valid email");
+        if (!["student", "teacher", "staff"].includes(role))
+          issues.push("role must be student, teacher or staff");
+        if ((label || role === "student") && cls.length !== 1)
+          issues.push(
+            "class choice does not match this school's classes; copy the exact value from a newly downloaded template's Classes sheet",
           );
+        if (seen.has(email.toLowerCase()))
+          issues.push("email is repeated in this workbook");
+        if (users.some((u) => u.email.toLowerCase() === email.toLowerCase()))
+          issues.push("email already belongs to an account");
+        if (issues.length) errors.push(`Row ${n}: ${issues.join("; ")}`);
         else
           entries.push({
             name,

@@ -171,8 +171,19 @@ test("directory and workbook exports enforce visibility; imports preview, valida
     return call(school + "/people-import/preview", tokens.principal, form);
   }
   book.getWorksheet("People").getRow(2).getCell(3).value = "owner";
-  assert.equal((await preview()).status, 400);
+  const invalidRole = await preview();
+  assert.equal(invalidRole.status, 400);
+  assert.match(
+    invalidRole.data.errors[0],
+    /role must be student, teacher or staff/,
+  );
   book.getWorksheet("People").getRow(2).getCell(3).value = "student";
+  book.getWorksheet("People").getRow(2).getCell(4).value =
+    "Missing Class | 2026-2027";
+  const missingClass = await preview();
+  assert.equal(missingClass.status, 400);
+  assert.match(missingClass.data.errors[0], /class choice does not match/);
+  book.getWorksheet("People").getRow(2).getCell(4).value = label;
   book.getWorksheet("People").getRow(3).values = [
     "Imported Teacher",
     "imported.teacher@test.local",
