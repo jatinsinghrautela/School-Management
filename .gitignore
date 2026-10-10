@@ -4,3 +4,5 @@ dist/
 *.log
 apps/api/data/
 coverage/
+test-results/
+playwright-report/

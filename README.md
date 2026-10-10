@@ -118,3 +118,5 @@ Phase 4 adds owner-only [platform monitoring](docs/PLATFORM-MONITORING.md) and o
 [Runtime security](docs/RUNTIME-SECURITY.md) separates migration credentials from production API access, protects audit writes and documents the school-isolation review. `db:grants` prints table-specific SQL for operator review; `db:permissions` verifies it with a disposable MySQL account. Production startup always skips migrations; run `db:init` using separate migration credentials before switching to a restricted runtime account.
 
 [Deployment checks](docs/DEPLOYMENT-CHECKS.md) add `deploy:check` (production target by default), an optional read-only `--database` check and `--development` preview checks. `/api/health` remains liveness; `/api/ready` verifies connectivity with bounded cached probes. Production requires a local trusted HTTPS proxy and prepared runtime configuration; no deployment is performed automatically.
+
+Browser regression checks: `npx playwright install chromium`, then `npm run test:e2e`. These use isolated synthetic demo data. See [browser testing instructions](docs/BROWSER-TESTS.md).

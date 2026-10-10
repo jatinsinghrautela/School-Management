@@ -242,3 +242,9 @@
 - Added a separate database readiness endpoint with five-second caching, shared concurrent probes, a two-second deadline and bounded retries while a dependency remains pending. Failed probe connections are discarded; pool connect time and queue are bounded. Liveness remains separate and both probes are excluded from request KPIs.
 - Added SIGINT/SIGTERM readiness draining, maintenance cancellation and connection/store shutdown with a ten-second failure deadline. Actual service-manager signal acceptance remains external work.
 - Validation: 58 API tests and production build pass; development/read-only MySQL preflight passes, production preflight correctly rejects current development settings and live demo readiness reports ready. Updated deployment guide, configuration, README and Phase 4 checklist. Actual HTTPS deployment and remaining host/school release checks are still pending.
+
+## 2026-10-10 — Isolated browser regression baseline
+
+Added pinned free Playwright tooling, six Chromium checks against the built web app served by an isolated demo API on port 4100, and GitHub Actions browser execution. Checks cover script errors, desktop/mobile logout visibility, horizontal overflow, dialog keyboard focus wrapping/Escape/restoration/scroll locking, assigned school switching, teacher notice targeting, disabled uploads and student read-only actions. No live preview or MySQL data is changed.
+
+Validation: production web build passed; all six browser tests passed. Dependency audit reported zero vulnerabilities. Initial runner launch overlapped the browser download; rerun after installation and corrected seeded-fixture expectations passed. No product code changes were needed for the covered behaviors. Broader accessibility, cross-browser and actual HTTPS deployment checks remain open. See BROWSER-TESTS.md.
