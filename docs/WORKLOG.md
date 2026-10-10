@@ -326,3 +326,7 @@ Documented later domain/HTTPS setup, production configuration, privacy operation
 Validation: final release verifier passed all 60 API tests, production build, all 54 browser scenarios (18 each in Chromium, Firefox and WebKit), and the isolated capacity check. Dependency audit reported zero vulnerabilities. Disposable MySQL operations checks passed privacy metadata roundtrips; development database preflight and local health/readiness probes passed. Visually inspected the dark privacy screen for spacing and readability. The report records the pre-commit revision and dirty working tree explicitly rather than claiming clean commit evidence.
 
 Firefox/WebKit installs exposed a full C: drive. Only browser caches installed during this work were removed, and test browsers were installed in ignored apps/api/data/browsers on D:. C: remains nearly full; free system-drive space before further Docker work. No school database or user files were deleted. Remote CI, live HTTPS and container verification are not claimed as passed.
+
+## 2026-10-10 - Login demo guidance and footer spacing
+
+Login now checks the backend health mode and only renders demo shortcuts when it explicitly reports demo mode. MySQL and unavailable backends expose no demo credentials. Moved the login footer into normal document flow with a 24px gap so expanding content cannot overlap it. Validation: production build passed; Chromium checks against the running MySQL app at 1366x600 and 390x700 confirmed hidden demo guidance and a 24px gap below the login card.

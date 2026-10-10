@@ -2178,6 +2178,15 @@ function ResultSummary({ marks, users }) {
   );
 }
 function Login({ api, onLogin, error }) {
+  const [demoAvailable, setDemoAvailable] = useState(false);
+  useEffect(() => {
+    const controller = new AbortController();
+    fetch("/api/health", { signal: controller.signal })
+      .then((response) => (response.ok ? response.json() : null))
+      .then((health) => setDemoAvailable(health?.mode === "demo"))
+      .catch(() => {});
+    return () => controller.abort();
+  }, []);
   const linkedToken =
     new URLSearchParams(window.location.hash.slice(1)).get("reset") || "";
   const [view, setView] = useState(linkedToken ? "reset" : "login"),
@@ -2355,29 +2364,31 @@ function Login({ api, onLogin, error }) {
               Need access? Contact your school.
             </p>
           </div>
-          <details className="demo-details">
-            <summary>Local demo accounts</summary>
-            <p>
-              Available only when the backend runs in demo mode. Password:{" "}
-              <b>OrbitDemo123!</b>
-            </p>
-            <div>
-              {["owner", "director", "principal", "teacher", "student"].map(
-                (role) => (
-                  <button
-                    key={role}
-                    onClick={() => {
-                      setEmail(`${role}@orbit.local`);
-                      setPassword("OrbitDemo123!");
-                      setView("login");
-                    }}
-                  >
-                    {role}
-                  </button>
-                ),
-              )}
-            </div>
-          </details>
+          {demoAvailable && (
+            <details className="demo-details">
+              <summary>Local demo accounts</summary>
+              <p>
+                Available only when the backend runs in demo mode. Password:{" "}
+                <b>OrbitDemo123!</b>
+              </p>
+              <div>
+                {["owner", "director", "principal", "teacher", "student"].map(
+                  (role) => (
+                    <button
+                      key={role}
+                      onClick={() => {
+                        setEmail(`${role}@orbit.local`);
+                        setPassword("OrbitDemo123!");
+                        setView("login");
+                      }}
+                    >
+                      {role}
+                    </button>
+                  ),
+                )}
+              </div>
+            </details>
+          )}
         </div>
         <small className="login-footer">
           Designed for learning. Built for connection.
