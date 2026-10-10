@@ -8,6 +8,16 @@ test("toggle follows system initially and remembers an explicit choice", async (
   await page.goto("/");
   const toggle = page.getByRole("group", { name: "Color theme" });
   await expect(toggle.getByRole("button")).toHaveCount(2);
+  expect((await toggle.boundingBox()).width).toBeLessThanOrEqual(80);
+  await expect(toggle.locator(".theme-symbol.dark")).toHaveCSS(
+    "animation-name",
+    "moon-drift",
+  );
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await expect(toggle.locator(".theme-symbol.dark")).toHaveCSS(
+    "animation-name",
+    "none",
+  );
   await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
   await page.emulateMedia({ colorScheme: "light" });
   await expect(page.locator("html")).toHaveAttribute("data-theme", "light");

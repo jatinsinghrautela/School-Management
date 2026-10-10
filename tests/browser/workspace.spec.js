@@ -64,7 +64,7 @@ test("director can switch between assigned schools", async ({ page }) => {
   await expect(schools).toHaveValue("school-west");
   await expect(
     page
-      .locator(".school-badge")
+      .locator(".school-brand-name")
       .getByText("Schoolglass Desk Demo West", { exact: true }),
   ).toBeVisible();
 });

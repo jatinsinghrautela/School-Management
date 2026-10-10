@@ -428,42 +428,21 @@ function App() {
         <div className="workspace-tag">
           {owner ? "PLATFORM CONSOLE" : "SCHOOL WORKSPACE"}
         </div>
-        <div className="school-badge">
-          <span className="school-icon">
-            {owner ? (
+        {owner ? (
+          <div className="school-badge">
+            <span className="school-icon">
               <ShieldCheck size={20} />
-            ) : data?.schoolSettings?.logoDataUri ? (
-              <img
-                className="school-logo"
-                src={data.schoolSettings.logoDataUri}
-                alt="School logo"
-              />
-            ) : data?.schoolSettings?.displayName ? (
-              data.schoolSettings.displayName
-                .split(/\s+/)
-                .map((w) => w[0])
-                .slice(0, 2)
-                .join("")
-                .toUpperCase()
-            ) : (
-              <Building2 size={20} />
-            )}
-          </span>
-          <div>
-            <strong>
-              {owner
-                ? "Mission control"
-                : data?.schoolSettings?.displayName ||
-                  school?.name ||
-                  "Your school"}
-            </strong>
-            <small>
-              {owner
-                ? "Platform administration"
-                : school?.city || "No assigned schools"}
-            </small>
+            </span>
+            <div>
+              <strong>Mission control</strong>
+              <small>Platform administration</small>
+            </div>
           </div>
-        </div>
+        ) : (
+          <p className="school-location">
+            {school?.city || "Your school workspace"}
+          </p>
+        )}
         <p className="nav-label">WORKSPACE</p>
         <nav>
           {nav.map((n) => {

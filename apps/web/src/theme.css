@@ -45,12 +45,49 @@
 .appearance-toggle button {
   position: relative;
   z-index: 1;
-  min-width: 74px;
-  min-height: 34px;
+  width: 32px;
+  min-width: 32px;
+  height: 32px;
+  min-height: 32px;
   border-radius: 999px;
   background: transparent;
   color: #294a40;
   font-size: 12px;
+  padding: 0;
+}
+.theme-symbol {
+  display: inline-block;
+  font-size: 22px;
+  line-height: 1;
+}
+.appearance-toggle button[aria-pressed="true"] .theme-symbol.light {
+  animation: sun-turn 18s linear infinite;
+}
+.appearance-toggle button[aria-pressed="true"] .theme-symbol.dark {
+  animation: moon-drift 4s ease-in-out infinite;
+}
+@keyframes sun-turn {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes moon-drift {
+  50% {
+    transform: translateY(-2px) rotate(-10deg);
+  }
+}
+.school-location {
+  font-size: 11px;
+  color: #496257;
+  margin: 0 0 18px;
+}
+[data-theme="dark"] .school-location {
+  color: #d3e4df;
+}
+@media (prefers-reduced-motion: reduce) {
+  .appearance-toggle .theme-symbol {
+    animation: none !important;
+  }
 }
 .toggle-indicator {
   position: absolute;

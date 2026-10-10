@@ -13,6 +13,11 @@ test("schools share one appearance and platform branding is secondary", async ({
     "Schoolglass Desk Demo North",
   );
   await expect(
+    page
+      .getByRole("complementary")
+      .getByText("Schoolglass Desk Demo North", { exact: true }),
+  ).toHaveCount(1);
+  await expect(
     page.getByText("Powered by Schoolglass Desk", { exact: true }),
   ).toBeVisible();
   await page.getByRole("button", { name: "Settings", exact: true }).click();

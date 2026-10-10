@@ -68,11 +68,14 @@ export function ThemeSwitch() {
         <button
           key={value}
           type="button"
+          aria-label={value === "light" ? "Light" : "Dark"}
+          title={value === "light" ? "Light mode" : "Dark mode"}
           aria-pressed={dark === (value === "dark")}
           onClick={() => change(value)}
         >
-          <span aria-hidden="true">{value === "light" ? "☀" : "☾"}</span>
-          {value === "light" ? "Light" : "Dark"}
+          <span className={`theme-symbol ${value}`} aria-hidden="true">
+            {value === "light" ? "☀" : "☾"}
+          </span>
         </button>
       ))}
     </div>
