@@ -1531,3 +1531,32 @@ td:first-child {
   line-height: 1.8;
   margin-bottom: 20px;
 }
+
+.monitoring-panel {
+  margin-top: 24px;
+  padding: 0 22px 22px;
+}
+.monitoring-panel .panel-heading {
+  padding-left: 0;
+  padding-right: 0;
+}
+.monitoring-panel .stats {
+  margin-top: 0;
+}
+.monitoring-panel > p {
+  margin-top: 18px;
+  color: var(--muted, #62677b);
+  line-height: 1.6;
+}
+.monitoring-panel .stat-card p {
+  margin-top: 0;
+  color: #62677b;
+}
+.monitoring-panel .stat-card small {
+  color: #62677b;
+  line-height: 1.5;
+}
+.monitoring-panel .stat-card {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}

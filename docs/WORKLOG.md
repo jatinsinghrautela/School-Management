@@ -209,3 +209,11 @@
 - Added school-scoped gallery, leadership publish/archive, permission acknowledgment, metadata stripping, dimension/size/quota checks, private image reads, twelve-item pagination and lazy image loading. Uploads remain safely disabled until ClamAV is configured.
 - Added additive MySQL migration v9 and gallery scoped-file/boolean checks. Validation: 46 tests and production build pass; MySQL operations checks pass. Browser reviewed multi-target and teacher publication, ledger focus, guardian review layout and upload disabled states. Synthetic two-page branded resource PDF rendered with Poppler and both pages visually checked.
 - Updated PLAN, README, admission/asset guides and SCHOOL-PUBLISHING operating guide. No paid infrastructure added. Phase 4 remains required before real student data.
+
+## 2026-10-10 — Phase 4 monitoring foundation
+
+- Restarted the local web/API preview in demo mode; browser connection recovered after starting servers with loopback permissions.
+- Added owner-only monitoring with full retained audit totals (fixing the previous 20-event counter), enabled accounts, independent schools, recent audited actions/actors and tracked upload storage.
+- Added bounded minute buckets for completed API requests, client rejections, server failures, mean/maximum latency and process uptime. Counters store no request paths, identities, headers or payloads; health probes are excluded.
+- Displayed explicit SMTP/scanner configuration states and ephemeral versus persistent storage. Configuration is not represented as successful infrastructure acceptance.
+- Validation: 48 API tests pass, frontend production build passes. No database schema or paid services added. Production alerts, restore drills, privacy decisions and deployment acceptance remain unfinished Phase 4 items.

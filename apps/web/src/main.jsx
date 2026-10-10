@@ -728,8 +728,8 @@ function App() {
                       [
                         Activity,
                         "Recorded actions",
-                        platform?.audit.length || 0,
-                        "Latest audit window",
+                        platform?.monitoring?.totals.auditEvents || 0,
+                        "All retained audit events",
                       ],
                     ]
                   : [
@@ -772,6 +772,85 @@ function App() {
                   </div>
                 ))}
               </div>
+              {owner && platform?.monitoring && (
+                <section
+                  className="panel monitoring-panel"
+                  aria-label="Platform monitoring"
+                >
+                  <div className="panel-heading">
+                    <div>
+                      <h3>Platform monitoring</h3>
+                      <p>
+                        Updated when the dashboard loads. Request counters cover
+                        this API process and reset on restart.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="stats">
+                    {[
+                      [
+                        "Enabled accounts",
+                        platform.monitoring.totals.enabledAccounts,
+                        "Accounts permitted to sign in",
+                      ],
+                      [
+                        "Independent schools",
+                        platform.monitoring.totals.independentSchools,
+                        "Schools outside an organization",
+                      ],
+                      [
+                        "Actions in 24 hours",
+                        platform.monitoring.totals.actionsLast24Hours,
+                        `${platform.monitoring.totals.actorsLast24Hours} distinct audited actors`,
+                      ],
+                      [
+                        "Stored uploads",
+                        `${(platform.monitoring.totals.storedBytes / 1048576).toFixed(2)} MB`,
+                        "Tracked files, including retained history",
+                      ],
+                      [
+                        "Requests in 60 minutes",
+                        platform.monitoring.requests.requests,
+                        `${platform.monitoring.requests.rejectedRequests} client rejections`,
+                      ],
+                      [
+                        "Server failures",
+                        platform.monitoring.requests.serverFailures,
+                        "HTTP 5xx responses in the same window",
+                      ],
+                      [
+                        "Average response",
+                        `${platform.monitoring.requests.averageLatencyMs} ms`,
+                        `Maximum ${platform.monitoring.requests.maxLatencyMs} ms`,
+                      ],
+                      [
+                        "Storage mode",
+                        platform.monitoring.dataMode,
+                        platform.monitoring.services.persistentStorage
+                          ? "Persistent database"
+                          : "Demo data resets on restart",
+                      ],
+                    ].map(([label, value, note]) => (
+                      <div className="stat-card" key={label}>
+                        <p>{label}</p>
+                        <strong>{value}</strong>
+                        <small>{note}</small>
+                      </div>
+                    ))}
+                  </div>
+                  <p>
+                    Email:{" "}
+                    {platform.monitoring.services.emailConfigured
+                      ? "Configured; delivery acceptance still required"
+                      : "Disabled until configured"}
+                    . Upload scanner:{" "}
+                    {platform.monitoring.services.scannerConfigured
+                      ? "Configured; scan acceptance still required"
+                      : "Disabled until configured"}
+                    .
+                  </p>
+                </section>
+              )}
               <div className="overview-grid">
                 <section className="panel">
                   <div className="panel-heading">

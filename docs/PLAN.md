@@ -88,7 +88,8 @@ Phase 3 publishing follow-up also implements multiple class/section notices with
 - [ ] Data retention rules, consent and privacy notices appropriate to operating jurisdictions.
 - [ ] Backup encryption, restore drill, export/deletion process and incident response.
 - [ ] Unit/integration/E2E test suite including MySQL and keyboard/accessibility tests.
-- [ ] Monitoring and actionable platform KPIs: active schools/users, request failures, latency, storage and activity.
+- [x] Owner-only monitoring foundation: enabled accounts, independent schools, retained audit totals, recent audited activity, upload bytes, request failures and latency. Bounded process-local counters and explicit service configuration states; external alerts and deployment acceptance remain below.
+- [ ] Production monitoring acceptance: uptime probes, actionable alerts, multi-instance aggregation and capacity testing.
 - [ ] Secure HTTPS deployment, infrastructure secrets, CSP tuned to production assets, database isolation.
 - [ ] Pilot with synthetic data first, then a controlled school trial after release checks.
 

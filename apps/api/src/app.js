@@ -1,3 +1,4 @@
+import { requestMonitor, platformMetrics } from "./monitoring.js";
 import {
   createCalendarRouter,
   visibleCalendar,
@@ -58,6 +59,8 @@ export function createApp(
   const app = express(),
     sessions = tokenRepository(store, "session"),
     resets = tokenRepository(store, "reset");
+  const monitor = requestMonitor();
+  app.use(monitor.middleware);
   app.use(
     helmet({
       contentSecurityPolicy: {
@@ -528,8 +531,12 @@ export function createApp(
     );
     res.json({ ok: true });
   });
+  app.get("/api/platform/monitoring", auth, owner, async (req, res) =>
+    res.json(await platformMetrics(store, monitor, { mailer })),
+  );
   app.get("/api/platform", auth, owner, async (req, res) =>
     res.json({
+      monitoring: await platformMetrics(store, monitor, { mailer }),
       organizations: await store.all("organizations"),
       schools: await store.all("schools"),
       users: (await store.all("users")).map(publicUser),
