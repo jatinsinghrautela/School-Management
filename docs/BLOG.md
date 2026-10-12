@@ -1,6 +1,6 @@
-# Schoolglass Desk — LinkedIn launch draft
+# Building Schoolglass Desk: a connected school workspace
 
-## Ready-to-post copy
+## From an idea to a live pilot
 
 A school dashboard is easy to demo. A connected school workspace is much harder to build.
 
@@ -37,9 +37,7 @@ Explore: https://schoolglass.jatinsinghrautela.com
 
 If you were designing a school platform, which workflow would you connect first?
 
-#SchoolglassDesk #EdTech #FullStackDevelopment #ReactJS #NodeJS #BuildInPublic
-
-## Technical overview for a follow-up article or portfolio
+## Technical overview
 
 ### Problem and original contribution
 
@@ -75,9 +73,3 @@ School records and upload bytes are kept outside the app host's ephemeral filesy
 ### Scope and honest limitations
 
 The application is a live pilot, not a certification of production readiness for sensitive student data. Hosted uploads are explicitly configured without malware scanning. Full current-cloud backup/recovery automation remains future work. Free hosting has availability/capacity limits. Bot controls reduce unwanted requests but do not eliminate them. Mobile development is planned, not shipped. No public demo credentials or student information should accompany the post.
-
-## Image
-
-Use the accompanying original AI-generated launch illustration. It is a conceptual promotional visual, not an actual product screenshot. Suggested alt text: Schoolglass Desk illustrated as a connected school campus with Schools, Teachers, Students and Guardians cards, above a React, Node.js, MySQL and private R2 architecture strip.
-
-Image-generation prompt and asset location are recorded alongside this draft. Review the final copy and visual before publishing; nothing has been posted to LinkedIn.
