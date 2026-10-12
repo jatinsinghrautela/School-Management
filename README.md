@@ -6,7 +6,9 @@ See [school records, separate imports, enrollment numbers, timetable generation 
 
 A multi-school workspace built with React, Node.js, and MySQL. One API serves the platform console and school web workspace; a mobile client will reuse it later.
 
-![Schoolglass Desk school dashboard](docs/screenshots/schoolglass-dashboard.png)
+![Current Schoolglass Desk dashboard in dark mode with demo data](docs/screenshots/schoolglass-dashboard.png)
+
+Dashboard preview refreshed on 13 October 2026 using isolated demo data.
 
 ## Current delivery
 
