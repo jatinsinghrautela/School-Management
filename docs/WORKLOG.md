@@ -1,5 +1,9 @@
 # Work log
 
+## Verified Aiven/R2 migration (2026-10-12)
+
+With user-provided protected configuration and confirmation that local writers were stopped, created and verified an encrypted 57-table/five-file backup. Confirmed Aiven verified TLS and an empty target. Corrected cloud import to compare migration versions rather than installation timestamps and omit only virtual/stored generated columns during inserts. Added two regression tests. Imported and checksum-verified 486 rows, revoked remote sessions, and retained all local data. Five private R2 files verified twice by SHA-256. Created a dedicated randomly named runtime account without database DDL and saved its credentials only in ignored apps/api/data/render-runtime.env. Production preflight and real restricted-account/R2 checks passed; three schools and 34 users present. R2 budget records 915556 reserved bytes, five writes and 15 reads. No Render service or DNS changes made; user must replace runtime credentials in Render before deployment. Email remains disabled and hosted uploads explicitly unscanned.
+
 ## Authorized hosted unscanned uploads (2026-10-12)
 
 Validation: all 71 API tests and production build passed after the policy/metadata changes. Existing local records and live provider configuration were not changed.

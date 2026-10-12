@@ -5,6 +5,10 @@ import { mysqlConfig } from "./mysql-config.js";
 import { createStore } from "./store.js";
 import { decryptBackup, rowDigest } from "./backup.js";
 import { budgetSchema } from "./cloud-budget.js";
+import {
+  sameMigrationVersions,
+  writableColumns,
+} from "./cloud-import-layout.js";
 // Operator-only import into an EMPTY target. Does not read or delete the source DB.
 if (
   process.env.CLOUD_MIGRATION_CONFIRMED !== "yes" ||
@@ -27,7 +31,7 @@ try {
   for (const table of snapshot.tables) {
     const [rows] = await db.query(`SELECT * FROM ${ident(table.name)}`);
     if (table.name === "sg_migrations") {
-      if (rowDigest(rows) !== table.sha256)
+      if (!sameMigrationVersions(table.rows, rows))
         throw new Error("Migration release mismatch");
     } else if (rows.length)
       throw new Error(
@@ -38,10 +42,12 @@ try {
   await db.beginTransaction();
   for (const table of snapshot.tables) {
     if (table.name === "sg_migrations") continue;
+    const [layout] = await db.query(`SHOW COLUMNS FROM ${ident(table.name)}`);
+    const insertColumns = writableColumns(table.columns, layout);
     for (const row of table.rows)
       await db.execute(
-        `INSERT INTO ${ident(table.name)} (${table.columns.map(ident).join(",")}) VALUES (${table.columns.map(() => "?").join(",")})`,
-        table.columns.map((c) =>
+        `INSERT INTO ${ident(table.name)} (${insertColumns.map(ident).join(",")}) VALUES (${insertColumns.map(() => "?").join(",")})`,
+        insertColumns.map((c) =>
           row[c] && typeof row[c] === "object"
             ? JSON.stringify(row[c])
             : row[c],
