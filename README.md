@@ -1,6 +1,6 @@
 # Schoolglass Desk
 
-See the [Render configuration and migration steps](docs/RENDER-SETUP.md) and [cloud operating guide](docs/CLOUD-DEPLOYMENT.md). Private R2 storage and persistent quotas are implemented; actual-provider verification and data migration remain before publishing.
+The website is live at [schoolglass.jatinsinghrautela.com](https://schoolglass.jatinsinghrautela.com). See the [complete deployment and maintenance guide](docs/CLOUD-DEPLOYMENT.md) for setup, environment variables, migration, DNS, costs, limits, code updates and recovery. Custom-domain HTTPS and backend readiness passed; complete the documented user-flow and dashboard acceptance checks.
 
 See [school records, separate imports, enrollment numbers, timetable generation and yearly fee planning](docs/ENROLLMENT-AND-PLANNING.md) for the latest management workflows. Archiving retains historical data.
 

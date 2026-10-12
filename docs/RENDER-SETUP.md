@@ -1,5 +1,7 @@
 # Render cloud pilot: configuration and cutover
 
+Historical configuration reference. Use [CLOUD-DEPLOYMENT.md](CLOUD-DEPLOYMENT.md) as the current consolidated guide: migration and deployment are complete and custom-domain HTTPS/readiness passed. Earlier statements below about providers not yet accessed or data not yet migrated describe the pre-cutover state.
+
 Upload policy update: the owner explicitly authorized hosted pilot uploads without scanning. Use `UPLOAD_SCAN_MODE=unscanned` in Render. Earlier disabled-until-scanning instructions below describe the safe alternative: `disabled` stops uploads, `required` enables real configured ClamAV. No hosted scanner is installed. Existing unscanned files are not retroactively scanned by changing the mode.
 
 12 October 2026. Cloud code is implemented and locally verified. Your Aiven/R2 accounts have not been accessed by this agent; actual provider verification and migration remain operator steps. No existing local data has been moved or deleted.
