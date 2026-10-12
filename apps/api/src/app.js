@@ -88,6 +88,7 @@ export function createApp(
     }),
   );
   app.use((req, res, next) => {
+    res.setHeader("X-Robots-Tag", "noindex, nofollow, noarchive");
     if (req.path.startsWith("/api/"))
       res.setHeader("Cache-Control", "private, no-store");
     if (
@@ -97,6 +98,9 @@ export function createApp(
     )
       return res.status(403).json({ error: "HTTPS is required" });
     next();
+  });
+  app.get("/robots.txt", (_req, res) => {
+    res.type("text/plain").send("User-agent: *\nDisallow: /\n");
   });
   app.use((req, res, next) =>
     express.json({

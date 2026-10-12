@@ -1,5 +1,9 @@
 # Work log
 
+## Cloud pilot deployment planning (2026-10-12)
+
+Documented Render Free, Aiven Free MySQL and private R2 Standard setup, proposed global byte/operation caps, safe pause/resume and data-preserving migration. Distinguished planned cloud enforcement from existing per-school quotas. Verified official provider documentation, including Aiven power-off data-loss risk and Cloudflare free certificate depth limits. Added crawler opt-out via robots.txt, HTML meta and X-Robots-Tag, with deployment regression checks. Bot filtering reduces traffic but cannot guarantee zero scans or charges. No cloud resources provisioned, credentials changed or existing data deleted.
+
 ## Staff profiles and leave milestone (2026-10-09)
 
 - Added Staff navigation for school leaders, teachers and supporting staff. Leadership manages school-scoped employment profiles; employees see only their own profile and leave history. Students have no access, and support sessions are read-only.

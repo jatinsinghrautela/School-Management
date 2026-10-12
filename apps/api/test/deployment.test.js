@@ -124,6 +124,15 @@ test("HTTP readiness reports dependency failure without details; production reje
     assert.ok(csp.includes("script-src 'self'"));
     assert.ok(csp.includes("script-src-attr 'none'"));
     assert.ok(csp.includes("upgrade-insecure-requests"));
+    assert.equal(
+      forwarded.headers.get("x-robots-tag"),
+      "noindex, nofollow, noarchive",
+    );
+    const robots = await fetch(base + "/robots.txt", {
+      headers: { "X-Forwarded-Proto": "https" },
+    });
+    assert.equal(robots.status, 200);
+    assert.equal(await robots.text(), "User-agent: *\nDisallow: /\n");
   } finally {
     await new Promise((resolve) => server.close(resolve));
     await store.close();

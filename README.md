@@ -1,5 +1,7 @@
 # Schoolglass Desk
 
+See the [Render, Aiven and private R2 deployment guide](docs/CLOUD-DEPLOYMENT.md) for setup, service start/stop, budgets and bot protection. Cloud integration and hosted quota enforcement remain prerequisites before publishing.
+
 See [school records, separate imports, enrollment numbers, timetable generation and yearly fee planning](docs/ENROLLMENT-AND-PLANNING.md) for the latest management workflows. Archiving retains historical data.
 
 A multi-school workspace built with React, Node.js, and MySQL. One API serves the platform console and school web workspace; a mobile client will reuse it later.
