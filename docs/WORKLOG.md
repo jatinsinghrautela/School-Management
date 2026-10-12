@@ -344,3 +344,7 @@ Validation: all eight Phase 2 API tests passed, including student/teacher tempor
 ## 2026-10-10 - Explain people import prerequisites and row failures
 
 Diagnosed the supplied 30-row WHSS workbook against local MySQL: no academic years or classes exist, so its proposed grade/year labels cannot resolve. No accounts or classes were created or modified. Preview now reports missing school classes directly and gives field-specific errors for names, emails, roles, class mismatches and duplicate accounts instead of a generic combined message. The upload template is unchanged. All eight Phase 2 tests passed, including specific invalid-role and missing-class diagnostics plus successful credentials import.
+
+## 2026-10-12 - Calendar upload response handling
+
+Replaced unconditional frontend response.json parsing with a shared guarded decoder. Empty or non-JSON proxy/server responses now display HTTP status and backend/MySQL retry guidance instead of an Unexpected end of JSON exception; non-JSON 413/429 responses get size/rate-limit explanations. Structured API errors remain unchanged. Calendar upload validates the .xlsx extension and existing 1 MB backend limit before sending. Local frontend/backend health checks currently returned valid MySQL responses; the original transient empty-response cause was not reproduced. Calendar import and response-decoder tests passed (four checks), including atomic application, school isolation, stale/reused preview rejection and oversized/empty/invalid responses. Production build passed. Workbook format unchanged.

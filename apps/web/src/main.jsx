@@ -1,4 +1,5 @@
 import { Gallery } from "./school-media.jsx";
+import { readApiResponse } from "./api-response.js";
 import { SchoolCalendar } from "./calendar.jsx";
 import React, { useEffect, useState, useRef } from "react";
 import { createRoot } from "react-dom/client";
@@ -178,7 +179,7 @@ function App() {
       },
       ...(body ? { body: multipart ? body : JSON.stringify(body) } : {}),
     });
-    const result = await response.json();
+    const result = await readApiResponse(response);
     if (!response.ok) {
       if (response.status === 401 && token) {
         const original = sessionStorage.getItem("orbit-owner-token") || "";

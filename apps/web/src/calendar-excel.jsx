@@ -90,6 +90,12 @@ export function CalendarExcel({ schoolId, api, refresh }) {
     setMessage("");
     setPreview(null);
     try {
+      if (!file || !/\.xlsx$/i.test(file.name))
+        throw new Error("Choose the downloaded .xlsx calendar workbook.");
+      if (file.size > 1024 * 1024)
+        throw new Error(
+          "Calendar workbook exceeds 1 MB. Upload a file at most 1 MB.",
+        );
       const body = new FormData();
       body.append("file", file);
       setPreview(
