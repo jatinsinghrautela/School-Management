@@ -1,5 +1,11 @@
 # Work log
 
+## Authorized hosted unscanned uploads (2026-10-12)
+
+Validation: all 71 API tests and production build passed after the policy/metadata changes. Existing local records and live provider configuration were not changed.
+
+Checked free ClamAV resource requirements against Render Free; standard signatures are not a practical fit within 512 MB. Implemented explicitly authorized production `UPLOAD_SCAN_MODE=unscanned` without weakening default required/disabled policies or local-only mode protection. New upload metadata records unscanned status; resource branding, homework attachments, logo/gallery and family document paths accept authorized unscanned files with existing permission checks. Updated Render environment example and user notices. No live service settings or stored data changed. Added production-mode policy checks; documented how to disable uploads or enable real ClamAV later.
+
 ## Hosted storage implementation (2026-10-12)
 
 Implemented explicit Render production profile, one trusted ingress hop, verified Aiven CA/hostname TLS and private R2 S3 adapter across resources, submissions, logos, gallery and document branding. Added independent MySQL budget transaction pool, durable byte/A/B reservations, no automatic resets/refunds, one SDK attempt, conditional UUID writes, bounded reads/timeouts and global pause. Runtime fails closed without initialized budget state. Added separate empty-target encrypted database import and checksum-verified file migration tools that retain local originals, plus exact render.env.example and RENDER-SETUP.md. No live cloud credentials used or local records changed. Hosted uploads remain disabled pending scanning; full cloud backup automation and real provider/header/grant acceptance remain outstanding.

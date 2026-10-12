@@ -1,5 +1,13 @@
 # Upload controls and local ClamAV
 
+## Hosted pilot uploads (12 October 2026)
+
+The owner authorized uploads without scanning when a free hosted scanner is impractical. Set `UPLOAD_SCAN_MODE=unscanned` in Render's Environment and redeploy. This mode is explicitly supported in production; `unscanned-local` still is not. New files are recorded as `unscanned`, with visible upload notices, instead of being falsely recorded as antivirus-clean. Existing formats, size limits, school/user permissions, metadata stripping for photos and R2 budgets remain enforced; they do not detect all malware.
+
+ClamAV is free software, but the standard signatures need substantially more RAM than Render Free's 512 MB. On a suitable future host, install ClamAV, update definitions with freshclam, configure CLAMAV_COMMAND and optionally CLAMAV_DATABASE_DIR, switch to `required`, restart and validate a clean fixture plus the EICAR antivirus test file. Scanner failure then blocks uploads. Switch to `disabled` and redeploy to stop uploads immediately. No public scanning service receives private school files. Previously uploaded files require a separate retrospective scan; changing policy does not scan them.
+
+References: [ClamAV requirements](https://docs.clamav.net/), [Render compute plans](https://render.com/docs/compute-plans).
+
 Edit `apps/api/.env`, then restart the Node backend after every configuration change. Vite does not reload the backend environment. Configuration is global to all schools on that API.
 
 ## Current local testing setting

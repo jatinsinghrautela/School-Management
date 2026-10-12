@@ -2,8 +2,12 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { uploadPolicy, scanBuffer } from "../src/upload-security.js";
 import { deploymentCheck } from "../src/deployment-config.js";
-test("uploads require scanning by default and unscanned mode is local only", async () => {
+test("uploads require scanning by default; explicit hosted unscanned mode and local-only mode stay distinct", async () => {
   assert.equal(uploadPolicy({}).enabled, false);
+  assert.deepEqual(
+    uploadPolicy({ UPLOAD_SCAN_MODE: "unscanned", NODE_ENV: "production" }),
+    { mode: "unscanned", enabled: true, unscanned: true },
+  );
   assert.equal(uploadPolicy({ CLAMAV_COMMAND: "clamscan" }).enabled, true);
   assert.equal(
     uploadPolicy({ UPLOAD_SCAN_MODE: "disabled", CLAMAV_COMMAND: "clamscan" })
@@ -40,6 +44,8 @@ test("uploads require scanning by default and unscanned mode is local only", asy
     process.env.UPLOAD_SCAN_MODE = "unscanned-local";
     process.env.NODE_ENV = "production";
     await assert.rejects(scanBuffer(Buffer.from("test")), /disabled/);
+    process.env.UPLOAD_SCAN_MODE = "unscanned";
+    await scanBuffer(Buffer.from("test"));
   } finally {
     for (const [key, value] of [
       ["UPLOAD_SCAN_MODE", original.mode],

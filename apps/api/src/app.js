@@ -1473,7 +1473,10 @@ export function createApp(
             mime: pdf ? "application/pdf" : png ? "image/png" : "image/jpeg",
             size: b.length,
             createdAt: new Date().toISOString(),
-            scanStatus: "clean",
+            scanStatus:
+              scanner === scanBuffer && uploadPolicy().unscanned
+                ? "unscanned"
+                : "clean",
           });
           const row = await tx.put("resources", {
             id: id(),
@@ -1588,7 +1591,10 @@ export function createApp(
                 .slice(0, 120) || "attachment",
             mime,
             size: req.file.size,
-            scanStatus: "clean",
+            scanStatus:
+              scanner === scanBuffer && uploadPolicy().unscanned
+                ? "unscanned"
+                : "clean",
             staged: true,
             createdAt: new Date().toISOString(),
           });

@@ -61,7 +61,7 @@ export function LogoUpload({ api, schoolId, settings, readOnly, onSaved }) {
       )}
       {settings.uploadsUnscanned && (
         <p className="upload-disabled">
-          Local testing: uploads are enabled without malware scanning.
+          Uploads are enabled without malware scanning.
         </p>
       )}
       {!settings.uploadsEnabled && (
@@ -236,7 +236,7 @@ export function Gallery({ api, schoolId, manager, readOnly }) {
                   {busy ? "Publishing…" : "Publish photograph"}
                 </button>
                 {data?.uploadsUnscanned && (
-                  <p>Local testing: photos are not malware scanned.</p>
+                  <p>Photos are not malware scanned.</p>
                 )}
                 {!data?.uploadsEnabled && (
                   <p>

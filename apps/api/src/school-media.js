@@ -157,7 +157,7 @@ export async function schoolLogo(store, schoolId) {
     (f) =>
       f.id === settings.logoFileId &&
       f.kind === "school-logo" &&
-      f.scanStatus === "clean" &&
+      ["clean", "unscanned"].includes(f.scanStatus) &&
       !f.deleted,
   );
   if (!file) return "";
@@ -196,7 +196,7 @@ export function createSchoolMediaRouter(store, scanner) {
             f.id === resource.fileId &&
             !f.deleted &&
             !f.staged &&
-            f.scanStatus === "clean" &&
+            ["clean", "unscanned"].includes(f.scanStatus) &&
             ["application/pdf", "image/png", "image/jpeg"].includes(f.mime),
         );
       if (!file || !/^[a-f0-9-]{36}$/i.test(file.id))
@@ -307,7 +307,10 @@ export function createSchoolMediaRouter(store, scanner) {
             mime: size.type,
             size: req.file.size,
             kind: "school-logo",
-            scanStatus: "clean",
+            scanStatus:
+              scanner === scanBuffer && uploadPolicy().unscanned
+                ? "unscanned"
+                : "clean",
             staged: false,
             createdAt: new Date().toISOString(),
           });
@@ -401,7 +404,10 @@ export function createSchoolMediaRouter(store, scanner) {
             mime: size.type,
             size: req.file.size,
             kind: "gallery",
-            scanStatus: "clean",
+            scanStatus:
+              scanner === scanBuffer && uploadPolicy().unscanned
+                ? "unscanned"
+                : "clean",
             staged: false,
             createdAt: new Date().toISOString(),
           });
@@ -438,7 +444,9 @@ export function createSchoolMediaRouter(store, scanner) {
         photo &&
         (await store.all("files", req.school.id)).find(
           (f) =>
-            f.id === photo.fileId && f.scanStatus === "clean" && !f.deleted,
+            f.id === photo.fileId &&
+            ["clean", "unscanned"].includes(f.scanStatus) &&
+            !f.deleted,
         );
       if (!file) fail(404, "Photo not found");
       res.set("Cache-Control", "private, no-store");

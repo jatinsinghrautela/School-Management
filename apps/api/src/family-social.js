@@ -456,7 +456,7 @@ export function createFamilySocialRouter(store) {
         (await store.all("files", req.school.id)).find(
           (x) =>
             x.id === resource.fileId &&
-            x.scanStatus === "clean" &&
+            ["clean", "unscanned"].includes(x.scanStatus) &&
             !x.staged &&
             !x.deleted &&
             ["application/pdf", "image/png", "image/jpeg"].includes(x.mime),

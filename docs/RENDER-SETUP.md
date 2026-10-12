@@ -1,5 +1,7 @@
 # Render cloud pilot: configuration and cutover
 
+Upload policy update: the owner explicitly authorized hosted pilot uploads without scanning. Use `UPLOAD_SCAN_MODE=unscanned` in Render. Earlier disabled-until-scanning instructions below describe the safe alternative: `disabled` stops uploads, `required` enables real configured ClamAV. No hosted scanner is installed. Existing unscanned files are not retroactively scanned by changing the mode.
+
 12 October 2026. Cloud code is implemented and locally verified. Your Aiven/R2 accounts have not been accessed by this agent; actual provider verification and migration remain operator steps. No existing local data has been moved or deleted.
 
 ## Render form
@@ -29,7 +31,7 @@ Use deploy/render.env.example as the exact runtime variable checklist. Render su
 | R2_MAX_CLASS_A                           | 500000                                                             |
 | R2_MAX_CLASS_B                           | 5000000                                                            |
 | R2_PAUSED                                | no                                                                 |
-| UPLOAD_SCAN_MODE                         | disabled                                                           |
+| UPLOAD_SCAN_MODE                         | unscanned                                                          |
 | SCHOOL_STORAGE_MB / STUDENT_STORAGE_MB   | 250 / 20                                                           |
 
 Add Secret File `aiven-ca.pem` containing the downloaded Aiven CA certificate. No client private key is needed for this connection. Never set NODE_TLS_REJECT_UNAUTHORIZED=0. Leave SMTP fields absent until delivery is configured. Do not put BOOTSTRAP_PASSWORD, BACKUP_PASSPHRASE, restore credentials or migration credentials into the running service.
@@ -43,7 +45,7 @@ Use a separate protected terminal environment for cloud operations. Commands bel
 3. Keep the source upload directory available under this checkout. Configure target R2 settings and FILE_STORAGE=r2, then run `node src/migrate-cloud-files.js`. It checks local file sizes, conditionally writes new objects and verifies downloaded SHA-256 hashes; reruns accept only identical existing objects. It never deletes source files. Failures stop migration; inspect target state before retrying. Failed/uncertain cloud writes consume reserved budget conservatively. Restore a missing source file from the verified backup before retrying.
 4. Confirm the row/checksum counts and every upload identity. Create a separate runtime MySQL account, apply the project's generated runtime grants with FILE_STORAGE=r2 (includes SELECT/UPDATE only on sg_cloud_budget), then remove migration secrets from runtime. Aiven may restrict GRANT/create-user capabilities: verify in its console before treating deployment as accepted. Never run the app using unrestricted avnadmin as a workaround.
 5. With only runtime environment, run `npm run deploy:check -- --database` after building. Set RENDER=true only in the separate operator validation environment to validate the intended hosted profile; Render sets it automatically at runtime. Verify both database schema and initialized budget table. Start Render only after the import/files checks pass.
-6. Add the main custom domain, DNS and HTTPS as described in CLOUD-DEPLOYMENT.md. Test actual proxy behavior, login/logout, school isolation, reset, private file reads and print documents. Verify existing logo/gallery/resource files survived. Keep automatic cloud file uploads disabled until a real hosted scanner is installed and tested. This safe disabled state is intentional; no scanning bypass was added.
+6. Add the main custom domain, DNS and HTTPS as described in CLOUD-DEPLOYMENT.md. Test actual proxy behavior, login/logout, school isolation, reset, private file reads and print documents. Verify existing logo/gallery/resource files survived. Hosted pilot uploads now use the owner-authorized unscanned mode. Use disabled to pause uploads or required after installing and testing a real scanner.
 
 ## Implemented budget behavior
 
@@ -56,7 +58,7 @@ Inspect with a read-only operator query: `SELECT * FROM sg_cloud_budget WHERE id
 ## Pause and restart
 
 - Set R2_PAUSED=yes and redeploy to stop all app cloud operations; no files are deleted. Set no and redeploy to resume. This does not remove existing storage charges or stop other clients using R2.
-- UPLOAD_SCAN_MODE=disabled stops new uploads while preserving private reads. required needs a real configured ClamAV scanner; unscanned-local remains forbidden in production.
+- UPLOAD_SCAN_MODE=disabled stops new uploads while preserving private reads. unscanned enables owner-authorized uploads without antivirus; required needs a real configured ClamAV scanner. unscanned-local remains forbidden in production.
 - Render Suspend/Resume pauses the web service. Its disk is disposable; permanent files are in R2. Aiven power-off can lose data without provider backups: verify your own recoverable backups first, as documented in CLOUD-DEPLOYMENT.md.
 - Legacy local backup commands are designed for local disk/table layout and must not be used as a complete cloud-backup claim. For the live cloud service use a verified full MySQL export including sg_cloud_budget plus an independently verified private R2 object backup; cloud encrypted backup/recovery automation is still a future extension. Preserve budget counters during restore to prevent granting excess allowances.
 

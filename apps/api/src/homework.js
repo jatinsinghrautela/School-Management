@@ -45,7 +45,7 @@ export function createHomeworkRouter(store) {
                 f.id === attachmentId &&
                 !f.deleted &&
                 f.staged &&
-                f.scanStatus === "clean" &&
+                ["clean", "unscanned"].includes(f.scanStatus) &&
                 f.schoolId === req.school.id &&
                 f.studentId === req.user.id &&
                 f.resourceId === resource.id,

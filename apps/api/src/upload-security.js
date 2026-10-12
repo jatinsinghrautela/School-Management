@@ -1,7 +1,9 @@
 import { spawn } from "node:child_process";
 export function uploadPolicy(env = process.env) {
   const mode = env.UPLOAD_SCAN_MODE || "required";
-  const unscanned = mode === "unscanned-local" && env.NODE_ENV !== "production";
+  const unscanned =
+    mode === "unscanned" ||
+    (mode === "unscanned-local" && env.NODE_ENV !== "production");
   return {
     mode,
     enabled: unscanned || (mode === "required" && !!env.CLAMAV_COMMAND),
