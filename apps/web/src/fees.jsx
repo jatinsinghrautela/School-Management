@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
+import { FeeYearPlan } from "./fee-year-plan.jsx";
 const money = (n, c) =>
   new Intl.NumberFormat(undefined, { style: "currency", currency: c }).format(
     n / 100,
@@ -20,6 +21,7 @@ export function Fees({
   manager,
   readOnly,
   settings,
+  years,
 }) {
   const money = (n, c) =>
     new Intl.NumberFormat(settings?.locale || "en-IN", {
@@ -157,6 +159,15 @@ export function Fees({
     totals[c.currency] = (totals[c.currency] || 0) + c.outstandingMinor;
   return (
     <div className="fees-workspace">
+      {writable && (
+        <FeeYearPlan
+          key={schoolId}
+          classes={classes}
+          years={years}
+          save={act}
+          busy={busy}
+        />
+      )}
       <section className="panel record-grid">
         <div className="panel-heading">
           <div>

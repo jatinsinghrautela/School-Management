@@ -246,7 +246,16 @@ export function createAcademicRouter(store) {
     "/academics/subjects",
     route(async (req, res) => {
       requireManager(req);
-      const { name, classId, teacherIds = [] } = req.body;
+      const {
+        name,
+        classId,
+        teacherIds = [],
+        category = "academic",
+      } = req.body;
+      if (!["academic", "sport", "event", "non-academic"].includes(category))
+        return res
+          .status(400)
+          .json({ error: "Choose a valid subject category" });
       assert(
         text(name) && Array.isArray(teacherIds),
         400,
@@ -283,6 +292,7 @@ export function createAcademicRouter(store) {
           classId,
           name: name.trim(),
           teacherIds: [...new Set(teacherIds)],
+          category,
         };
         await tx.put("subjects", row);
         await audit(tx, req.user, req.school.id, "subject.created");

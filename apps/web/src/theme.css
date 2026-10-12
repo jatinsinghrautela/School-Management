@@ -1,4 +1,81 @@
 /* One shared appearance; compact controls and responsive workspace header. */
+.planner-panel {
+  padding: 22px;
+  margin: 0 0 24px;
+  min-width: 0;
+}
+.planner-panel > summary {
+  cursor: pointer;
+  font-weight: 700;
+}
+.planner-panel p {
+  line-height: 1.6;
+  margin: 16px 0;
+}
+.planner-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr));
+  gap: 16px;
+  margin: 20px 0;
+  align-items: end;
+}
+.planner-grid label {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+.planner-grid input,
+.planner-grid select {
+  min-width: 0;
+  width: 100%;
+}
+.planner-panel fieldset {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  margin: 18px 0;
+  padding: 14px;
+  min-width: 0;
+}
+.planner-choice {
+  display: inline-flex !important;
+  gap: 8px;
+  align-items: center;
+  margin: 8px 16px 8px 0;
+}
+.planner-preview {
+  max-height: 400px;
+  overflow: auto;
+}
+[data-theme="dark"]
+  :is(
+    .calendar-excel,
+    .calendar-day:not(.empty),
+    .calendar-entry,
+    .calendar-form,
+    .calendar-import-preview,
+    .calendar-preview-table,
+    .dated-timetable,
+    .planner-panel
+  ) {
+  background: #192b30;
+  color: #edf6f3;
+  border-color: #526e6c;
+}
+[data-theme="dark"] .calendar-preview-table th {
+  background: #263d42;
+  color: #edf6f3;
+}
+[data-theme="dark"] .calendar-excel-message {
+  color: #b9e2d5;
+}
+[data-theme="dark"] .calendar-pill {
+  background: #253e62;
+  color: #e1ebff;
+}
+[data-theme="dark"] .calendar-pill.holiday {
+  background: #264c41;
+  color: #d4f4e5;
+}
 .scene-toggle {
   width: 88px;
   height: 44px;

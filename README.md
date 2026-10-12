@@ -1,5 +1,7 @@
 # Schoolglass Desk
 
+See [school records, separate imports, enrollment numbers, timetable generation and yearly fee planning](docs/ENROLLMENT-AND-PLANNING.md) for the latest management workflows. Archiving retains historical data.
+
 A multi-school workspace built with React, Node.js, and MySQL. One API serves the platform console and school web workspace; a mobile client will reuse it later.
 
 ![Schoolglass Desk school dashboard](docs/screenshots/schoolglass-dashboard.png)

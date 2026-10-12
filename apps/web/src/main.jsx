@@ -1,4 +1,5 @@
 import { Gallery } from "./school-media.jsx";
+import { PlatformRecords, GuardianRecords } from "./record-management.jsx";
 import { readApiResponse } from "./api-response.js";
 import { SchoolCalendar } from "./calendar.jsx";
 import React, { useEffect, useState, useRef } from "react";
@@ -1046,6 +1047,13 @@ function App() {
                 )}
               </div>
               {page === "Schools" && (
+                <PlatformRecords
+                  api={api}
+                  platform={platform}
+                  refresh={refresh}
+                />
+              )}
+              {page === "Schools" && (
                 <div className="school-grid">
                   {filtered(platform?.schools).map((s) => (
                     <article className="school-card panel" key={s.id}>
@@ -1053,7 +1061,9 @@ function App() {
                         <span className="school-icon">
                           <Building2 />
                         </span>
-                        <span className="badge">Connected</span>
+                        <span className="badge">
+                          {s.active === false ? "Archived" : "Connected"}
+                        </span>
                       </div>
                       <h3>{s.name}</h3>
                       <p>{s.city}</p>
@@ -1163,7 +1173,7 @@ function App() {
                                 })
                               }
                             >
-                              {u.active === false ? "Reactivate" : "Suspend"}
+                              {u.active === false ? "Restore" : "Archive"}
                             </button>
                           )}
                       </div>,
@@ -1189,6 +1199,9 @@ function App() {
                     ],
                   )}
                 />
+              )}
+              {page === "People" && manager && data && (
+                <GuardianRecords key={sid} api={api} schoolId={sid} />
               )}
               {page === "People" && manager && data && (
                 <StudentRecords
@@ -1270,6 +1283,7 @@ function App() {
                 data &&
                 (manager || user.role === "student") && (
                   <Fees
+                    years={data?.academicYears || []}
                     api={api}
                     schoolId={sid}
                     classes={classes}
@@ -2768,7 +2782,8 @@ function Editor({
               {!owner && (
                 <fieldset>
                   <legend>
-                    Class access (required for teachers and students)
+                    Class access (required for students; teachers can have
+                    multiple or be assigned later)
                   </legend>
                   {classes.map((c) => (
                     <label className="checkbox" key={c.id}>

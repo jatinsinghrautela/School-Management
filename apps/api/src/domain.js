@@ -13,7 +13,8 @@ export const roles = [
 export function canAccessSchool(user, school) {
   return (
     user.role === "owner" ||
-    ((user.orgId || null) === (school.orgId || null) &&
+    (school.active !== false &&
+      (user.orgId || null) === (school.orgId || null) &&
       user.schoolIds.includes(school.id))
   );
 }

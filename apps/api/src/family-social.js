@@ -60,7 +60,7 @@ export async function linkParentAccount(tx, req, b, hash) {
   if (
     !b.guardianIds.every(
       (g) =>
-        gs.some((x) => x.id === g) &&
+        gs.some((x) => x.id === g && x.active !== false) &&
         sl.some((x) => x.guardianId === g && x.active),
     )
   )

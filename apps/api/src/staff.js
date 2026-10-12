@@ -113,6 +113,8 @@ export function createStaffRouter(store) {
           fail(409, "Employee number is already in use at this school");
         const previous = profiles.find((p) => p.userId === user.id);
         const row = {
+          ...previous,
+          profileNeedsReview: false,
           id: previous?.id || id(),
           schoolId: req.school.id,
           userId: user.id,

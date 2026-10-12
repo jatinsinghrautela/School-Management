@@ -374,6 +374,7 @@ function AcademicEditor({ type, data, close, save, error, busy, subject }) {
       });
     if (type === "subject")
       save("/academics/subjects", {
+        category: form.category || "academic",
         name: form.name,
         classId: form.classId,
         teacherIds: form.teacherIds,
@@ -428,6 +429,19 @@ function AcademicEditor({ type, data, close, save, error, busy, subject }) {
           </button>
         </div>
         <form onSubmit={submit}>
+          {type === "subject" && (
+            <label>
+              Subject category
+              <select
+                value={form.category || "academic"}
+                onChange={(e) => setForm({ ...form, category: e.target.value })}
+              >
+                {["academic", "sport", "event", "non-academic"].map((c) => (
+                  <option key={c}>{c}</option>
+                ))}
+              </select>
+            </label>
+          )}
           {["year", "subject", "exam"].includes(type) &&
             input(
               "name",

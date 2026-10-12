@@ -111,6 +111,19 @@ Use React Native with Expo open-source tooling. Reuse API contracts, permissions
 
 Use a calm light workspace with a dark orbital hero, lavender accents, subtle motion, clear tables and mobile-friendly navigation. Respect reduced-motion preferences. Animation must never obstruct mark entry, attendance, or accessibility. Public school marketing websites are a separate optional module; the school workspace remains authenticated.
 
+## School operations improvements — 2026-10-12
+
+- [x] Edit/archive schools and organizations, retaining records and blocking archived school access.
+- [x] Verify reset/change flows allow passwords shared by different accounts; preserve mandatory own-password change.
+- [x] Separate teacher/student templates, multi-class/section teacher import and authorized guardian/profile fields.
+- [x] Automatically allocate school-code student/teacher numbers and align existing profiles while retaining prior numbers.
+- [x] Account profile/access edits and archive/restore controls; guardian contact edit/archive with ended access links.
+- [x] Academic/sport/event categories, timing/break controls, bounded randomized conflict-checked timetable drafts and class Excel import.
+- [x] Readable dark Calendar Excel surfaces and expanded tool checks across desktop/mobile.
+- [x] Atomic academic-year fee schedules, selected months, recurring due day and optional current-roster assignment.
+
+See [workflow guide](ENROLLMENT-AND-PLANNING.md). These additions do not replace production acceptance gates above.
+
 ## Work tracking
 
 Update this checklist and WORKLOG after each meaningful milestone. Commit one reviewable change per feature/fix. Do not claim the entire ERP is complete because the MVP screens exist.

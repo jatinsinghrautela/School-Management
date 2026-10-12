@@ -1,4 +1,6 @@
 import { schoolLogo } from "./school-media.js";
+import { assignEnrollmentNumber } from "./enrollment-numbers.js";
+import { validDate } from "./calendar.js";
 import { brandWorkbook } from "./document-brand.js";
 import { Router } from "express";
 import ExcelJS from "exceljs";
@@ -183,10 +185,41 @@ export function createDataToolsRouter(store) {
         sheet = book.addWorksheet("People"),
         lookup = book.addWorksheet("Classes"),
         years = await store.all("academicYears");
-      sheet.addRow(["Name", "Email", "Role", "Class"]);
-      sheet.addRow(["", "", "student", ""]);
+      const templateType = req.query.type || "legacy";
+      if (!["legacy", "student", "teacher"].includes(templateType))
+        fail(400, "Choose a template type");
+      sheet.addRow([
+        "Name",
+        "Email",
+        "Role",
+        "Class",
+        ...(templateType === "student"
+          ? [
+              "Admission number",
+              "Birth date",
+              "Address",
+              "Guardian consent",
+              ...Array.from({ length: 3 }, (_, i) => [
+                `Guardian ${i + 1} name`,
+                `Guardian ${i + 1} relationship`,
+                `Guardian ${i + 1} phone`,
+                `Guardian ${i + 1} email`,
+              ]).flat(),
+            ]
+          : templateType === "teacher"
+            ? ["Enrollment number", "Phone"]
+            : []),
+      ]);
+      sheet.addRow([
+        "",
+        "",
+        templateType === "teacher" ? "teacher" : "student",
+        "",
+      ]);
       sheet.getRow(1).font = { bold: true };
       sheet.columns.forEach((c) => (c.width = 35));
+      if (templateType !== "legacy")
+        sheet.columns.forEach((c) => (c.numFmt = "@"));
       lookup.addRow(["Class choice"]);
       scope(await store.all("classes"), req).forEach((c) =>
         lookup.addRow([
@@ -198,7 +231,12 @@ export function createDataToolsRouter(store) {
           type: "list",
           formulae: ['"student,teacher,staff"'],
         };
-      await workbookResponse(req, res, book, "people-import.xlsx");
+      await workbookResponse(
+        req,
+        res,
+        book,
+        `${templateType === "legacy" ? "people" : templateType}-import.xlsx`,
+      );
     }),
   );
   router.post(
@@ -229,7 +267,14 @@ export function createDataToolsRouter(store) {
         errors = [],
         entries = [],
         seen = new Set();
-      if (!classes.length)
+      if (
+        !classes.length &&
+        Array.from({ length: sheet.rowCount - 1 }, (_, i) =>
+          sheet.getRow(i + 2),
+        ).some(
+          (row) => row.getCell(3).value === "student" && row.getCell(1).value,
+        )
+      )
         fail(
           400,
           "This school has no classes yet. Create an academic year and its classes/sections in Academics, then download a fresh people template and use its Classes sheet choices.",
@@ -245,10 +290,17 @@ export function createDataToolsRouter(store) {
         }
         const [name, email, role, label] = cells.map((v) => v.trim());
         if (!name && !email && role === "student" && !label) continue;
-        const cls = classes.filter(
-          (c) =>
-            `${c.name} | ${years.find((y) => y.id === c.academicYearId)?.name || "Legacy"}` ===
-            label,
+        const labels =
+          role === "teacher"
+            ? label
+                .split(";")
+                .map((s) => s.trim())
+                .filter(Boolean)
+            : [label];
+        const cls = classes.filter((c) =>
+          labels.includes(
+            `${c.name} | ${years.find((y) => y.id === c.academicYearId)?.name || "Legacy"}`,
+          ),
         );
         const issues = [];
         if (!name || name.length > 200)
@@ -257,7 +309,10 @@ export function createDataToolsRouter(store) {
           issues.push("enter a valid email");
         if (!["student", "teacher", "staff"].includes(role))
           issues.push("role must be student, teacher or staff");
-        if ((label || role === "student") && cls.length !== 1)
+        if (
+          (role === "student" && cls.length !== 1) ||
+          (label && cls.length !== new Set(labels).size)
+        )
           issues.push(
             "class choice does not match this school's classes; copy the exact value from a newly downloaded template's Classes sheet",
           );
@@ -265,13 +320,105 @@ export function createDataToolsRouter(store) {
           issues.push("email is repeated in this workbook");
         if (users.some((u) => u.email.toLowerCase() === email.toLowerCase()))
           issues.push("email already belongs to an account");
+        const profileData = {};
+        const extra = (column) => {
+          const value = sheet.getRow(n).getCell(column).value ?? "";
+          if (typeof value !== "string") {
+            issues.push(`column ${column} must contain plain text`);
+            return "";
+          }
+          return value.trim();
+        };
+        if (sheet.getCell("E1").value === "Admission number") {
+          if (role !== "student")
+            issues.push("use the student template for students only");
+          profileData.admissionNumber = extra(5);
+          profileData.birthDate = extra(6) || null;
+          profileData.address = extra(7);
+          profileData.guardians = [];
+          if (
+            profileData.admissionNumber.length > 60 ||
+            profileData.address.length > 500 ||
+            (profileData.birthDate &&
+              (!validDate(profileData.birthDate) ||
+                profileData.birthDate > new Date().toISOString().slice(0, 10)))
+          )
+            issues.push("check admission number, ISO birth date and address");
+          for (let index = 0; index < 3; index++) {
+            const [gname, relationship, phone, gemail] = [9, 10, 11, 12].map(
+              (c) => extra(c + index * 4),
+            );
+            if (![gname, relationship, phone, gemail].some(Boolean)) continue;
+            if (
+              !gname ||
+              gname.length > 200 ||
+              !relationship ||
+              relationship.length > 60 ||
+              phone.length > 40 ||
+              (!phone && !gemail) ||
+              (gemail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(gemail))
+            )
+              issues.push(
+                `check guardian ${index + 1} name, relationship and contact`,
+              );
+            profileData.guardians.push({
+              name: gname,
+              relationship,
+              phone,
+              email: gemail.toLowerCase(),
+            });
+          }
+          if (profileData.guardians.length && extra(8).toLowerCase() !== "yes")
+            issues.push(
+              "set Guardian consent to Yes after obtaining authorization",
+            );
+          if (
+            profileData.admissionNumber &&
+            ((await store.all("studentProfiles", req.school.id)).some(
+              (p) =>
+                p.admissionNumber?.toLowerCase() ===
+                profileData.admissionNumber.toLowerCase(),
+            ) ||
+              entries.some(
+                (e) =>
+                  e.profileData?.admissionNumber?.toLowerCase() ===
+                  profileData.admissionNumber.toLowerCase(),
+              ))
+          )
+            issues.push("admission number already in use");
+        } else if (sheet.getCell("E1").value === "Enrollment number") {
+          if (role !== "teacher")
+            issues.push("use the teacher template for teachers only");
+          profileData.employeeNumber = extra(5);
+          profileData.phone = extra(6);
+          if (
+            profileData.employeeNumber.length > 120 ||
+            profileData.phone.length > 40
+          )
+            issues.push("check enrollment number and phone");
+          if (
+            profileData.employeeNumber &&
+            ((await store.all("staffProfiles", req.school.id)).some(
+              (p) =>
+                p.employeeNumber?.toLowerCase() ===
+                profileData.employeeNumber.toLowerCase(),
+            ) ||
+              entries.some(
+                (e) =>
+                  e.profileData?.employeeNumber?.toLowerCase() ===
+                  profileData.employeeNumber.toLowerCase(),
+              ))
+          )
+            issues.push("enrollment number already in use");
+        }
         if (issues.length) errors.push(`Row ${n}: ${issues.join("; ")}`);
         else
           entries.push({
             name,
             email: email.toLowerCase(),
             role,
-            classIds: cls.length ? [cls[0].id] : [],
+            classIds: cls.map((c) => c.id),
+            profileData,
           });
         seen.add(email.toLowerCase());
       }
@@ -367,9 +514,11 @@ export function createDataToolsRouter(store) {
         )
           fail(409, "Users or classes changed; upload again");
         for (let i = 0; i < p.entries.length; i++) {
+          const { profileData = {}, ...entry } = p.entries[i];
           const user = await tx.put("users", {
             id: id(),
-            ...p.entries[i],
+            ...entry,
+            ...(profileData.phone ? { phone: profileData.phone } : {}),
             orgId: req.school.orgId || null,
             schoolIds: [req.school.id],
             passwordHash: hashes[i],
@@ -377,6 +526,62 @@ export function createDataToolsRouter(store) {
             authVersion: 0,
             active: true,
           });
+          if (user.role === "student") {
+            if (
+              profileData.admissionNumber &&
+              (await tx.all("studentProfiles", req.school.id)).some(
+                (p) =>
+                  p.admissionNumber?.toLowerCase() ===
+                  profileData.admissionNumber.toLowerCase(),
+              )
+            )
+              fail(409, "Admission number changed; preview again");
+            await tx.put("studentProfiles", {
+              id: id(),
+              schoolId: req.school.id,
+              studentId: user.id,
+              birthDate: profileData.birthDate || null,
+              address: profileData.address || "",
+              admissionNumber: profileData.admissionNumber || null,
+            });
+            for (const g of profileData.guardians || []) {
+              const guardian = await tx.put("guardians", {
+                ...g,
+                id: id(),
+                schoolId: req.school.id,
+                consentRecordedBy: req.user.id,
+                consentRecordedAt: new Date().toISOString(),
+              });
+              await tx.put("studentGuardians", {
+                id: id(),
+                schoolId: req.school.id,
+                studentId: user.id,
+                guardianId: guardian.id,
+                active: true,
+                createdAt: new Date().toISOString(),
+              });
+            }
+          } else if (user.role === "teacher" && profileData.employeeNumber) {
+            if (
+              (await tx.all("staffProfiles", req.school.id)).some(
+                (p) =>
+                  p.employeeNumber?.toLowerCase() ===
+                  profileData.employeeNumber.toLowerCase(),
+              )
+            )
+              fail(409, "Enrollment number changed; preview again");
+            await tx.put("staffProfiles", {
+              id: id(),
+              schoolId: req.school.id,
+              userId: user.id,
+              employeeNumber: profileData.employeeNumber,
+              jobTitle: "Teacher",
+              department: "Teaching",
+              joinDate: new Date().toISOString().slice(0, 10),
+              profileNeedsReview: true,
+            });
+          }
+          await assignEnrollmentNumber(tx, req.school, user);
           if (user.role === "student")
             for (const classId of user.classIds) {
               const cls = classes.find((c) => c.id === classId);

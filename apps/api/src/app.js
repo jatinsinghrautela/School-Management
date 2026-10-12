@@ -1,4 +1,8 @@
 import { readinessProbe } from "./readiness.js";
+import { assignEnrollmentNumber } from "./enrollment-numbers.js";
+import { createRecordManagementRouter } from "./record-management.js";
+import { createFeeYearPlanRouter } from "./fee-year-plan.js";
+import { createTimetablePlannerRouter } from "./timetable-planner.js";
 import { createPrivacyRouter } from "./privacy.js";
 import { requestMonitor, platformMetrics } from "./monitoring.js";
 import {
@@ -94,7 +98,13 @@ export function createApp(
       return res.status(403).json({ error: "HTTPS is required" });
     next();
   });
-  app.use(express.json({ limit: "100kb" }));
+  app.use((req, res, next) =>
+    express.json({
+      limit: /^\/api\/schools\/[^/]+\/timetable-plan\/apply$/.test(req.path)
+        ? "1mb"
+        : "100kb",
+    })(req, res, next),
+  );
   app.use((req, res, next) => {
     if (
       ["POST", "PUT", "PATCH"].includes(req.method) &&
@@ -622,11 +632,89 @@ export function createApp(
     await audit(req.user, "organization.created", null);
     res.status(201).json(row);
   });
+  for (const kind of ["schools", "organizations"])
+    app.post(
+      `/api/platform/${kind}/:recordId/edit`,
+      auth,
+      owner,
+      async (req, res) => {
+        if (req.session.support)
+          return fail(res, 403, "Use the normal owner session");
+        const record = (await store.all(kind)).find(
+          (r) => r.id === req.params.recordId,
+        );
+        if (!record) return fail(res, 404, "Record not found");
+        const {
+          name = record.name,
+          city = record.city,
+          code = record.code,
+          active = record.active !== false,
+        } = req.body;
+        if (
+          !valid(name) ||
+          typeof active !== "boolean" ||
+          (kind === "schools" &&
+            (!valid(city) || !valid(code) || code.length > 40))
+        )
+          return fail(res, 400, "Check record details");
+        if (
+          kind === "organizations" &&
+          !active &&
+          (await store.all("schools")).some(
+            (s) => s.orgId === record.id && s.active !== false,
+          )
+        )
+          return fail(
+            res,
+            409,
+            "Archive the organization’s active schools first. Their records will be retained.",
+          );
+        if (
+          kind === "schools" &&
+          active &&
+          record.orgId &&
+          (await store.all("organizations")).some(
+            (o) => o.id === record.orgId && o.active === false,
+          )
+        )
+          return fail(
+            res,
+            409,
+            "Restore the organization before restoring its school",
+          );
+        await store.transaction(
+          record.id,
+          async (tx) => {
+            await tx.put(kind, {
+              ...record,
+              name: name.trim(),
+              active,
+              ...(kind === "schools"
+                ? { city: city.trim(), code: code.trim() }
+                : {}),
+              updatedAt: new Date().toISOString(),
+            });
+            await tx.put("audit", {
+              id: id(),
+              actorId: req.user.id,
+              schoolId: kind === "schools" ? record.id : null,
+              action: `${kind}.${active ? "updated" : "archived"}`,
+              createdAt: new Date().toISOString(),
+            });
+          },
+          kind,
+        );
+        res.json({ ok: true });
+      },
+    );
   app.post("/api/platform/schools", auth, owner, async (req, res) => {
     const { name, city, code, orgId } = req.body;
     if (
       ![name, city, code].every((v) => valid(v)) ||
-      (orgId && !(await store.all("organizations")).some((o) => o.id === orgId))
+      (orgId &&
+        !(await store.all("organizations")).some(
+          (o) => o.id === orgId && o.active !== false,
+        ))
     )
       return fail(
         res,
@@ -847,9 +935,12 @@ export function createApp(
                 (c) => c.id === cid && schoolIds.includes(c.schoolId),
               ),
           ) ||
-          (["teacher", "student"].includes(role) && !classIds.length)
+          (role === "student" && !classIds.length)
         )
-          reject(400, "Assign valid classes to teachers and students");
+          reject(
+            400,
+            "Assign valid classes; students require a class. Teachers can be assigned later.",
+          );
         if (
           (await tx.all("subjects")).some(
             (s) =>
@@ -964,7 +1055,7 @@ export function createApp(
         (cid) =>
           !classes.some((c) => c.id === cid && schoolIds.includes(c.schoolId)),
       ) ||
-      (["student", "teacher"].includes(role) && !classIds.length)
+      (role === "student" && !classIds.length)
     )
       return fail(res, 400, "Assign valid classes to students and teachers");
     if (
@@ -987,6 +1078,11 @@ export function createApp(
         schoolIds: [...new Set(schoolIds)],
         classIds: [...new Set(classIds)],
       });
+      await assignEnrollmentNumber(
+        tx,
+        (await tx.all("schools")).find((s) => s.id === schoolIds[0]),
+        created,
+      );
       if (created.role === "student")
         for (const classId of created.classIds) {
           const cls = classes.find((c) => c.id === classId);
@@ -1577,17 +1673,20 @@ export function createApp(
     res.status(201).json(result);
   });
   app.use("/api/schools/:schoolId", createAcademicRouter(store));
+  app.use("/api/schools/:schoolId", createRecordManagementRouter(store));
   app.use("/api/schools/:schoolId", createProgressionRouter(store));
   app.use("/api/schools/:schoolId", createDataToolsRouter(store));
   app.use("/api/schools/:schoolId", createSubstitutionRouter(store));
   app.use("/api/schools/:schoolId", createAttendanceSessionRouter(store));
   app.use("/api/schools/:schoolId", createAttendanceCorrectionRouter(store));
   app.use("/api/schools/:schoolId", createTimetableRouter(store));
+  app.use("/api/schools/:schoolId", createTimetablePlannerRouter(store));
   app.use("/api/schools/:schoolId", createCalendarRouter(store));
   app.use("/api/schools/:schoolId", createCalendarImportRouter(store));
   app.use("/api/schools/:schoolId", createHomeworkRouter(store));
   app.use("/api/schools/:schoolId", createAdmissionsRouter(store));
   app.use("/api/schools/:schoolId", createFeesRouter(store));
+  app.use("/api/schools/:schoolId", createFeeYearPlanRouter(store));
   app.use("/api/schools/:schoolId", createStaffRouter(store));
   app.use("/api/schools/:schoolId", createOperationsRouter(store));
   app.use("/api/schools/:schoolId", createFamilySocialRouter(store));

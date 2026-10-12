@@ -142,6 +142,13 @@ export function Staff({ api, schoolId, manager, userId, readOnly }) {
                 </select>
               </label>
               <article className="staff-profile">
+                {profile?.profileNeedsReview && (
+                  <p role="status">
+                    Enrollment number assigned automatically. Please review the
+                    job details and joining date; the initial date is the
+                    enrollment setup date.
+                  </p>
+                )}
                 <h3>{person?.name || "Employee profile"}</h3>
                 {profile ? (
                   <dl>

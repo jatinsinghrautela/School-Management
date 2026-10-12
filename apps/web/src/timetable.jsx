@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { DatedTimetable } from "./dated-timetable.jsx";
+import { TimetablePlanner } from "./timetable-planner.jsx";
 import { X, Plus } from "./glyphs.jsx";
 const days = [
   "Monday",
@@ -74,6 +75,15 @@ export function Timetable({ data, schoolId, api, refresh, manager }) {
   }
   return (
     <section className="timetable-workspace">
+      {manager && (
+        <TimetablePlanner
+          key={schoolId}
+          data={data}
+          schoolId={schoolId}
+          api={api}
+          refresh={refresh}
+        />
+      )}
       <DatedTimetable
         data={data}
         api={api}

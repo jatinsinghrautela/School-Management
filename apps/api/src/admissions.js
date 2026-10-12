@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { assignEnrollmentNumber } from "./enrollment-numbers.js";
 import bcrypt from "bcryptjs";
 import { randomBytes } from "node:crypto";
 import { id, managers, publicUser } from "./domain.js";
@@ -102,7 +103,11 @@ export function createAdmissionsRouter(store) {
     )
       fail(409, "Admission number already belongs to another student");
     const { guardians, birthDate, admissionNumber, address } = data,
-      fields = { birthDate, admissionNumber, address };
+      fields = {
+        birthDate,
+        admissionNumber: admissionNumber || existing?.admissionNumber || null,
+        address,
+      };
     const profile = await tx.put("studentProfiles", {
       ...existing,
       ...fields,
@@ -112,6 +117,14 @@ export function createAdmissionsRouter(store) {
       updatedAt: new Date().toISOString(),
       updatedBy: req.user.id,
     });
+    if (!profile.admissionNumber) {
+      const user = (await tx.all("users")).find((u) => u.id === studentId);
+      profile.admissionNumber = await assignEnrollmentNumber(
+        tx,
+        req.school,
+        user,
+      );
+    }
     const oldLinks = (await tx.all("studentGuardians", req.school.id)).filter(
       (l) => l.studentId === studentId && l.active,
     );

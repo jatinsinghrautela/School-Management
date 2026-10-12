@@ -69,6 +69,26 @@ export function DataTools({ kind, api, schoolId, refresh, manager }) {
             credentials after importing and share each user's credentials
             privately.
           </p>
+          <p>
+            Teacher imports: separate multiple exact class/section choices with
+            a semicolon, or leave Class blank and assign teaching classes later.
+            Student templates include admission details and up to three
+            authorized guardians. Leave enrollment numbers blank to generate
+            them.
+          </p>
+          {["student", "teacher"].map((type) => (
+            <button
+              key={type}
+              className="secondary"
+              disabled={busy}
+              onClick={async () => {
+                const r = await action(`/people-import/template?type=${type}`);
+                if (r) downloadGenerated(r);
+              }}
+            >
+              Download {type} template
+            </button>
+          ))}
           {credentials && (
             <div className="success" role="status">
               <p>
