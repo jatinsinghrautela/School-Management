@@ -1,5 +1,9 @@
 # Work log
 
+## Render Linux build fix (2026-10-12)
+
+User's first Render build failed on missing @rollup/rollup-linux-x64-gnu. The Windows-generated lockfile omitted Linux Rollup/esbuild optional package records. Added exact matching native packages as root optional dependencies, preserving the locked tool versions and npm ci workflow. Verified native/tool version alignment, local production build and an isolated Linux Node 24 container running the exact npm ci --include=dev && npm run build command; zero dependency audit vulnerabilities. No application data, cloud credentials or provider settings changed. Manual deployment of the latest commit is required in Render.
+
 ## Verified Aiven/R2 migration (2026-10-12)
 
 With user-provided protected configuration and confirmation that local writers were stopped, created and verified an encrypted 57-table/five-file backup. Confirmed Aiven verified TLS and an empty target. Corrected cloud import to compare migration versions rather than installation timestamps and omit only virtual/stored generated columns during inserts. Added two regression tests. Imported and checksum-verified 486 rows, revoked remote sessions, and retained all local data. Five private R2 files verified twice by SHA-256. Created a dedicated randomly named runtime account without database DDL and saved its credentials only in ignored apps/api/data/render-runtime.env. Production preflight and real restricted-account/R2 checks passed; three schools and 34 users present. R2 budget records 915556 reserved bytes, five writes and 15 reads. No Render service or DNS changes made; user must replace runtime credentials in Render before deployment. Email remains disabled and hosted uploads explicitly unscanned.
