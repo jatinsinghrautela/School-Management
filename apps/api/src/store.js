@@ -4,6 +4,7 @@ import {
   auditImmutable,
 } from "./schema-policy.js";
 import mysql from "mysql2/promise";
+import { mysqlConfig } from "./mysql-config.js";
 import {
   migrateRelational,
   relationalAll,
@@ -74,20 +75,7 @@ export async function createStore(
   if (mode === "demo" && process.env.NODE_ENV === "production")
     throw new Error("Demo mode cannot run in production");
   const memory = Object.fromEntries(collections.map((k) => [k, []]));
-  const pool =
-    mode === "mysql"
-      ? mysql.createPool({
-          host: process.env.MYSQL_HOST || "127.0.0.1",
-          port: Number(process.env.MYSQL_PORT || 3306),
-          user: process.env.MYSQL_USER || "orbit",
-          password: process.env.MYSQL_PASSWORD,
-          database: process.env.MYSQL_DATABASE || "orbit_school",
-          connectionLimit: 5,
-          connectTimeout: 5000,
-          queueLimit: 20,
-          dateStrings: true,
-        })
-      : null;
+  const pool = mode === "mysql" ? mysql.createPool(mysqlConfig()) : null;
   if (pool) {
     try {
       if (migrate) {

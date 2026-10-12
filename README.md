@@ -1,6 +1,6 @@
 # Schoolglass Desk
 
-See the [Render, Aiven and private R2 deployment guide](docs/CLOUD-DEPLOYMENT.md) for setup, service start/stop, budgets and bot protection. Cloud integration and hosted quota enforcement remain prerequisites before publishing.
+See the [Render configuration and migration steps](docs/RENDER-SETUP.md) and [cloud operating guide](docs/CLOUD-DEPLOYMENT.md). Private R2 storage and persistent quotas are implemented; actual-provider verification and data migration remain before publishing.
 
 See [school records, separate imports, enrollment numbers, timetable generation and yearly fee planning](docs/ENROLLMENT-AND-PLANNING.md) for the latest management workflows. Archiving retains historical data.
 

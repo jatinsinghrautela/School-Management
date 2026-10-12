@@ -4,6 +4,7 @@ export function deploymentCheck(
 ) {
   const errors = [],
     warnings = [];
+  const render = env.DEPLOYMENT_PROFILE === "render";
   const issue = (condition, message) => {
     if (!condition) errors.push(message);
   };
@@ -56,17 +57,37 @@ export function deploymentCheck(
       "SMTP_PORT must be an integer from 1 to 65535",
     );
   if (production) {
+    if (render) {
+      issue(
+        env.RENDER === "true",
+        "Render profile requires the platform RENDER marker",
+      );
+      issue(
+        env.MYSQL_TLS === "required" && !!env.MYSQL_CA_FILE,
+        "Render requires verified MySQL TLS and MYSQL_CA_FILE",
+      );
+      issue(
+        env.FILE_STORAGE === "r2",
+        "Render requires persistent R2 file storage",
+      );
+      issue(
+        env.TRUST_PROXY === "1",
+        "Render requires exactly one trusted proxy hop",
+      );
+      issue(env.HOST === "0.0.0.0", "Render requires HOST=0.0.0.0");
+    }
     issue(
       env.NODE_ENV === "production",
       "Set NODE_ENV=production for the production process",
     );
     issue(env.DATA_MODE === "mysql", "Production requires DATA_MODE=mysql");
     issue(
-      ["127.0.0.1", "::1", "localhost"].includes(env.HOST || "127.0.0.1"),
+      render ||
+        ["127.0.0.1", "::1", "localhost"].includes(env.HOST || "127.0.0.1"),
       "Production API must bind to loopback behind a local HTTPS reverse proxy",
     );
     issue(
-      env.TRUST_PROXY === "loopback",
+      render || env.TRUST_PROXY === "loopback",
       "Production requires TRUST_PROXY=loopback; the local reverse proxy must overwrite forwarded headers",
     );
     issue(
@@ -107,6 +128,33 @@ export function deploymentCheck(
         !env.BACKUP_PASSPHRASE,
       "Recovery credentials and backup passphrases must not be present in the API runtime environment",
     );
+  }
+  issue(
+    !env.FILE_STORAGE || ["local", "r2"].includes(env.FILE_STORAGE),
+    "Invalid FILE_STORAGE",
+  );
+  if (env.FILE_STORAGE === "r2") {
+    issue(
+      /^https:\/\/[a-f0-9]{32}(?:\.eu|\.fedramp)?\.r2\.cloudflarestorage\.com\/?$/.test(
+        env.R2_ENDPOINT || "",
+      ),
+      "Use the account HTTPS R2 S3 endpoint",
+    );
+    issue(
+      !!env.R2_BUCKET && !!env.R2_ACCESS_KEY_ID && !!env.R2_SECRET_ACCESS_KEY,
+      "R2 credentials and bucket are required",
+    );
+    for (const [name, maximum] of [
+      ["R2_MAX_BYTES", 8000000000],
+      ["R2_MAX_CLASS_A", 500000],
+      ["R2_MAX_CLASS_B", 5000000],
+    ]) {
+      const value = Number(env[name] || maximum);
+      issue(
+        Number.isSafeInteger(value) && value > 0 && value <= maximum,
+        `${name} must stay within the conservative free-tier budget`,
+      );
+    }
   }
   if (!configured.length)
     warnings.push("Email delivery is disabled until configured and tested");

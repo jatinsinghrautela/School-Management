@@ -22,15 +22,18 @@ export function runtimeGrants(database, user, host) {
       "sg_subject_teachers",
       "sg_migrations",
       "records",
+      ...(process.env.FILE_STORAGE === "r2" ? ["sg_cloud_budget"] : []),
     ]),
   ].sort();
   return tables.map((table) => {
     const privileges =
       table === "sg_audit"
         ? "SELECT, INSERT"
-        : ["sg_migrations", "records"].includes(table)
-          ? "SELECT"
-          : "SELECT, INSERT, UPDATE, DELETE";
+        : table === "sg_cloud_budget"
+          ? "SELECT, UPDATE"
+          : ["sg_migrations", "records"].includes(table)
+            ? "SELECT"
+            : "SELECT, INSERT, UPDATE, DELETE";
     return `GRANT ${privileges} ON \`${database}\`.\`${table}\` TO '${user}'@'${host}';`;
   });
 }

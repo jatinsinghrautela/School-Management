@@ -8,9 +8,9 @@ One Render Free Node web service serves the built React app and its API. Aiven F
 
 Already implemented: school/user authorization, private file endpoints, school/student storage quotas, login rate limiting, and crawler opt-out via robots.txt, HTML meta and X-Robots-Tag. These directives ask compliant crawlers to stay away; they are not access controls.
 
-**Required implementation before publishing:** R2 storage adapter and safe migration of local files; account-wide transactional storage/request budgets; remote MySQL verified TLS; a Render deployment profile with bounded trusted-proxy configuration; protected migration/backup procedure; hosted upload scanning configuration. Current production preflight requires a loopback proxy and local storage, so setting HOST=0.0.0.0 alone will fail. Do not weaken validation or run a public development server to bypass this.
+**Cloud implementation update:** private R2 storage, persistent transactional budgets, verified MySQL TLS, Render's one-hop proxy profile and offline migration tools are now implemented. Follow [RENDER-SETUP.md](RENDER-SETUP.md) and deploy/render.env.example for the exact supported configuration. Hosted scanning, actual-provider verification and complete cloud backup automation remain acceptance work; uploads default to disabled. The local production profile continues to require loopback; select the explicit Render profile instead of weakening validation.
 
-No R2 quota, credentials, DNS record, provider subscription or cloud deployment was created by writing this guide. The proposed R2 settings below are not yet supported environment variables.
+No credentials, DNS record, provider subscription or cloud deployment was created by writing this guide. Budget enforcement activates only when the initialized cloud database and R2 runtime configuration are used. Storage/request reservations are cumulative with no automatic resets or refunds in the initial implementation; the monthly targets below describe provider allowances and future operator reconciliation, not an implemented monthly reset.
 
 ## Your next steps, in order
 

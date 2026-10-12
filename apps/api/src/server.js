@@ -5,6 +5,7 @@ import { createStore } from "./store.js";
 import { seed } from "./seed.js";
 import { createApp } from "./app.js";
 import { maintenance } from "./maintenance.js";
+import { closeStorage, checkStorage } from "./file-storage.js";
 requireDeployment();
 if (
   process.env.NODE_ENV === "production" &&
@@ -12,6 +13,7 @@ if (
 )
   throw new Error("Build the web application before production startup");
 const store = await createStore();
+await checkStorage();
 await seed(store);
 const app = createApp(store);
 const sweep = setInterval(
@@ -44,6 +46,7 @@ function shutdown() {
   server.close(async () => {
     try {
       await store.close();
+      await closeStorage();
     } finally {
       clearTimeout(deadline);
     }

@@ -1,5 +1,11 @@
 # Work log
 
+## Hosted storage implementation (2026-10-12)
+
+Implemented explicit Render production profile, one trusted ingress hop, verified Aiven CA/hostname TLS and private R2 S3 adapter across resources, submissions, logos, gallery and document branding. Added independent MySQL budget transaction pool, durable byte/A/B reservations, no automatic resets/refunds, one SDK attempt, conditional UUID writes, bounded reads/timeouts and global pause. Runtime fails closed without initialized budget state. Added separate empty-target encrypted database import and checksum-verified file migration tools that retain local originals, plus exact render.env.example and RENDER-SETUP.md. No live cloud credentials used or local records changed. Hosted uploads remain disabled pending scanning; full cloud backup automation and real provider/header/grant acceptance remain outstanding.
+
+Validation: full API suite 71/71, final targeted cloud/deployment tests 7/7, production build and isolated MySQL concurrency/restart/read-budget fixture passed. npm dependency audit reported zero vulnerabilities after installing the open-source AWS S3 client. File and cloud adapter tests use mocked providers; actual R2/Aiven/Render acceptance is not claimed.
+
 ## Cloud pilot deployment planning (2026-10-12)
 
 Documented Render Free, Aiven Free MySQL and private R2 Standard setup, proposed global byte/operation caps, safe pause/resume and data-preserving migration. Distinguished planned cloud enforcement from existing per-school quotas. Verified official provider documentation, including Aiven power-off data-loss risk and Cloudflare free certificate depth limits. Added crawler opt-out via robots.txt, HTML meta and X-Robots-Tag, with deployment regression checks. Bot filtering reduces traffic but cannot guarantee zero scans or charges. No cloud resources provisioned, credentials changed or existing data deleted.

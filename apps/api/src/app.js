@@ -37,7 +37,7 @@ import bcrypt from "bcryptjs";
 import { randomBytes, createHash } from "node:crypto";
 import { fileURLToPath } from "node:url";
 import { existsSync } from "node:fs";
-import { mkdir, writeFile, unlink } from "node:fs/promises";
+import { mkdir, readFile, writeFile, unlink } from "./file-storage.js";
 import multer from "multer";
 import { tokenRepository } from "./tokens.js";
 import { createTimetableRouter } from "./timetable.js";
@@ -71,7 +71,11 @@ export function createApp(
     sessions = tokenRepository(store, "session"),
     resets = tokenRepository(store, "reset");
   const production = process.env.NODE_ENV === "production";
-  if (production) app.set("trust proxy", "loopback");
+  if (production)
+    app.set(
+      "trust proxy",
+      process.env.DEPLOYMENT_PROFILE === "render" ? 1 : "loopback",
+    );
   const readiness = readinessProbe(() => store.healthCheck());
   app.locals.readiness = readiness;
   const monitor = requestMonitor();
@@ -1520,7 +1524,10 @@ export function createApp(
       return fail(res, 404, "File not found");
     res.setHeader("Cache-Control", "private, no-store");
     res.setHeader("Content-Type", file.mime);
-    res.download(uploadRoot + file.id, file.name);
+    if (process.env.FILE_STORAGE === "r2") {
+      const bytes = await readFile(uploadRoot + file.id);
+      res.attachment(file.name).type(file.mime).send(bytes);
+    } else res.download(uploadRoot + file.id, file.name);
   });
   app.post(
     "/api/schools/:schoolId/homework/:resourceId/attachment",

@@ -1,7 +1,7 @@
 import { brandedResource } from "./resource-document.js";
 import { Router } from "express";
 import multer from "multer";
-import { mkdir, readFile, writeFile, unlink } from "node:fs/promises";
+import { mkdir, readFile, writeFile, unlink } from "./file-storage.js";
 import { fileURLToPath } from "node:url";
 import { inflateSync } from "node:zlib";
 import {
