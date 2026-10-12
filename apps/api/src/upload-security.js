@@ -1,4 +1,13 @@
 import { spawn } from "node:child_process";
+export function uploadPolicy(env = process.env) {
+  const mode = env.UPLOAD_SCAN_MODE || "required";
+  const unscanned = mode === "unscanned-local" && env.NODE_ENV !== "production";
+  return {
+    mode,
+    enabled: unscanned || (mode === "required" && !!env.CLAMAV_COMMAND),
+    unscanned,
+  };
+}
 export function uploadType(buffer) {
   if (buffer.subarray(0, 5).toString() === "%PDF-") return "application/pdf";
   if (
@@ -12,6 +21,13 @@ export function uploadType(buffer) {
   });
 }
 export async function scanBuffer(buffer) {
+  const policy = uploadPolicy();
+  if (policy.unscanned) return;
+  if (policy.mode !== "required")
+    throw Object.assign(
+      new Error("File uploads are disabled by upload policy"),
+      { status: 503 },
+    );
   if (!process.env.CLAMAV_COMMAND)
     throw Object.assign(
       new Error(
@@ -20,7 +36,14 @@ export async function scanBuffer(buffer) {
       { status: 503 },
     );
   return new Promise((resolve, reject) => {
-    const child = spawn(process.env.CLAMAV_COMMAND, ["--no-summary", "-"], {
+    const args = [
+      "--no-summary",
+      ...(process.env.CLAMAV_DATABASE_DIR
+        ? [`--database=${process.env.CLAMAV_DATABASE_DIR}`]
+        : []),
+      "-",
+    ];
+    const child = spawn(process.env.CLAMAV_COMMAND, args, {
       windowsHide: true,
       stdio: ["pipe", "ignore", "ignore"],
     });

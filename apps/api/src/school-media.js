@@ -21,7 +21,12 @@ import {
   children,
   printable,
 } from "./operations-common.js";
-import { uploadType, checkQuota, scanBuffer } from "./upload-security.js";
+import {
+  uploadType,
+  checkQuota,
+  scanBuffer,
+  uploadPolicy,
+} from "./upload-security.js";
 
 const root = fileURLToPath(new URL("../data/uploads/", import.meta.url));
 // Preserve image pixels while omitting EXIF/IPTC/comments and text metadata.
@@ -341,7 +346,8 @@ export function createSchoolMediaRouter(store, scanner) {
         photos: all.slice((page - 1) * 12, page * 12),
         total: all.length,
         page,
-        uploadsEnabled: scanner !== scanBuffer || !!process.env.CLAMAV_COMMAND,
+        uploadsEnabled: scanner !== scanBuffer || uploadPolicy().enabled,
+        uploadsUnscanned: scanner === scanBuffer && uploadPolicy().unscanned,
       });
     }),
   );

@@ -2,6 +2,7 @@ import { brandedResource } from "./resource-document.js";
 import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { Router } from "express";
+import { uploadPolicy } from "./upload-security.js";
 import bcrypt from "bcryptjs";
 import { randomBytes } from "node:crypto";
 import {
@@ -223,7 +224,8 @@ export function createFamilySocialRouter(store) {
         ...defaultSettings,
         ...(await store.all("schoolSettings", req.school.id))[0],
         logoDataUri: await schoolLogo(store, req.school.id),
-        uploadsEnabled: !!process.env.CLAMAV_COMMAND,
+        uploadsEnabled: uploadPolicy().enabled,
+        uploadsUnscanned: uploadPolicy().unscanned,
       }),
     ),
   );

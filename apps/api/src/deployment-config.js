@@ -110,7 +110,19 @@ export function deploymentCheck(
   }
   if (!configured.length)
     warnings.push("Email delivery is disabled until configured and tested");
-  if (!env.CLAMAV_COMMAND)
+  if (
+    !["required", "disabled", "unscanned-local"].includes(
+      env.UPLOAD_SCAN_MODE || "required",
+    )
+  )
+    errors.push(
+      "UPLOAD_SCAN_MODE must be required, disabled or unscanned-local",
+    );
+  if (production && env.UPLOAD_SCAN_MODE === "unscanned-local")
+    errors.push("Unscanned uploads are restricted to local development");
+  if (env.UPLOAD_SCAN_MODE === "unscanned-local" && !production)
+    warnings.push("Local uploads are enabled WITHOUT malware scanning");
+  else if (env.UPLOAD_SCAN_MODE === "disabled" || !env.CLAMAV_COMMAND)
     warnings.push(
       "File uploads are disabled until ClamAV is configured and tested",
     );

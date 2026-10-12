@@ -11,7 +11,12 @@ import { createCalendarImportRouter } from "./calendar-import.js";
 import { createProgressionRouter } from "./progression.js";
 import { createDataToolsRouter } from "./data-tools.js";
 import { configuredMailer } from "./mail.js";
-import { scanBuffer, uploadType, checkQuota } from "./upload-security.js";
+import {
+  scanBuffer,
+  uploadType,
+  checkQuota,
+  uploadPolicy,
+} from "./upload-security.js";
 import { createSubstitutionRouter } from "./substitutions.js";
 import {
   attendanceSession,
@@ -1075,7 +1080,8 @@ export function createApp(
       },
       capabilities: {
         emailDelivery: !!mailer,
-        uploads: scanner !== scanBuffer || !!process.env.CLAMAV_COMMAND,
+        uploads: scanner !== scanBuffer || uploadPolicy().enabled,
+        uploadsUnscanned: scanner === scanBuffer && uploadPolicy().unscanned,
       },
       classes: (await scoped("classes")).filter((c) => canSeeClass(u, c.id)),
       users: users

@@ -182,8 +182,9 @@ export function Homework({
                       />
                     </label>
                     <p>
-                      Uploads require the school's configured malware scanner
-                      and available storage quota.
+                      {data.capabilities?.uploadsUnscanned
+                        ? "Local testing: uploaded files are not malware scanned."
+                        : "Uploads require the school's configured malware scanner and available storage quota."}
                     </p>
                   </>
                 ) : (
