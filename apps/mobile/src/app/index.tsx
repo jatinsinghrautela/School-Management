@@ -55,7 +55,12 @@ function SignIn() {
           autoComplete="current-password"
         />
         <ErrorText message={state.error} />
-        {state.busy ? <Busy /> : null}
+        {state.busy ? (
+          <>
+            <Busy />
+            <Copy muted>{state.activity}</Copy>
+          </>
+        ) : null}
         <Button
           label="Sign in"
           disabled={state.busy || sending || !email.trim() || !password}
@@ -279,7 +284,7 @@ export default function Home() {
           {state.status === "restoring" ? (
             <>
               <Busy />
-              <Copy>Checking your session…</Copy>
+              <Copy>{state.activity || "Checking your session…"}</Copy>
             </>
           ) : state.status === "locked" ? (
             <>

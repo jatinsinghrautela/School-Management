@@ -408,3 +408,11 @@ Added isolated Expo SDK 57/React Native/TypeScript package with Expo Router, Sec
 ## 2026-10-15 - Physical iPhone Expo Go authentication instructions
 
 Verified the supplied error against Expo's SDK 57 sign-in documentation: physical iOS Expo Go requires matching Expo CLI and device accounts. Corrected the earlier account-only-for-EAS guidance and added exact login/whoami, phone sign-in and reload steps. This is Expo development authentication, separate from school credentials; no paid Apple membership is needed for this preview. No credentials were requested or authentication state changed by the agent.
+
+## 2026-10-15 - Mobile cold-start-aware login
+
+Investigated reported principal sign-in timeout. Live custom-domain readiness responded 200 in approximately 0.44 seconds and an empty login request correctly returned 400 in approximately 0.32 seconds; no account credentials or live school data were used. Owner confirmed phone browser readiness succeeds. Original mobile deadline was 25 seconds, below Render's documented approximate one-minute wake-up time; the earlier failure itself was not reproduced or definitively attributed to cold start.
+
+Added one unauthenticated readiness request with a 90-second deadline before credential submission and saved-session validation, plus visible startup progress and operation-specific network errors. Normal request deadlines remain bounded to 25 seconds; no login retries or keep-awake polling. Cancellation/generation guards prevent credentials being submitted after logout while connecting. Added readiness failure/delay/cancellation regressions. Native phone confirmation remains pending; browser readiness does not prove native request success.
+
+Validation: 13 mobile tests, typecheck and lint passed; Android/iOS/web JavaScript export and isolated 390px mobile UI/accessibility checks passed. These checks do not reproduce native-device connectivity; reload Expo Go and confirm on the phone.

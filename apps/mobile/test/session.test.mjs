@@ -19,6 +19,7 @@ function setup(overrides = {}, saved = null) {
   let token = saved;
   let calls = [];
   const api = {
+    prepare: async () => {},
     login: async () => ({ token: "issued", user: identity.user, mode: "demo" }),
     me: async () => identity,
     workspace: async (_, id) => ({ school: { id, name: id }, notices: [] }),
@@ -94,6 +95,7 @@ test("logout wins over pending login and revokes the late-issued token", async (
     logout: async (t) => revoked.push(t),
   });
   const work = x.session.login("a", "b");
+  await Promise.resolve(); // Readiness has completed; the login request is in flight.
   await x.session.logout();
   pending.resolve({ token: "late" });
   await work;
@@ -204,4 +206,71 @@ test("stored sessions are scoped to the exact API endpoint", async () => {
     sessionStorageKey("https://a-b.test/api"),
     sessionStorageKey("https://a.b.test/api"),
   );
+});
+
+test("readiness finishes before credentials are sent and logout cancels pending connection", async () => {
+  const pending = deferred();
+  let logins = 0;
+  const x = setup({
+    prepare: () => pending.promise,
+    login: async () => {
+      logins++;
+      return { token: "issued" };
+    },
+  });
+  const work = x.session.login("a", "b");
+  assert.equal(logins, 0);
+  assert.match(x.session.state.activity, /90 seconds/);
+  await x.session.logout();
+  pending.resolve();
+  await work;
+  assert.equal(logins, 0);
+  assert.equal(x.token, null);
+});
+test("cold-start readiness gets a longer deadline than ordinary requests without polling", async () => {
+  let calls = [];
+  const api = createApi(
+    "https://example.test/api",
+    async (url, options) => {
+      calls.push({ url, options });
+      await new Promise((resolve, reject) => {
+        const timer = setTimeout(resolve, 25);
+        options.signal.addEventListener("abort", () => {
+          clearTimeout(timer);
+          reject(Error("aborted"));
+        });
+      });
+      return new Response(JSON.stringify({ status: "ready" }));
+    },
+    5,
+    100,
+  );
+  await api.prepare();
+  assert.equal(calls.length, 1);
+  assert.equal(calls[0].options.method, "GET");
+  assert.equal(calls[0].options.headers.Authorization, undefined);
+  assert.equal(calls[0].options.body, undefined);
+  await assert.rejects(api.me("secret"), /too long/);
+  assert.equal(calls.length, 2);
+});
+test("failed readiness does not attempt login or store a token", async () => {
+  let logins = 0;
+  const x = setup({
+    prepare: async () => {
+      throw new ApiError("Service unavailable", 503);
+    },
+    login: async () => {
+      logins++;
+    },
+  });
+  await x.session.login("a", "b");
+  assert.equal(logins, 0);
+  assert.equal(x.token, null);
+  assert.equal(x.session.state.status, "signedOut");
+  assert.equal(x.session.state.busy, false);
+  const api = createApi(
+    "https://example.test/api",
+    async () => new Response(JSON.stringify({ status: "unavailable" })),
+  );
+  await assert.rejects(api.prepare(), (e) => e.status === 503);
 });

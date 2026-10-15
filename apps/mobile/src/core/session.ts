@@ -7,6 +7,7 @@ export type SessionState = {
   workspace: Workspace | null;
   busy: boolean;
   error: string;
+  activity: string;
 };
 const initial = (): SessionState => ({
   status: "restoring",
@@ -15,6 +16,7 @@ const initial = (): SessionState => ({
   workspace: null,
   busy: false,
   error: "",
+  activity: "",
 });
 export class Session {
   state = initial();
@@ -55,6 +57,12 @@ export class Session {
         return;
       }
       this.token = token;
+      this.update({
+        activity:
+          "Connecting to your school. First connection can take up to 90 seconds.",
+      });
+      await this.api.prepare();
+      if (g !== this.generation) return;
       await this.identify(g);
     } catch (error) {
       if (g === this.generation)
@@ -73,7 +81,13 @@ export class Session {
     try {
       const identity = await this.api.me(this.token);
       if (g !== this.generation) return;
-      this.update({ status: "ready", identity, error: "", busy: false });
+      this.update({
+        status: "ready",
+        identity,
+        error: "",
+        busy: false,
+        activity: "",
+      });
       if (
         !identity.user.passwordChangeRequired &&
         identity.user.role !== "owner" &&
@@ -99,9 +113,14 @@ export class Session {
       schoolId: "",
       busy: true,
       error: "",
+      activity:
+        "Connecting to your school. First connection can take up to 90 seconds.",
     });
     let issued = "";
     try {
+      await this.api.prepare();
+      if (g !== this.generation) return;
+      this.update({ activity: "Signing in…" });
       const result = await this.api.login(email, password);
       issued = result.token;
       if (g !== this.generation) {
@@ -122,6 +141,7 @@ export class Session {
       } else
         this.update({
           busy: false,
+          activity: "",
           error: error instanceof Error ? error.message : "Sign in failed",
         });
     }
@@ -162,6 +182,7 @@ export class Session {
       schoolId: "",
       busy: false,
       error: message,
+      activity: "",
     });
     try {
       await this.persist(() => this.vault.clear(), g);

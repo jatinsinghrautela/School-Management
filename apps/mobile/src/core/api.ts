@@ -21,6 +21,7 @@ export type Workspace = {
 };
 export type Login = { token: string; user: User; mode: string };
 export type Api = {
+  prepare(): Promise<void>;
   login(email: string, password: string): Promise<Login>;
   me(token: string): Promise<Identity>;
   workspace(token: string, schoolId: string): Promise<Workspace>;
@@ -68,14 +69,16 @@ export function createApi(
   base: string,
   fetcher: typeof fetch = fetch,
   timeout = 25000,
+  startupTimeout = 90000,
 ): Api {
   async function request<T>(
     path: string,
     token?: string,
     body?: unknown,
+    deadline = timeout,
   ): Promise<T> {
     const abort = new AbortController();
-    const timer = setTimeout(() => abort.abort(), timeout);
+    const timer = setTimeout(() => abort.abort(), deadline);
     try {
       const response = await fetcher(`${base}${path}`, {
         method: body === undefined ? "GET" : "POST",
@@ -107,10 +110,20 @@ export function createApi(
       return data as T;
     } catch (error) {
       if (error instanceof ApiError) throw error;
+      const operation =
+        path === "/ready"
+          ? "Server connection"
+          : path === "/auth/login"
+            ? "Sign-in"
+            : path === "/me"
+              ? "Account validation"
+              : path.endsWith("/workspace")
+                ? "School workspace"
+                : "Request";
       throw new ApiError(
         abort.signal.aborted
-          ? "The service took too long. It may be waking up; please retry."
-          : "Cannot connect. Check your connection and try again.",
+          ? `${operation} took too long. It may be waking up; please retry.`
+          : `${operation} could not connect. Check your connection and try again.`,
         0,
       );
     } finally {
@@ -118,6 +131,19 @@ export function createApi(
     }
   }
   return {
+    prepare: async () => {
+      const result = await request<{ status: string }>(
+        "/ready",
+        undefined,
+        undefined,
+        startupTimeout,
+      );
+      if (result?.status !== "ready")
+        throw new ApiError(
+          "The school service is not ready yet. Please retry shortly.",
+          503,
+        );
+    },
     login: (email, password) =>
       request("/auth/login", undefined, {
         email: email.trim().toLowerCase(),
