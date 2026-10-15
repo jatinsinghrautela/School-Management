@@ -4,7 +4,9 @@ The website is live at [schoolglass.jatinsinghrautela.com](https://schoolglass.j
 
 See [school records, separate imports, enrollment numbers, timetable generation and yearly fee planning](docs/ENROLLMENT-AND-PLANNING.md) for the latest management workflows. Archiving retains historical data.
 
-A multi-school workspace built with React, Node.js, and MySQL. One API serves the platform console and school web workspace; a mobile client will reuse it later.
+A multi-school workspace built with React, Node.js, and MySQL. One API serves the platform console, school web workspace and initial mobile client.
+
+The [Android/iOS mobile foundation](apps/mobile/README.md) now includes login, secure sessions, school switching and appearance settings. See the [mobile roadmap](docs/MOBILE-PLAN.md) for staged workflows and remaining device/release checks.
 
 ![Current Schoolglass Desk dashboard in dark mode with demo data](docs/screenshots/schoolglass-dashboard.png)
 

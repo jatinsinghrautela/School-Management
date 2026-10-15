@@ -400,3 +400,7 @@ Replaced the earlier cloud plan with one complete CLOUD-DEPLOYMENT.md covering a
 ## 2026-10-15 - Mobile feasibility and staged plan
 
 Reviewed repository bearer-session authorization and existing web/mobile roadmap. Added MOBILE-PLAN.md: Expo/React Native/TypeScript, one existing backend, Android-first staged milestones, secure native session storage, school/child cache isolation, private files, online-first pilot, future push/offline acceptance and cost/distribution constraints. Node/npm/Java/adb are available; emulator is not on PATH and native build/device readiness remains unverified. No mobile scaffold, provider change or live data mutation in this planning milestone.
+
+## 2026-10-15 - M1 mobile foundation implementation
+
+Added isolated Expo SDK 57/React Native/TypeScript package with Expo Router, SecureStore sessions scoped by API server, login/restore/logout, mandatory password change/reset request, school identity/switching and system-default light/dark account settings. Session and school generation checks prevent stale requests restoring cleared context. Added isolated API integration and controller regressions plus reproducible 390px web-preview/accessibility check. Android/iOS/web JS export and Expo Doctor 21/21 passed; typecheck/lint and web/API build passed. Original web/API lockfile is unchanged; mobile owns its dependencies. Upstream mobile build/router audit findings are explicitly recorded as distribution blockers. Physical-device verification, signed binaries and M2 daily workflows remain pending; no live data/settings changed.

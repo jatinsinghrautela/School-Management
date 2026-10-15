@@ -30,7 +30,9 @@
     "test:capacity": "node scripts/capacity-check.js",
     "monitor:probe": "node apps/api/src/uptime-cli.js",
     "release:verify": "node scripts/release-verify.js",
-    "release:container": "node scripts/container-verify.js"
+    "release:container": "node scripts/container-verify.js",
+    "mobile:start": "npm --prefix apps/mobile run start",
+    "mobile:check": "npm --prefix apps/mobile run typecheck && npm --prefix apps/mobile run lint && npm --prefix apps/mobile test"
   },
   "devDependencies": {
     "@axe-core/playwright": "4.13.0",

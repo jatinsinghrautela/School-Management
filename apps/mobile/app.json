@@ -1,0 +1,24 @@
+{
+  "expo": {
+    "name": "Schoolglass Desk",
+    "slug": "schoolglass-desk",
+    "version": "0.1.0",
+    "scheme": "schoolglass",
+    "orientation": "default",
+    "userInterfaceStyle": "automatic",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.jatinsinghrautela.schoolglass"
+    },
+    "android": {
+      "package": "com.jatinsinghrautela.schoolglass",
+      "predictiveBackGestureEnabled": true
+    },
+    "plugins": [
+      "expo-router",
+      "expo-system-ui",
+      ["expo-secure-store", { "configureAndroidBackup": true }]
+    ],
+    "web": { "bundler": "metro" }
+  }
+}

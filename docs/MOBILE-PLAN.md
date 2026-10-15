@@ -12,14 +12,14 @@ This Windows workspace has Node/npm, Java and adb available. The emulator comman
 
 ## Milestones and acceptance
 
-| Milestone | Deliverable | Required acceptance |
-| --- | --- | --- |
-| M1 Foundation | Expo workspace, navigation, API client, session restore/login/logout, mandatory password change, school switch, school identity, system-default light/dark | Typecheck/unit checks; clean startup; revoked session handling; explicit school-context clearing |
-| M2 Student/guardian daily use | Dashboard, child switch, notices/read status, calendar, timetable, attendance summary, published results, homework/resources, fees/receipts, gallery | No cross-child/class/school leakage; authenticated file open/download; readable loading/error/empty states |
-| M3 Teacher workflows | Assigned classes, attendance, marks, homework, notices, timetable | Backend permission enforcement; validation; no silent duplicate writes or blind retries |
-| M4 Leadership | School overview, people/admission lookup, notice publication, review/approval queues, staff/fee summaries | Correct role capabilities and safe confirmation/reason workflows; retain complex Excel/bulk planning on web initially |
-| M5 Release pilot | Signed Android preview APK, device/accessibility checks, setup/build/update guide | Physical-device checks, background/resume, expired sessions, slow service, no secrets in bundle; owner-approved pilot |
-| M6 Later extensions | Remaining management parity, optional push, carefully designed offline workflows, iOS release | Separate acceptance for each feature; no claim of full web parity before verified |
+| Milestone                     | Deliverable                                                                                                                                                | Required acceptance                                                                                                   |
+| ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| M1 Foundation                 | Expo workspace, navigation, API client, session restore/login/logout, mandatory password change, school switch, school identity, system-default light/dark | Typecheck/unit checks; clean startup; revoked session handling; explicit school-context clearing                      |
+| M2 Student/guardian daily use | Dashboard, child switch, notices/read status, calendar, timetable, attendance summary, published results, homework/resources, fees/receipts, gallery       | No cross-child/class/school leakage; authenticated file open/download; readable loading/error/empty states            |
+| M3 Teacher workflows          | Assigned classes, attendance, marks, homework, notices, timetable                                                                                          | Backend permission enforcement; validation; no silent duplicate writes or blind retries                               |
+| M4 Leadership                 | School overview, people/admission lookup, notice publication, review/approval queues, staff/fee summaries                                                  | Correct role capabilities and safe confirmation/reason workflows; retain complex Excel/bulk planning on web initially |
+| M5 Release pilot              | Signed Android preview APK, device/accessibility checks, setup/build/update guide                                                                          | Physical-device checks, background/resume, expired sessions, slow service, no secrets in bundle; owner-approved pilot |
+| M6 Later extensions           | Remaining management parity, optional push, carefully designed offline workflows, iOS release                                                              | Separate acceptance for each feature; no claim of full web parity before verified                                     |
 
 Prioritize students, guardians and teachers for mobile daily tasks. Keep platform-owner onboarding/support and complex spreadsheet administration on web initially; decide native owner tooling later. This stages delivery without changing the long-term shared-platform objective.
 
@@ -78,3 +78,9 @@ No new credentials are required for planning. For M1 implementation, default to 
 - https://docs.expo.dev/versions/latest/sdk/securestore/
 - https://support.google.com/googleplay/android-developer/answer/6112435
 - https://developer.apple.com/help/account/membership/program-enrollment/
+
+## M1 implementation — 15 October 2026
+
+Implemented the Expo SDK 57 / React Native foundation in apps/mobile with its own lockfile, excluded from root npm workspaces so Render does not install native dependencies. Includes Router-protected account navigation, bearer login, endpoint-scoped native SecureStore token storage, validated restore, required password change, reset requests, school switching/identity, small scoped overview and system-default light/dark with session override. Private school data stays in memory and is cleared across switching/logout; generation guards reject stale responses.
+
+Validated: TypeScript, lint, isolated API/session tests, SDK Doctor 21/21 and Android/iOS/web JS exports. Mobile-sized web checks cover login/logout, school switching, password-change gate, accessibility and overflow in both themes. Native phone SecureStore, gestures/keyboard and signed builds remain pending. Android API 36/build tools and Java 17 exist; adb startup could not be verified in the sandbox. No native binary, cloud build, paid account, live API data mutation or mobile workflow parity is claimed. Remaining upstream dependency findings are documented in apps/mobile/README.md as distribution gates. See that README for phone setup.
