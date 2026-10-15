@@ -18,9 +18,16 @@ export type Workspace = {
   classes?: unknown[];
   notices?: unknown[];
   resources?: unknown[];
+  [key: string]: unknown;
 };
 export type Login = { token: string; user: User; mode: string };
 export type Api = {
+  school<T>(
+    token: string,
+    schoolId: string,
+    path: string,
+    body?: unknown,
+  ): Promise<T>;
   prepare(): Promise<void>;
   login(email: string, password: string): Promise<Login>;
   me(token: string): Promise<Identity>;
@@ -75,7 +82,9 @@ export function createApi(
     path: string,
     token?: string,
     body?: unknown,
-    deadline = timeout,
+    deadline = body === undefined && path.startsWith("/schools/")
+      ? startupTimeout
+      : timeout,
   ): Promise<T> {
     const abort = new AbortController();
     const timer = setTimeout(() => abort.abort(), deadline);
@@ -131,6 +140,15 @@ export function createApi(
     }
   }
   return {
+    school: (token, schoolId, path, body) => {
+      if (!/^\/[a-z]/.test(path) || path.includes("..") || path.includes("\\"))
+        throw new Error("Invalid school API path");
+      return request(
+        `/schools/${encodeURIComponent(schoolId)}${path}`,
+        token,
+        body,
+      );
+    },
     prepare: async () => {
       const result = await request<{ status: string }>(
         "/ready",

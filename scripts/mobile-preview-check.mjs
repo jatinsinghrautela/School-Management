@@ -10,6 +10,87 @@ import { createApp } from "../apps/api/src/app.js";
 const root = resolve("apps/mobile/dist");
 const store = await createStore("demo");
 await seed(store);
+const demoStudent = (await store.all("users")).find(
+  (u) => u.role === "student",
+);
+await store.put("users", {
+  ...demoStudent,
+  id: "kid-two",
+  name: "Demo child two",
+  email: "second@orbit.local",
+  classIds: ["school-north-9"],
+});
+await store.put("users", {
+  ...demoStudent,
+  id: "demo-parent",
+  role: "parent",
+  name: "Demo guardian",
+  email: "parent@orbit.local",
+  classIds: [],
+});
+await store.put("parentLinks", {
+  id: "demo-parent-link",
+  schoolId: "school-north",
+  userId: "demo-parent",
+  guardianId: "demo-guardian",
+  active: true,
+});
+for (const studentId of [demoStudent.id, "kid-two"])
+  await store.put("studentGuardians", {
+    id: "guardian-" + studentId,
+    schoolId: "school-north",
+    studentId,
+    guardianId: "demo-guardian",
+    active: true,
+  });
+await store.put("notices", {
+  id: "grade-nine-notice",
+  schoolId: "school-north",
+  classId: "school-north-9",
+  title: "Grade nine announcement",
+  body: "For the second child only",
+  audience: "all",
+  createdAt: new Date().toISOString(),
+});
+await store.put("resources", {
+  id: "grade-nine-resource",
+  schoolId: "school-north",
+  classId: "school-north-9",
+  type: "syllabus",
+  title: "Grade nine reading list",
+  description: "Only for grade nine students.",
+});
+await store.put("feeCharges", {
+  id: "mobile-charge",
+  schoolId: "school-north",
+  studentId: demoStudent.id,
+  name: "Pilot tuition",
+  amountMinor: 100000,
+  currency: "INR",
+  dueDate: "2026-10-31",
+});
+await store.put("feePayments", {
+  id: "mobile-payment",
+  schoolId: "school-north",
+  chargeId: "mobile-charge",
+  studentId: demoStudent.id,
+  amountMinor: 20000,
+  currency: "INR",
+  name: "Pilot tuition",
+  receiptNumber: "MOBILE-RECEIPT",
+  paidOn: "2026-10-15",
+  createdAt: new Date().toISOString(),
+  method: "cash",
+});
+await store.put("attendance", {
+  id: "attendance-mobile",
+  schoolId: "school-north",
+  studentId: demoStudent.id,
+  classId: "school-north-10",
+  date: "2026-10-15",
+  status: "present",
+});
+
 const api = createApp(store, { mailer: null, scanner: async () => {} }).listen(
   0,
   "127.0.0.1",
@@ -61,13 +142,15 @@ try {
     reducedMotion: "reduce",
   });
   const page = await context.newPage();
+  page.setDefaultTimeout(20000);
   const errors = [];
   page.on("pageerror", (e) => errors.push(e.message));
   await page.route(
     "https://schoolglass.jatinsinghrautela.com/api/**",
     async (route) => {
       const req = route.request();
-      const target = `http://127.0.0.1:${api.address().port}${new URL(req.url()).pathname}`;
+      const requestUrl = new URL(req.url());
+      const target = `http://127.0.0.1:${api.address().port}${requestUrl.pathname}${requestUrl.search}`;
       const response = await fetch(target, {
         method: req.method(),
         headers: {
@@ -99,6 +182,7 @@ try {
       .waitFor();
   };
   const inspect = async (name) => {
+    console.log(`Reviewing ${name}`);
     if (
       await page.evaluate(
         () => document.documentElement.scrollWidth > innerWidth,
@@ -141,6 +225,77 @@ try {
     .first()
     .waitFor();
   await inspect("school switch");
+  await page.getByRole("button", { name: "Sign out", exact: true }).click();
+
+  const dailyLabels = [
+    "Notices",
+    "Homework & resources",
+    "Timetable",
+    "Calendar",
+    "Attendance",
+    "Published results",
+    "Fees & receipts",
+    "School gallery",
+  ];
+  await login("student");
+  for (const label of dailyLabels) {
+    await page.getByRole("button", { name: label, exact: true }).click();
+    await page
+      .getByRole("button", { name: "Back to overview", exact: true })
+      .waitFor();
+    await inspect("student " + label);
+    await page
+      .getByRole("button", { name: "Back to overview", exact: true })
+      .click();
+  }
+  await page.getByRole("button", { name: "Sign out", exact: true }).click();
+  await login("parent");
+  await page
+    .getByRole("button", { name: "Demo child two", exact: true })
+    .waitFor();
+  await page
+    .getByRole("button", { name: "Demo child two", exact: true })
+    .click();
+  await page.getByText("Viewing Demo child two", { exact: true }).waitFor();
+  await page
+    .getByRole("button", { name: "Homework & resources", exact: true })
+    .click();
+  await page.getByText("Grade nine reading list", { exact: true }).waitFor();
+  if (
+    await page.getByText("Explore quadratic equations", { exact: true }).count()
+  )
+    throw Error("Other child homework leaked");
+  await inspect("guardian second-child learning");
+  await page.screenshot({
+    path: "apps/api/data/mobile-family-learning.png",
+    fullPage: true,
+  });
+  await page
+    .getByRole("button", { name: "Back to overview", exact: true })
+    .click();
+  await page.getByRole("button", { name: "Rohan Kapoor", exact: true }).click();
+  await page.getByText("Viewing Rohan Kapoor", { exact: true }).waitFor();
+  await page
+    .getByRole("button", { name: "Fees & receipts", exact: true })
+    .click();
+  await page.getByText("MOBILE-RECEIPT", { exact: true }).waitFor();
+  await inspect("guardian fees");
+  await page
+    .getByRole("button", { name: "Back to overview", exact: true })
+    .click();
+  await page.getByRole("button", { name: "Notices", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Mark as read", exact: true })
+    .first()
+    .click();
+  await page
+    .getByRole("button", { name: "Read", exact: true })
+    .first()
+    .waitFor();
+  await inspect("guardian notice read");
+  await page
+    .getByRole("button", { name: "Back to overview", exact: true })
+    .click();
   await page.getByRole("button", { name: "Sign out", exact: true }).click();
   const student = (await store.all("users")).find((u) => u.role === "student");
   await store.put("users", { ...student, passwordChangeRequired: true });

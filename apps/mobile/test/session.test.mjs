@@ -274,3 +274,21 @@ test("failed readiness does not attempt login or store a token", async () => {
   );
   await assert.rejects(api.prepare(), (e) => e.status === 503);
 });
+
+// Context guards protect every new daily-view request, not just initial workspace loading.
+test("school requests ignore late responses and clear revoked sessions", async () => {
+  const x = setup({ school: async () => ({ items: [] }) });
+  await x.session.login("a", "b");
+  const pending = deferred();
+  x.api.school = () => pending.promise;
+  const work = x.session.school("/fees");
+  await x.session.selectSchool("b");
+  pending.resolve({ private: "old-school" });
+  await assert.rejects(work, /context changed/);
+  x.api.school = async () => {
+    throw new ApiError("expired", 401);
+  };
+  await assert.rejects(x.session.school("/family"));
+  assert.equal(x.session.state.status, "signedOut");
+  assert.equal(x.session.state.workspace, null);
+});

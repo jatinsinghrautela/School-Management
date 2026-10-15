@@ -331,37 +331,41 @@ export function createFeesRouter(store) {
           (managers.includes(req.user.role) || p.studentId === req.user.id),
       );
       if (!p) fail(404, "Receipt not found");
-      const escape = (v) =>
-        String(v ?? "").replace(
-          /[&<>"']/g,
-          (c) =>
-            ({
-              "&": "&amp;",
-              "<": "&lt;",
-              ">": "&gt;",
-              '"': "&quot;",
-              "'": "&#39;",
-            })[c],
-        );
-      const amount = new Intl.NumberFormat("en", {
-        style: "currency",
-        currency: p.currency,
-      }).format(p.amountMinor / 100);
-      const rows = [
-        ["Receipt", p.receiptNumber],
-        ["Student", p.studentName],
-        ["Fee", p.name],
-        ["Amount", amount],
-        ["Payment date", p.paidOn],
-        ["Method", p.method],
-        ["Reference", p.reference || "—"],
-        ["Recorded at", p.createdAt],
-      ];
-      res.json({
-        filename: `${p.receiptNumber}.html`,
-        html: `<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>${escape(p.receiptNumber)}</title><style>body{font:16px system-ui;color:#173e34;max-width:720px;margin:40px auto;padding:24px;line-height:1.6}h1{font-size:26px}table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:12px;border-bottom:1px solid #d2e3da}th{width:35%}.void{color:#9b2525;font-weight:bold}@media print{body{margin:0}}</style>${logoHeader(p.schoolLogo || (await schoolLogo(store, req.school.id)))}<h1>${escape(p.schoolName)}</h1><h2>Manual payment receipt</h2>${p.voided ? `<p class="void">VOIDED — ${escape(p.voidReason)} (${escape(p.voidedAt)})</p>` : ""}<table>${rows.map(([k, v]) => `<tr><th>${escape(k)}</th><td>${escape(v)}</td></tr>`).join("")}</table><p>This records a manually entered payment. It does not verify a bank settlement or process a transfer.</p><p>Schoolglass Desk</p></html>`,
-      });
+      res.json(await paymentReceipt(store, req.school.id, p));
     }),
   );
   return router;
+}
+
+export async function paymentReceipt(store, schoolId, p) {
+  const escape = (v) =>
+    String(v ?? "").replace(
+      /[&<>"']/g,
+      (c) =>
+        ({
+          "&": "&amp;",
+          "<": "&lt;",
+          ">": "&gt;",
+          '"': "&quot;",
+          "'": "&#39;",
+        })[c],
+    );
+  const amount = new Intl.NumberFormat("en", {
+    style: "currency",
+    currency: p.currency,
+  }).format(p.amountMinor / 100);
+  const rows = [
+    ["Receipt", p.receiptNumber],
+    ["Student", p.studentName],
+    ["Fee", p.name],
+    ["Amount", amount],
+    ["Payment date", p.paidOn],
+    ["Method", p.method],
+    ["Reference", p.reference || "—"],
+    ["Recorded at", p.createdAt],
+  ];
+  return {
+    filename: `${p.receiptNumber}.html`,
+    html: `<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>${escape(p.receiptNumber)}</title><style>body{font:16px system-ui;color:#173e34;max-width:720px;margin:40px auto;padding:24px;line-height:1.6}h1{font-size:26px}table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:12px;border-bottom:1px solid #d2e3da}th{width:35%}.void{color:#9b2525;font-weight:bold}@media print{body{margin:0}}</style>${logoHeader(p.schoolLogo || (await schoolLogo(store, schoolId)))}<h1>${escape(p.schoolName)}</h1><h2>Manual payment receipt</h2>${p.voided ? `<p class="void">VOIDED — ${escape(p.voidReason)} (${escape(p.voidedAt)})</p>` : ""}<table>${rows.map(([k, v]) => `<tr><th>${escape(k)}</th><td>${escape(v)}</td></tr>`).join("")}</table><p>This records a manually entered payment. It does not verify a bank settlement or process a transfer.</p><p>Schoolglass Desk</p></html>`,
+  };
 }

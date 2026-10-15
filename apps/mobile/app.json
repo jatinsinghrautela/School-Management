@@ -17,8 +17,16 @@
     "plugins": [
       "expo-router",
       "expo-system-ui",
-      ["expo-secure-store", { "configureAndroidBackup": true }]
+      [
+        "expo-secure-store",
+        {
+          "configureAndroidBackup": true
+        }
+      ],
+      "expo-sharing"
     ],
-    "web": { "bundler": "metro" }
+    "web": {
+      "bundler": "metro"
+    }
   }
 }

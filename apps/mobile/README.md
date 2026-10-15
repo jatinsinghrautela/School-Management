@@ -1,4 +1,4 @@
-# Mobile foundation (M1)
+# Schoolglass Desk mobile (M1 + M2)
 
 This Expo/React Native app uses the existing Schoolglass Desk API. It is an early foundation preview, not complete mobile feature parity. Android and iOS source are supported; native device acceptance is still pending.
 
@@ -70,7 +70,7 @@ No code or database change fixes an Expo account mismatch. Do not share Expo pas
 - Local clearing on logout, server revocation attempt, explicit warning if revocation cannot be confirmed.
 - Loading/retry/error handling including Render cold starts and Cloudflare non-JSON challenges.
 
-No persistent school-record cache, push notifications, offline writes, complete owner tools or daily academic workflows yet. Parent child views are M2. Web preview intentionally keeps tokens in memory instead of browser persistence; it does not verify native SecureStore behavior. New screens will use existing backend permissions and protected file routes.
+Student and guardian daily views are now included: notices, homework/resources, dated timetable, calendar, attendance, published results, fees/receipts and private gallery. See ../../docs/MOBILE-DAILY-VIEWS.md for role setup, backend deployment and phone checks. Homework submission, push, offline writes and complete staff/owner tools remain later work. No persistent school-record cache is used. Web preview intentionally keeps tokens in memory instead of browser persistence; it does not verify native SecureStore behavior. New screens will use existing backend permissions and protected file routes.
 
 ## Verify
 
@@ -99,6 +99,6 @@ The isolated mobile dependency audit on 15 October 2026 reports 21 findings (18 
 
 ## Cold starts and mobile sign-in timeouts
 
-Sign-in and saved-session restore first make ONE unauthenticated /api/ready request with a 90-second startup deadline. Credentials are sent only after readiness succeeds. Normal requests retain their 25-second deadline; there is no automatic retry of login/password changes and no background keep-awake polling. The screen shows connection progress. Timeout messages identify server connection, sign-in, account validation or school workspace so device/network issues can be distinguished.
+Sign-in and saved-session restore first make ONE unauthenticated /api/ready request with a 90-second startup deadline. Credentials are sent only after readiness succeeds. School GET requests also allow up to 90 seconds when an already-open app encounters a sleeping server. Other requests retain their 25-second deadline; there is no automatic retry of login/password changes and no background keep-awake polling. The screen shows connection progress. Timeout messages identify server connection, sign-in, account validation or school workspace so device/network issues can be distinguished.
 
 If it still times out, open https://schoolglass.jatinsinghrautela.com/api/ready on the SAME phone, then reload Expo Go using r in the Metro terminal and retry once. A browser-ready response proves browser reachability, not native-client acceptance by the network/Cloudflare. Record the exact new operation message and check Cloudflare Security Events/Render logs before changing protection. Never globally disable bot protection or alter passwords to fix a timeout. Keep EXPO_PUBLIC_API_URL unset for the default live domain unless deliberately using a LAN demo API.

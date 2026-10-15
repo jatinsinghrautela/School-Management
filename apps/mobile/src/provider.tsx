@@ -3,6 +3,7 @@ import { AppState, Platform, useColorScheme } from "react-native";
 import * as SecureStore from "expo-secure-store";
 import { apiBase, createApi, sessionStorageKey } from "./core/api";
 import { Session } from "./core/session";
+import { clearTemporaryArtifacts } from "./artifacts";
 const configured =
   process.env.EXPO_PUBLIC_API_URL ||
   "https://schoolglass.jatinsinghrautela.com";
@@ -65,6 +66,11 @@ export function MobileProvider({ children }: { children: React.ReactNode }) {
     () => new Session(api, vault, () => redraw((n) => n + 1)),
   );
   useEffect(() => {
+    try {
+      clearTemporaryArtifacts();
+    } catch {
+      /* Private cache cleanup is retried on the next launch. */
+    }
     void session.restore();
     const subscription = AppState.addEventListener("change", (state) => {
       if (state === "active" && session.state.status === "ready")

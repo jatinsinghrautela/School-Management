@@ -1,5 +1,5 @@
 import { brandedResource } from "./resource-document.js";
-import { readFile } from "node:fs/promises";
+import { readFile } from "./file-storage.js";
 import { fileURLToPath } from "node:url";
 import { Router } from "express";
 import { uploadPolicy } from "./upload-security.js";
@@ -14,8 +14,9 @@ import {
   publicUser,
 } from "./domain.js";
 import { schoolLogo } from "./school-media.js";
-import { feeBalance } from "./fees.js";
-import { holidaysOn } from "./calendar.js";
+import { feeBalance, paymentReceipt } from "./fees.js";
+import { holidaysOn, validDate } from "./calendar.js";
+import { datedTimetable } from "./substitutions.js";
 import {
   route,
   manage,
@@ -423,6 +424,7 @@ export function createFamilySocialRouter(store) {
                   ...x,
                   ...feeBalance(x, payments, concessions),
                 })),
+              payments: payments.filter((p) => p.studentId === student.id),
               notices: (await tx.all("notices", req.school.id)).filter(
                 (x) =>
                   ["all", "parent", "student"].includes(x.audience) &&
@@ -440,6 +442,54 @@ export function createFamilySocialRouter(store) {
           };
         }),
       );
+    }),
+  );
+  r.get(
+    "/family/timetable",
+    route(async (req, res) => {
+      if (req.user.role !== "parent") fail(403, "Parent account required");
+      if (!validDate(req.query.date)) fail(400, "Choose a valid date");
+      const student = (await children(store, req)).find(
+        (u) => u.id === req.query.childId,
+      );
+      if (!student) fail(404, "Linked child not found");
+      const date = req.query.date,
+        holidays = holidaysOn(
+          await store.all("calendar", req.school.id),
+          req.school.id,
+          date,
+        );
+      const subjects = await store.all("subjects", req.school.id),
+        users = await store.all("users");
+      const entries = holidays.length
+        ? []
+        : (await datedTimetable(store, req.school.id, date))
+            .filter((e) => student.classIds.includes(e.classId))
+            .map((e) => ({
+              ...e,
+              substitution: e.substitution
+                ? { id: e.substitution.id, teacherId: e.substitution.teacherId }
+                : undefined,
+              subjectName:
+                subjects.find((s) => s.id === e.subjectId)?.name || "Subject",
+              teacherName:
+                users.find((u) => u.id === e.teacherId)?.name || "Teacher",
+            }));
+      res.json({ date, holidays: holidays.map((h) => h.title), entries });
+    }),
+  );
+  r.get(
+    "/family/fee-payments/:paymentId/receipt",
+    route(async (req, res) => {
+      if (req.user.role !== "parent") fail(403, "Parent account required");
+      const kids = await children(store, req);
+      const payment = (await store.all("feePayments", req.school.id)).find(
+        (p) =>
+          p.id === req.params.paymentId &&
+          kids.some((k) => k.id === p.studentId),
+      );
+      if (!payment) fail(404, "Receipt not found");
+      res.json(await paymentReceipt(store, req.school.id, payment));
     }),
   );
   r.get(

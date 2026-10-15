@@ -6,7 +6,7 @@ See [school records, separate imports, enrollment numbers, timetable generation 
 
 A multi-school workspace built with React, Node.js, and MySQL. One API serves the platform console, school web workspace and initial mobile client.
 
-The [Android/iOS mobile foundation](apps/mobile/README.md) now includes login, secure sessions, school switching and appearance settings. See the [mobile roadmap](docs/MOBILE-PLAN.md) for staged workflows and remaining device/release checks.
+The [Android/iOS mobile app](apps/mobile/README.md) includes secure login, school switching, appearance settings and [student/guardian daily views](docs/MOBILE-DAILY-VIEWS.md). See the [mobile roadmap](docs/MOBILE-PLAN.md) for remaining staff workflows and device/release checks.
 
 ![Current Schoolglass Desk dashboard in dark mode with demo data](docs/screenshots/schoolglass-dashboard.png)
 

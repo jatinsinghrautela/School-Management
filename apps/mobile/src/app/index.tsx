@@ -12,6 +12,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { api, endpoint, useMobile } from "../provider";
 import { Busy, Button, Card, Copy, ErrorText, Field } from "../components/ui";
+import { DailyMenu } from "../components/daily-menu";
 function SignIn() {
   const { session, state } = useMobile();
   const [email, setEmail] = useState(""),
@@ -207,9 +208,8 @@ function Dashboard() {
           <Card>
             <Copy large>A clearer school day.</Copy>
             <Copy muted>
-              Your account and school connection are ready. This foundation
-              preview provides secure access and a school overview; daily
-              workflows arrive in the next milestone.
+              Your account and school connection are ready. Open your daily
+              school views below. Additional staff workflows are coming next.
             </Copy>
           </Card>
           <View style={styles.row}>
@@ -226,14 +226,7 @@ function Dashboard() {
               </Card>
             </View>
           </View>
-          {identity.user.role === "parent" ? (
-            <Card>
-              <Copy muted>
-                Linked-child views are planned for the next milestone. No child
-                records are cached in this preview.
-              </Copy>
-            </Card>
-          ) : null}
+          <DailyMenu />
         </>
       ) : !state.busy && !state.error ? (
         <Card>

@@ -36,6 +36,33 @@ export class Session {
     this.state = { ...this.state, ...patch };
     this.notify();
   }
+  scope() {
+    return `${this.generation}:${this.schoolVersion}`;
+  }
+  async school<T>(path: string, body?: unknown): Promise<T> {
+    const scope = this.scope(),
+      schoolId = this.state.schoolId;
+    if (
+      this.state.status !== "ready" ||
+      !schoolId ||
+      this.state.identity?.user.passwordChangeRequired
+    )
+      throw Error("Open an authorized school workspace first.");
+    try {
+      const result = await this.api.school<T>(this.token, schoolId, path, body);
+      if (scope !== this.scope())
+        throw Error("School context changed. Please reopen this view.");
+      return result;
+    } catch (error) {
+      if (
+        scope === this.scope() &&
+        error instanceof ApiError &&
+        error.status === 401
+      )
+        await this.clear("Your session ended. Please sign in again.");
+      throw error;
+    }
+  }
   private persist(action: () => Promise<void>, generation: number) {
     const next = this.writes
       .catch(() => {})
