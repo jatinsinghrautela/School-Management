@@ -396,3 +396,7 @@ Validation: complete 68-test API suite passed, disposable MySQL operations verif
 ## 2026-10-12 - Consolidated live deployment guide
 
 Replaced the earlier cloud plan with one complete CLOUD-DEPLOYMENT.md covering actual live service identifiers, provider setup, private R2, all Render variables/CA secret, completed migration, DNS/HTTPS/bot controls, conditional costs, cumulative caps, service pause/resume, code release/auto-deploy, schema migration and cloud backup limitations. Updated README and marked RENDER-SETUP as a historical reference. Confirmed official current Render/Aiven/R2 policies; documented that actual dashboard auto-deploy/billing/security settings remain operator checks. Documentation-only release uses [skip render] to avoid unnecessary build usage. No live service settings or school data changed.
+
+## 2026-10-15 - Mobile feasibility and staged plan
+
+Reviewed repository bearer-session authorization and existing web/mobile roadmap. Added MOBILE-PLAN.md: Expo/React Native/TypeScript, one existing backend, Android-first staged milestones, secure native session storage, school/child cache isolation, private files, online-first pilot, future push/offline acceptance and cost/distribution constraints. Node/npm/Java/adb are available; emulator is not on PATH and native build/device readiness remains unverified. No mobile scaffold, provider change or live data mutation in this planning milestone.
