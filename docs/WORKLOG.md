@@ -404,3 +404,7 @@ Reviewed repository bearer-session authorization and existing web/mobile roadmap
 ## 2026-10-15 - M1 mobile foundation implementation
 
 Added isolated Expo SDK 57/React Native/TypeScript package with Expo Router, SecureStore sessions scoped by API server, login/restore/logout, mandatory password change/reset request, school identity/switching and system-default light/dark account settings. Session and school generation checks prevent stale requests restoring cleared context. Added isolated API integration and controller regressions plus reproducible 390px web-preview/accessibility check. Android/iOS/web JS export and Expo Doctor 21/21 passed; typecheck/lint and web/API build passed. Original web/API lockfile is unchanged; mobile owns its dependencies. Upstream mobile build/router audit findings are explicitly recorded as distribution blockers. Physical-device verification, signed binaries and M2 daily workflows remain pending; no live data/settings changed.
+
+## 2026-10-15 - Physical iPhone Expo Go authentication instructions
+
+Verified the supplied error against Expo's SDK 57 sign-in documentation: physical iOS Expo Go requires matching Expo CLI and device accounts. Corrected the earlier account-only-for-EAS guidance and added exact login/whoami, phone sign-in and reload steps. This is Expo development authentication, separate from school credentials; no paid Apple membership is needed for this preview. No credentials were requested or authentication state changed by the agent.

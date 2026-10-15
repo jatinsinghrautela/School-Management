@@ -11,7 +11,7 @@ npm --prefix apps/mobile ci
 npm run mobile:start
 ```
 
-Install Expo Go on your Android/iPhone. Use the SDK-compatible version shown by Expo. Put phone and PC on the same Wi-Fi, then scan the terminal QR code (Expo Go on Android, Camera/Expo Go on iPhone). The Metro development server requires this PC while previewing; the live website remains independent. Router, secure storage and other modules used here are included in the compatible Expo Go client; if client/SDK versions differ, use a matching client or a development build.
+For a physical iPhone, first sign in to the same free Expo account in Expo CLI and Expo Go (steps below). Install Expo Go on your Android/iPhone. Use the SDK-compatible version shown by Expo. Put phone and PC on the same Wi-Fi, then scan the terminal QR code (Expo Go on Android, Camera/Expo Go on iPhone). The Metro development server requires this PC while previewing; the live website remains independent. Router, secure storage and other modules used here are included in the compatible Expo Go client; if client/SDK versions differ, use a matching client or a development build.
 
 The default API is https://schoolglass.jatinsinghrautela.com/api. Only sign in to live accounts deliberately; attendance/fees/etc. are not written by this foundation. Password change/reset/logout are real operations, even from a preview. Ordinary tests use isolated demo memory and never live credentials. Do not publish credentials or student screenshots.
 
@@ -40,6 +40,25 @@ EXPO_PUBLIC_API_URL=http://<PC-LAN-IP>:4100
 ```
 
 Allow only private-network firewall access if Windows asks. Keep the API on trusted LAN only. Restart Expo after an environment change. Do not change or overwrite your existing MySQL/cloud environment. The in-memory demo sign-ins are principal@orbit.local, teacher@orbit.local and student@orbit.local with OrbitDemo123!; these are not live-site accounts. Review public environment values before building. Production bundles require HTTPS. No database or R2 secrets belong in EXPO_PUBLIC variables.
+
+## iPhone: Expo sign-in required
+
+Expo Go for SDK 57 on a physical iPhone requires the same Expo account on the PC and phone. This is separate from your Schoolglass Desk login and does not require paid Apple membership.
+
+1. Create a free account at https://expo.dev/signup if needed.
+2. Keep the development server running. In a SECOND PowerShell terminal:
+
+```powershell
+cd "D:\Personal Projects\School Management\apps\mobile"
+npx expo login
+npx expo whoami
+```
+
+3. Complete the sign-in flow privately. On iPhone, open Expo Go → Go home → account/avatar icon → sign in to the SAME Expo account.
+4. Tap Try again or rescan the QR code. If you switched from a different Expo account, stop/restart Metro using npm run mobile:start from the repository root and scan the new QR.
+5. After Schoolglass Desk opens, use the school account credentials on its own sign-in screen.
+
+No code or database change fixes an Expo account mismatch. Do not share Expo passwords/tokens in chat or Git. Android currently does not have the same physical-iOS requirement, but signing in is recommended. See [official troubleshooting](https://docs.expo.dev/troubleshooting/expo-go-sign-in-required/) and [SDK 57 login announcement](https://expo.dev/changelog/expo-go-57-login).
 
 ## Included
 

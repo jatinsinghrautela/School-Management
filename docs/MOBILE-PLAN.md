@@ -56,7 +56,7 @@ The mobile app does not need its own hosting subscription. API calls/file downlo
 
 Agent: implement native source, shared contracts, isolated API regressions, typechecking, JS build checks, Android tooling diagnosis, documentation and preparation of a signed preview build when tooling/signing is ready.
 
-Owner: confirm Android or iPhone for first device testing; install Expo Go for an early preview where supported; provide device interaction feedback. An Expo account is needed only if choosing EAS services. Keep signing credentials private. Store accounts, distribution and publishing are separate explicit decisions.
+Owner: confirm Android or iPhone for first device testing; install Expo Go for an early preview where supported; provide device interaction feedback. A free Expo account is also required for Expo Go on a physical iPhone: sign in to the same account in Expo CLI and Expo Go. EAS services separately require an Expo account. Keep signing credentials private. Store accounts, distribution and publishing are separate explicit decisions.
 
 No new credentials are required for planning. For M1 implementation, default to Android-first; no need to wait for an account to build source or isolated tests. Do not claim a native build/device acceptance until actually run.
 
