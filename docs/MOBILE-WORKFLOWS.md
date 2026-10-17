@@ -133,3 +133,10 @@ The login header offers a compact light/dark button. First use follows the devic
 ### M4.6 follow-up — Central brand animation and loaders
 
 The login animation is on the central content logo, including compact screens; the top navigation logo is static. A mint/blue/violet gradient circulates around the original mark with a travelling light sweep. The same original mark replaces generic loading rings in full and compact loaders. Login's button/status says “Logging in”; connection details remain visible, without a second full loader stretching the form. Animations use transform-only loops, pause on blur/background, and respect Reduce Motion. Login light/dark control is unchanged.
+
+
+### M4.6 follow-up — Reassembling loader and date picker
+
+Loading variants now split the original Schoolglass mark into four clipped pieces, separate/rotate them, and reassemble them with a short joined pause before repeating. The gradient login decoration remains intact. Both compact button loaders and larger loaders use this variant; Reduce Motion shows the joined mark. Animation remains transform-only and stops on blur/background.
+
+Native DateField uses datetimepicker 9.1's onValueChange and onDismiss callbacks, replacing deprecated native onChange. Android selection closes the dialog; cancellation closes it without changing the value; iOS inline selection stays open until Done. No neutral button is configured, so no neutral callback is needed. The DateField's own app-facing onChange prop is unchanged. Browser date fields remain unchanged. Native selection/cancellation should be checked once on each phone after reloading.

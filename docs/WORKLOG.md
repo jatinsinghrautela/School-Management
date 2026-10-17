@@ -525,3 +525,12 @@ Final isolated browser review passed in full: rapid reverse swipes, dock drag, l
 Moved motion off the navigation logo and onto the central login logo at normal and compact heights. Replaced the old pulsing outline with one shared original Schoolglass mark, circulating mint/blue/violet gradient frame and travelling light sweep. Shared full/compact loaders now use that brand animation instead of a generic ring/school icon. The sign-in button and accessible progress label read “Logging in”; removed the duplicate full sign-in loader so the form remains compact. Login appearance switch remains available. Transform-only animation pauses on screen blur/background and respects Reduce Motion; no assets, packages, backend settings or school data changed.
 
 Validation: typecheck/lint and all 27 mobile tests passed; iOS/Android/web exports passed. Isolated browser review verifies central placement, changing gradient transform, normal-height no-scroll login, compact layout, “Logging in” progress semantics with a delayed local sign-in, and actual logo-loader movement during a delayed notice submission. Reviewed the generated login screenshot. Native visual acceptance remains on the owner's phones; reload Expo Go, no Render deploy required.
+
+
+## 18 October 2026 — Shattering brand loader and picker deprecation
+
+Added a loader-only disassemble/rejoin cycle: four clipped fragments of the existing Schoolglass logo translate and rotate apart, reassemble exactly, pause, then repeat. Shared compact and full loaders opt in; the central login gradient is unchanged. Reuses one transform animation clock, suspends on blur/background, and shows an assembled mark under Reduce Motion. No new assets or dependencies.
+
+Migrated the shared native DateField from datetimepicker's deprecated onChange to installed 9.1's typed onValueChange/onDismiss callbacks after checking Expo SDK 57 guidance and installed package documentation. Selection updates the date; Android closes after selection, dismissal leaves it unchanged, and iOS retains its inline Done action. No warning suppression was added. All native picker use goes through this field; web date inputs are unchanged.
+
+Validation: typecheck, lint and all 27 tests passed; iOS/Android/web exports passed. The isolated browser submission check now measures a logo fragment's transform in addition to the gradient rotation. Native date selection/cancellation and warning absence remain device acceptance after Expo Go reload. No API/database/Render configuration or school data changes.

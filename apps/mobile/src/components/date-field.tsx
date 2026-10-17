@@ -37,11 +37,11 @@ export function DateField({
             display={Platform.OS === "ios" ? "inline" : "default"}
             themeVariant={dark ? "dark" : "light"}
             accentColor={colors.accent}
-            onChange={(event, selected) => {
+            onValueChange={(_, selected) => {
               if (Platform.OS !== "ios") setOpen(false);
-              if (event.type === "set" && selected)
-                onChange(localDate(selected));
+              onChange(localDate(selected));
             }}
+            onDismiss={() => setOpen(false)}
           />
           {Platform.OS === "ios" ? (
             <Button

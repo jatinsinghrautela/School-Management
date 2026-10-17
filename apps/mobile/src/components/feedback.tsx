@@ -26,7 +26,7 @@ export function LoadingMotion({
         paddingVertical: compact ? 0 : 12,
       }}
     >
-      <LogoMotion size={compact ? 26 : 64} />
+      <LogoMotion size={compact ? 26 : 64} shatter />
       {!compact ? (
         <Text
           style={{

@@ -16,9 +16,11 @@ import { useReducedMotion } from "./motion";
 export function LogoMotion({
   size = 64,
   testID = "schoolglass-logo-motion",
+  shatter = false,
 }: {
   size?: number;
   testID?: string;
+  shatter?: boolean;
 }) {
   const { colors } = useMobile();
   const reduced = useReducedMotion();
@@ -52,6 +54,10 @@ export function LogoMotion({
     animation.start();
     return () => animation.stop();
   }, [active, focused, phase, reduced]);
+  const separation = phase.interpolate({
+    inputRange: [0, 0.18, 0.42, 0.6, 0.84, 1],
+    outputRange: [0, 0, 1, 1, 0, 0],
+  });
   const radius = size * 0.29;
   return (
     <View
@@ -112,7 +118,51 @@ export function LogoMotion({
         <View
           style={{ width: 30, height: 30, transform: [{ scale: size / 48 }] }}
         >
-          <BrandMark />
+          {shatter ? (
+            [0, 1, 2, 3].map((index) => {
+              const x = index % 2,
+                y = Math.floor(index / 2);
+              return (
+                <Animated.View
+                  key={index}
+                  testID={`${testID}-shard-${index}`}
+                  style={{
+                    position: "absolute",
+                    left: x * 15,
+                    top: y * 15,
+                    width: 15,
+                    height: 15,
+                    overflow: "hidden",
+                    transform: [
+                      { translateX: Animated.multiply(separation, x ? 5 : -5) },
+                      { translateY: Animated.multiply(separation, y ? 5 : -5) },
+                      {
+                        rotate: separation.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: [
+                            "0deg",
+                            `${(x === y ? 1 : -1) * 14}deg`,
+                          ],
+                        }),
+                      },
+                    ],
+                  }}
+                >
+                  <View
+                    style={{
+                      position: "absolute",
+                      left: -x * 15,
+                      top: -y * 15,
+                    }}
+                  >
+                    <BrandMark />
+                  </View>
+                </Animated.View>
+              );
+            })
+          ) : (
+            <BrandMark />
+          )}
         </View>
         {!reduced ? (
           <Animated.View

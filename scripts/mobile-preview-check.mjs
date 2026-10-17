@@ -200,7 +200,7 @@ try {
       const requestUrl = new URL(req.url());
       const target = `http://127.0.0.1:${api.address().port}${requestUrl.pathname}${requestUrl.search}`;
       if (req.method() === "POST" && requestUrl.pathname.endsWith("/notices"))
-        await new Promise((resolve) => setTimeout(resolve, 1800));
+        await new Promise((resolve) => setTimeout(resolve, 2800));
       if (
         req.method() === "POST" &&
         requestUrl.pathname.endsWith("/auth/login")
@@ -629,6 +629,19 @@ try {
   const after = await ring.evaluate((el) => getComputedStyle(el).transform);
   if (before === after)
     throw Error("Submission orbit did not animate with motion enabled");
+  const shard = page
+    .getByRole("progressbar", { name: "Saving your changes…", exact: true })
+    .getByTestId("schoolglass-logo-motion-shard-0");
+  const shardBefore = await shard.evaluate(
+    (el) => getComputedStyle(el).transform,
+  );
+  await page.waitForTimeout(850);
+  const shardAfter = await shard.evaluate(
+    (el) => getComputedStyle(el).transform,
+  );
+  if (shardBefore === shardAfter)
+    throw Error("Logo loader fragments did not separate/reassemble");
+
   await page.screenshot({ path: "apps/api/data/mobile-saving-motion.png" });
   await inspect("animated submission loader");
   await page
