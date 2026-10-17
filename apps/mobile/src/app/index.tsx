@@ -14,7 +14,7 @@ import { Redirect } from "expo-router";
 import { needsSchoolChoice } from "../core/session";
 import { api, endpoint, useMobile } from "../provider";
 import { Busy, Button, Card, Copy, ErrorText, Field } from "../components/ui";
-import { BrandMark } from "../components/hero";
+import { LoginGlow } from "../components/login-glow";
 import { Dashboard } from "../components/dashboard";
 function SignIn() {
   const { session, state, colors } = useMobile();
@@ -38,17 +38,7 @@ function SignIn() {
   return (
     <>
       <View style={{ gap: 8, alignItems: "center" }}>
-        {height > 700 ? (
-          <View
-            style={{
-              padding: 10,
-              borderRadius: 19,
-              backgroundColor: colors.hero,
-            }}
-          >
-            <BrandMark />
-          </View>
-        ) : null}
+        <LoginGlow compact={height <= 700} />
         <Text
           style={{
             color: colors.ink,
@@ -91,12 +81,11 @@ function SignIn() {
         <ErrorText message={state.error} />
         {state.busy ? (
           <>
-            <Busy />
             <Copy muted>{state.activity}</Copy>
           </>
         ) : null}
         <Button
-          label="Sign in"
+          label={state.busy ? "Logging in" : "Sign in"}
           busy={state.busy}
           disabled={state.busy || sending || !email.trim() || !password}
           onPress={() => {

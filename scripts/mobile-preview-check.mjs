@@ -201,6 +201,11 @@ try {
       const target = `http://127.0.0.1:${api.address().port}${requestUrl.pathname}${requestUrl.search}`;
       if (req.method() === "POST" && requestUrl.pathname.endsWith("/notices"))
         await new Promise((resolve) => setTimeout(resolve, 1800));
+      if (
+        req.method() === "POST" &&
+        requestUrl.pathname.endsWith("/auth/login")
+      )
+        await new Promise((resolve) => setTimeout(resolve, 400));
       const response = await fetch(target, {
         method: req.method(),
         headers: {
@@ -253,6 +258,15 @@ try {
       .fill(`${role}@orbit.local`);
     await page.getByLabel("Password", { exact: true }).fill("OrbitDemo123!");
     await page.getByRole("button", { name: "Sign in", exact: true }).click();
+    await page
+      .getByRole("progressbar", { name: "Logging in", exact: true })
+      .waitFor();
+    if (
+      await page
+        .getByRole("progressbar", { name: "Loading", exact: true })
+        .count()
+    )
+      throw Error("Login still uses generic loading text");
     if (role === "director") await header("Choose your school").waitFor();
     else
       await page
@@ -304,6 +318,21 @@ try {
   if (scrollOverflow) throw Error("Normal-height login still needs scrolling");
   await page.screenshot({ path: "apps/api/data/mobile-login-compact.png" });
   await page.emulateMedia({ reducedMotion: "no-preference" });
+  const loginGradient = page.getByTestId("login-logo-glow-gradient");
+  const logoBounds = await page.getByTestId("login-logo-glow").boundingBox();
+  if (!logoBounds || logoBounds.y < 80)
+    throw Error("Animated login logo is not in the central content");
+  const gradientBefore = await loginGradient.evaluate(
+    (el) => getComputedStyle(el).transform,
+  );
+  await page.waitForTimeout(180);
+  const gradientAfter = await loginGradient.evaluate(
+    (el) => getComputedStyle(el).transform,
+  );
+  if (gradientBefore === gradientAfter)
+    throw Error("Central logo gradient is not running");
+  await page.screenshot({ path: "apps/api/data/mobile-login-gradient.png" });
+
   const ambient = page
     .getByTestId("ambient-flow")
     .filter({ visible: true })

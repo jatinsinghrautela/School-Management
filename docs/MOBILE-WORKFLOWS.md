@@ -128,3 +128,8 @@ Screen swipes commit once on release without moving the full scene on every Java
 Exam marks are scoped to one chosen exam and assigned subject. A compact searchable class register shows scores, maximum marks, unmarked pupils and completion counts. Existing score entry and draft/publish permissions remain unchanged. Timetables now use a single aligned day schedule with a time rail, subjects, class, teacher and room, using the same dated and guardian-scoped APIs. No timetable or marks data is modified by these presentation changes.
 
 The login header offers a compact light/dark button. First use follows the device theme as before; an explicit selection overrides it. The original logo has a slow animated backlight which pauses while the app is inactive and respects Reduce Motion. No new packages or backend deployment are needed. Reload the project in Expo Go to receive the source changes.
+
+
+### M4.6 follow-up — Central brand animation and loaders
+
+The login animation is on the central content logo, including compact screens; the top navigation logo is static. A mint/blue/violet gradient circulates around the original mark with a travelling light sweep. The same original mark replaces generic loading rings in full and compact loaders. Login's button/status says “Logging in”; connection details remain visible, without a second full loader stretching the form. Animations use transform-only loops, pause on blur/background, and respect Reduce Motion. Login light/dark control is unchanged.

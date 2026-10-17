@@ -1,4 +1,3 @@
-import { LoginGlow } from "./login-glow";
 import { BrandMark } from "./hero";
 import { Icon } from "./icon";
 import React from "react";
@@ -76,9 +75,7 @@ export function TopBar() {
               <Icon name="back" color={colors.accent} size={24} />
             </Pressable>
           ) : null}
-          {!ready ? (
-            <LoginGlow />
-          ) : !back ? (
+          {!back ? (
             <View
               style={{
                 backgroundColor: colors.hero,
