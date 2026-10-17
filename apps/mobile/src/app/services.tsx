@@ -1,7 +1,8 @@
+import { featuresFor } from "../core/features";
 import React, { useState } from "react";
 import { ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Redirect, router } from "expo-router";
+import { Redirect, router, useLocalSearchParams } from "expo-router";
 import { useMobile } from "../provider";
 import { useSchoolData } from "../daily-provider";
 import { shareArtifact } from "../artifacts";
@@ -551,9 +552,9 @@ function Content({ tab }: { tab: string }) {
     </>
   );
 }
-export default function SchoolServices() {
+function SchoolServices({ initialTab }: { initialTab?: string }) {
   const { state, session, colors } = useMobile();
-  const [tab, setTab] = useState("Library & transport");
+  const [tab, setTab] = useState(initialTab || "Library & transport");
   const role = state.identity?.user.role || "";
   if (
     state.status !== "ready" ||
@@ -584,7 +585,7 @@ export default function SchoolServices() {
           maxWidth: 680,
           width: "100%",
           alignSelf: "center",
-          paddingBottom: 45,
+          paddingBottom: 120,
         }}
       >
         <Button
@@ -606,4 +607,13 @@ export default function SchoolServices() {
       </ScrollView>
     </SafeAreaView>
   );
+}
+
+export default function Route() {
+  const { section } = useLocalSearchParams<{ section?: string }>();
+  const { state } = useMobile();
+  const selected = featuresFor(state.identity?.user.role || "").find(
+    (f) => f.screen === "services" && f.section === section,
+  )?.section;
+  return <SchoolServices key={selected || "default"} initialTab={selected} />;
 }

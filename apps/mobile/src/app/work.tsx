@@ -1,7 +1,8 @@
+import { featuresFor } from "../core/features";
 import React, { useState } from "react";
 import { ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Redirect, router } from "expo-router";
+import { Redirect, router, useLocalSearchParams } from "expo-router";
 import { useMobile } from "../provider";
 import { useSchoolData } from "../daily-provider";
 import { Button, Card, Copy, ErrorText, Busy, Field } from "../components/ui";
@@ -697,10 +698,11 @@ function Work({ tab }: { tab: string }) {
     </Card>
   );
 }
-export default function StaffWork() {
+function StaffWork({ initialTab }: { initialTab?: string }) {
   const { state, session, colors } = useMobile();
   const [tab, setTab] = useState(
-    state.identity?.user.role === "staff" ? "Calendar" : "Timetable",
+    initialTab ||
+      (state.identity?.user.role === "staff" ? "Calendar" : "Timetable"),
   );
   const role = state.identity?.user.role || "";
   if (
@@ -735,7 +737,7 @@ export default function StaffWork() {
           maxWidth: 680,
           width: "100%",
           alignSelf: "center",
-          paddingBottom: 45,
+          paddingBottom: 120,
         }}
       >
         <Button
@@ -768,4 +770,13 @@ export default function StaffWork() {
       </ScrollView>
     </SafeAreaView>
   );
+}
+
+export default function Route() {
+  const { section } = useLocalSearchParams<{ section?: string }>();
+  const { state } = useMobile();
+  const selected = featuresFor(state.identity?.user.role || "").find(
+    (f) => f.screen === "work" && f.section === section,
+  )?.section;
+  return <StaffWork key={selected || "default"} initialTab={selected} />;
 }

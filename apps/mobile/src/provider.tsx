@@ -50,10 +50,7 @@ const dark = {
   onAccent: "#123c35",
   error: "#ffb3bc",
 };
-export type Design = "glass" | "clay" | "maximalism";
 type Context = {
-  design: Design;
-  setDesign: (design: Design) => void;
   session: Session;
   state: Session["state"];
   colors: typeof light;
@@ -63,7 +60,6 @@ type Context = {
 const MobileContext = createContext<Context | null>(null);
 export function MobileProvider({ children }: { children: React.ReactNode }) {
   const system = useColorScheme();
-  const [design, setDesign] = useState<Design>("glass");
   const [choice, setChoice] = useState<boolean | null>(null);
   const [, redraw] = useState(0);
   const [session] = useState(
@@ -86,8 +82,6 @@ export function MobileProvider({ children }: { children: React.ReactNode }) {
   return (
     <MobileContext.Provider
       value={{
-        design,
-        setDesign,
         session,
         state: session.state,
         colors: isDark ? dark : light,

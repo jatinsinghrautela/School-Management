@@ -92,3 +92,7 @@ Implemented the eight daily sections, guardian child switching and record refres
 ## M3 / leadership daily expansion — 17 October 2026
 
 Teacher daily workflows and selected leadership operational flows are now implemented, alongside student homework submission and shared school services. This supersedes the earlier M2 read-only homework note. Three brand-aligned style previews are available in-app. See MOBILE-WORKFLOWS.md for the feature matrix, deliberately web-based desk work, validation and remaining physical-device/release acceptance; no blanket native management parity is claimed.
+
+## Selected Glass layout
+
+The owner selected Glass. The temporary three-style chooser is retired. The app now has a compact school dashboard, feature search, four quick actions, a feature grid and fixed bottom navigation. More retains role-relevant website-only features with an accessible explanatory popup. Screen transitions honor reduced motion; see MOBILE-WORKFLOWS.md for the current behavior and device acceptance.

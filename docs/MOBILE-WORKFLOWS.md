@@ -2,11 +2,17 @@
 
 Updated 17 October 2026. The mobile app uses the same Node.js API, MySQL database, private R2 files and school permissions as the website. Existing school data was not migrated, reseeded or deleted.
 
-## Compare the three styles
+## Selected design and navigation
 
-On sign-in choose **Compare design styles**, or after signing in open **Account & appearance → Compare design styles**. Select Glass, Clay or Maximalism. The same sample dashboard is used so the comparison is fair. The selection applies to shared cards throughout the current app session; restarting returns to Glass. Light/dark still starts with device appearance and has a two-mode override.
+Glass is now the chosen app style. The temporary Clay/Maximalism chooser has been removed. The mint/deep-teal palette and original Schoolglass mark continue to match the website; uploaded school logos identify the workspace header.
 
-All styles use the website's mint/deep-teal identity and the original Schoolglass window mark. Glass uses translucent surfaces and fine borders; Clay uses rounded raised surfaces; Maximalism uses heavier graphic borders and offset shadows. Glass is deliberately an inexpensive translucent treatment rather than a live blur filter over every card. Text-bearing surfaces maintain high opacity. Decorative motion remains native-driven, honors reduced motion and pauses when backgrounded or unfocused. No new stock artwork, remote animation service or paid library is involved.
+The dashboard uses a compact school/account header, feature search, four quick actions, an icon grid, a compact branded card and small summary cards. The supplied reference informed the layout; no shopping-company logos, banking content or external artwork were copied. A fixed safe-area-aware bottom bar provides Home, School day, Services and More. Scrollable screens reserve space so final controls remain reachable above the bar.
+
+More and dashboard search list role-relevant native and website-only features. Website tools show **Available on the website**, a short explanation, **Open website** and **Stay in the app**. Opening the website is explicit and does not transfer credentials or the app token. The popup dismisses when school/session context changes, hides background accessibility content, supports platform back/Escape, and scrolls on small screens.
+
+Native Stack uses short sliding screen transitions; the web preview gets a short fade/translation. Reduced motion disables these transitions and popup fades. The existing decorative hero animation remains background/focus-aware. Glass surfaces keep text readable without expensive per-card blur filters. Light/dark still starts with the device appearance.
+
+See [current dashboard preview](screenshots/mobile-dashboard-glass.png). Older three-style screenshots are retained as design history, not current selectable modes.
 
 ## Native workflow coverage
 
@@ -43,6 +49,6 @@ Authenticated reads/downloads remain school/class/student scoped. The new `/home
 
 The picker requests PDF/PNG/JPEG up to 5 MB; backend signature checks and the configured malware policy remain authoritative. Picker-cache files are removed when the component leaves and after an upload attempt; temporary document sharing uses the existing app-private cache. Records are held in memory, and school/account switches fence stale responses. An OS-level exported copy belongs to the destination chosen by the user.
 
-Verification: 78 API tests and 18 mobile tests passed; TypeScript and Expo lint passed; web/Android/iOS bundles exported. The isolated mobile browser suite covers all three design styles in light/dark, narrow-screen accessibility, management tabs, teacher notices/attendance/marks, student homework and guardian isolation. Test writes use only an in-memory demo API, never live school records.
+Verification: the existing backend suite passed 78 tests in the preceding workflow release; this UI update leaves the API unchanged. All 19 mobile tests passed; TypeScript and Expo lint passed; web/Android/iOS bundles exported. The isolated mobile browser suite covers the glass dashboard and website-only popup in light/dark, bottom navigation and 320px/390px layouts, narrow-screen accessibility, management tabs, teacher notices/attendance/marks, student homework and guardian isolation. Test writes use only an in-memory demo API, never live school records.
 
 Physical iPhone/Android acceptance still required: file picker/cancellation, PDF/image upload under the active upload policy, SecureStore/resume, OS sharing and animation smoothness with reduced motion. Current upstream dependency audit findings documented in apps/mobile/README.md remain distribution gates. No signed APK/IPA, store submission, paid build, push service or offline write queue is claimed.

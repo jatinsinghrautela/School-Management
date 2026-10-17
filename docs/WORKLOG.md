@@ -433,3 +433,7 @@ Validation: 77 API tests passed, 17 mobile tests/typecheck/lint passed, web buil
 ## 17 October 2026 — Mobile identity, style comparison and daily workflows
 
 Aligned mint/teal with the website and restored the original window mark. Added Glass/Clay/Maximalism session previews, native teacher workflows and student homework attachments/answers, shared school services, leadership operational actions and account password change. Added one authorized finalized-submission attachment JSON download endpoint with ownership/class/scan/staging regressions. No production data changes. See MOBILE-WORKFLOWS.md for exact coverage, web-only desk workflows, deployment and physical-device acceptance.
+
+## 17 October 2026 — Selected Glass dashboard and feature navigation
+
+Selected Glass, retired the temporary style chooser and adapted the supplied layout into a compact mint/teal school dashboard: identity header, search, quick actions, feature grid, branded card and fixed safe-area bottom navigation. Added role-relevant website-only features with an accessible, dismissible popup and explicit browser open, without credential transfer. Native Stack slides and web entry transitions honor reduced motion. Private session/school boundaries, data and API behavior remain unchanged. Updated isolated visual/navigation coverage and feature-discovery regressions; see MOBILE-WORKFLOWS.md.

@@ -198,38 +198,40 @@ try {
       );
   };
   await inspect("login");
-  await page
-    .getByRole("button", { name: "Compare design styles", exact: true })
-    .click();
-  for (const design of ["glass", "clay", "maximalism"]) {
-    const button = page.getByRole("button", {
-      name: `Preview ${design}`,
-      exact: true,
-    });
-    if (await button.count()) await button.click();
-    await inspect(`design ${design} dark`);
-    await page
-      .getByRole("button", { name: "Switch to light mode", exact: true })
-      .click();
-    await inspect(`design ${design} light`);
-    await page
-      .getByRole("img", { name: "Schoolglass Desk logo", exact: true })
-      .evaluate((el) => el.parentElement.scrollIntoView({ block: "start" }));
-    await page.screenshot({
-      path: `apps/api/data/mobile-design-${design}.png`,
-      fullPage: true,
-    });
-    await page
-      .getByRole("button", { name: "Switch to dark mode", exact: true })
-      .click();
-  }
-  await page
-    .getByRole("button", { name: "Preview glass", exact: true })
-    .click();
-  await page.getByRole("button", { name: "Back to app", exact: true }).click();
   await login("principal");
   await page.getByText("A clearer school day.", { exact: true }).waitFor();
   await inspect("dark overview");
+  await page
+    .getByRole("button", { name: "Open more tab", exact: true })
+    .click();
+  await page
+    .getByLabel("Search all features", { exact: true })
+    .fill("Yearly fee");
+  await page
+    .getByRole("button", { name: "Yearly fee planning", exact: true })
+    .click();
+  await page.getByText("Available on the website", { exact: true }).waitFor();
+  await inspect("website-only feature popup");
+  await page
+    .getByRole("button", { name: "Stay in the app", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Open home tab", exact: true })
+    .click();
+  await page
+    .getByRole("textbox", { name: "Search features", exact: true })
+    .fill("Yearly fee");
+  await page
+    .getByRole("button", { name: "Yearly fee planning", exact: true })
+    .click();
+  await page.getByText("Available on the website", { exact: true }).waitFor();
+  await page
+    .getByRole("button", { name: "Stay in the app", exact: true })
+    .click();
+  await page.getByRole("button", { name: "Clear search", exact: true }).click();
+  await page
+    .getByRole("button", { name: "School workspace", exact: true })
+    .waitFor();
   await page.screenshot({
     path: "apps/api/data/mobile-overview-dark.png",
     fullPage: true,
@@ -239,6 +241,24 @@ try {
   await inspect("light settings");
   await page.getByRole("button", { name: "Back to overview" }).click();
   await inspect("light overview");
+  await page.setViewportSize({ width: 320, height: 568 });
+  await inspect("320px glass dashboard");
+  await page
+    .getByRole("button", { name: "Open more tab", exact: true })
+    .click();
+  await page
+    .getByRole("textbox", { name: "Search all features", exact: true })
+    .fill("Yearly fee");
+  await page
+    .getByRole("button", { name: "Yearly fee planning", exact: true })
+    .click();
+  await page.getByText("Available on the website", { exact: true }).waitFor();
+  await inspect("320px website popup");
+  await page.keyboard.press("Escape");
+  await page
+    .getByRole("button", { name: "Open home tab", exact: true })
+    .click();
+  await page.setViewportSize({ width: 390, height: 844 });
   await page
     .getByRole("button", { name: "School workspace", exact: true })
     .click();
@@ -279,6 +299,21 @@ try {
   await page
     .getByRole("button", { name: "Back to overview", exact: true })
     .click();
+  await page
+    .getByRole("textbox", { name: "Search features", exact: true })
+    .evaluate((el) => {
+      let parent = el.parentElement;
+      while (parent) {
+        if (
+          parent.scrollHeight > parent.clientHeight &&
+          getComputedStyle(parent).overflowY === "auto"
+        ) {
+          parent.scrollTop = 0;
+          break;
+        }
+        parent = parent.parentElement;
+      }
+    });
   await page.screenshot({
     path: "apps/api/data/mobile-overview-light.png",
     fullPage: true,
@@ -492,7 +527,7 @@ try {
   await inspect("required password");
   if (errors.length) throw Error(JSON.stringify(errors));
   console.log(
-    "Mobile web preview passed: three design styles, principal services, teacher notice/attendance/marks, student homework, guardian child scope, required-password gate, light/dark accessibility and 390px overflow. Native device behavior remains unverified.",
+    "Mobile web preview passed: glass dashboard, fixed bottom navigation, website-only feature popup, principal services, teacher notice/attendance/marks, student homework, guardian child scope, required-password gate, light/dark accessibility and 390px overflow. Native device behavior remains unverified.",
   );
 } finally {
   if (browser) await browser.close();

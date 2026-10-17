@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import {
-  Image,
   KeyboardAvoidingView,
   Platform,
   RefreshControl,
@@ -9,11 +8,10 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { router } from "expo-router";
 import { api, endpoint, useMobile } from "../provider";
 import { Busy, Button, Card, Copy, ErrorText, Field } from "../components/ui";
 import { Hero } from "../components/hero";
-import { DailyMenu } from "../components/daily-menu";
+import { Dashboard } from "../components/dashboard";
 function SignIn() {
   const { session, state } = useMobile();
   const [email, setEmail] = useState(""),
@@ -153,116 +151,6 @@ function PasswordChange() {
     </>
   );
 }
-function Dashboard() {
-  const { state, session } = useMobile();
-  const identity = state.identity!;
-  const selected = identity.schools.find((s) => s.id === state.schoolId);
-  const logo = state.workspace?.schoolSettings?.logoDataUri;
-  return (
-    <>
-      <View style={styles.row}>
-        {logo ? (
-          <Image
-            accessibilityLabel="School logo"
-            source={{ uri: logo }}
-            style={{ width: 54, height: 54, borderRadius: 15 }}
-          />
-        ) : null}
-        <View style={{ flex: 1, gap: 4 }}>
-          <Copy large>{selected?.name || "Your workspace"}</Copy>
-          <Copy muted>
-            {identity.user.name} · {identity.user.role}
-          </Copy>
-        </View>
-      </View>
-      {identity.mode === "demo" ? (
-        <Copy muted>Demo workspace · temporary test data</Copy>
-      ) : null}
-      {identity.schools.length > 1 ? (
-        <Card>
-          <Copy>Choose your school</Copy>
-          {identity.schools.map((s) => (
-            <Button
-              key={s.id}
-              label={`${s.id === state.schoolId ? "✓ " : ""}${s.name}`}
-              secondary={s.id !== state.schoolId}
-              onPress={() => void session.selectSchool(s.id)}
-            />
-          ))}
-        </Card>
-      ) : null}
-      <ErrorText message={state.error} />
-      {state.busy ? <Busy /> : null}
-      {state.error && state.schoolId ? (
-        <Button
-          label="Retry school connection"
-          onPress={() => void session.selectSchool(state.schoolId)}
-        />
-      ) : null}
-      {identity.user.role === "owner" ? (
-        <Card>
-          <Copy large>Platform management</Copy>
-          <Copy muted>
-            Continue onboarding and owner support in the website. School mobile
-            workflows are being built separately.
-          </Copy>
-        </Card>
-      ) : state.workspace ? (
-        <>
-          <Hero
-            title="A clearer school day."
-            detail="Your learning, people and plans. Beautifully connected in one place."
-          />
-          <View style={styles.row}>
-            <View style={{ flex: 1 }}>
-              <Card>
-                <Copy large>{state.workspace.classes?.length ?? 0}</Copy>
-                <Copy muted>Accessible classes</Copy>
-              </Card>
-            </View>
-            <View style={{ flex: 1 }}>
-              <Card>
-                <Copy large>{state.workspace.notices?.length ?? 0}</Copy>
-                <Copy muted>Visible notices</Copy>
-              </Card>
-            </View>
-          </View>
-          <DailyMenu />
-        </>
-      ) : !state.busy && !state.error ? (
-        <Card>
-          <Copy muted>
-            No school workspace is available. Ask your administrator to review
-            your school access.
-          </Copy>
-        </Card>
-      ) : null}
-      {["teacher", "principal", "admin", "director", "staff"].includes(
-        identity.user.role,
-      ) ? (
-        <Button label="School workspace" onPress={() => router.push("/work")} />
-      ) : null}
-      {identity.user.role !== "owner" ? (
-        <Button
-          label="School services"
-          secondary
-          onPress={() => router.push("/services")}
-        />
-      ) : null}
-      <Button
-        label="Account & appearance"
-        secondary
-        onPress={() => router.push("/settings")}
-      />
-      <Button
-        label="Sign out"
-        secondary
-        onPress={() => void session.logout()}
-      />
-      <Copy muted>Powered by Schoolglass Desk</Copy>
-    </>
-  );
-}
 export default function Home() {
   const { state, session, colors } = useMobile();
   return (
@@ -284,9 +172,11 @@ export default function Home() {
             ) : undefined
           }
         >
-          <View style={styles.row}>
-            <Copy muted>SCHOOLGLASS DESK</Copy>
-          </View>
+          {state.status !== "ready" ? (
+            <View style={styles.row}>
+              <Copy muted>SCHOOLGLASS DESK</Copy>
+            </View>
+          ) : null}
           {state.status === "restoring" ? (
             <>
               <Busy />
@@ -309,11 +199,6 @@ export default function Home() {
           ) : state.status === "signedOut" ? (
             <>
               <SignIn />
-              <Button
-                label="Compare design styles"
-                secondary
-                onPress={() => router.push("/designs")}
-              />
             </>
           ) : state.identity?.user.passwordChangeRequired ? (
             <PasswordChange />
@@ -327,12 +212,12 @@ export default function Home() {
 }
 const styles = StyleSheet.create({
   content: {
-    padding: 22,
-    gap: 22,
+    padding: 18,
+    gap: 18,
     width: "100%",
     maxWidth: 620,
     alignSelf: "center",
-    paddingBottom: 40,
+    paddingBottom: 120,
   },
   row: { flexDirection: "row", gap: 14, alignItems: "center" },
 });

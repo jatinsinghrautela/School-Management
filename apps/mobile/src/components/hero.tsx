@@ -11,8 +11,16 @@ import { useFocusEffect } from "expo-router";
 import { useMobile } from "../provider";
 
 /** One decorative animation, with no layout updates or network activity. */
-export function Hero({ title, detail }: { title: string; detail: string }) {
-  const { dark, design } = useMobile();
+export function Hero({
+  title,
+  detail,
+  compact = false,
+}: {
+  title: string;
+  detail: string;
+  compact?: boolean;
+}) {
+  const { dark } = useMobile();
   const [focused, setFocused] = useState(false);
   useFocusEffect(
     useCallback(() => {
@@ -71,7 +79,9 @@ export function Hero({ title, detail }: { title: string; detail: string }) {
         styles.hero,
         {
           backgroundColor: dark ? "#153d38" : "#123f3a",
-          borderRadius: design === "maximalism" ? 10 : 30,
+          borderRadius: 24,
+          padding: compact ? 20 : 26,
+          gap: compact ? 10 : 16,
         },
       ]}
     >
@@ -110,12 +120,25 @@ export function Hero({ title, detail }: { title: string; detail: string }) {
       >
         <BrandMark />
       </View>
-      <Text style={styles.eyebrow}>A LITTLE CLARITY. EVERY DAY.</Text>
-      <Text style={styles.title}>{title}</Text>
-      <Text style={styles.detail}>{detail}</Text>
-      <View style={styles.badge}>
-        <Text style={styles.badgeText}>LEARN · CONNECT · GROW</Text>
-      </View>
+      {!compact ? (
+        <Text style={styles.eyebrow}>A LITTLE CLARITY. EVERY DAY.</Text>
+      ) : null}
+      <Text style={[styles.title, compact && { fontSize: 24, lineHeight: 30 }]}>
+        {title}
+      </Text>
+      <Text
+        style={[
+          styles.detail,
+          compact && { paddingRight: 65, fontSize: 13, lineHeight: 21 },
+        ]}
+      >
+        {detail}
+      </Text>
+      {!compact ? (
+        <View style={styles.badge}>
+          <Text style={styles.badgeText}>LEARN · CONNECT · GROW</Text>
+        </View>
+      ) : null}
     </View>
   );
 }
