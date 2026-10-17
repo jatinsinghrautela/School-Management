@@ -61,7 +61,8 @@ Record device model, OS, Expo Go/custom build version, date, role, steps, expect
 | Reduced Motion, screen transitions, loaders and interrupted saves | Pending | Pending |
 | Large text, screen reader, landscape, keyboard/back and small screen | Pending | Pending |
 | Student answer/file upload and private document sharing | Pending | Pending |
-| Teacher attendance/marks/notices and no duplicate write | Pending | Pending |
+| Teacher class attendance (today/session, mark remaining present, exceptions, one review/save), marks/notices and no duplicate write | Pending | Pending |
+| Native date selection/cancel, optional clear and local date around midnight | Pending | Pending |
 | Leadership leave/correction decisions and fee recording | Pending | Pending |
 | Account session list, cancel and other-session revocation | Pending | Pending |
 

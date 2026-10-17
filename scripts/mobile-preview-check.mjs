@@ -15,6 +15,12 @@ const demoStudent = (await store.all("users")).find(
 );
 await store.put("users", {
   ...demoStudent,
+  id: "bulk-classmate",
+  name: "Demo classmate",
+  email: "classmate@orbit.local",
+});
+await store.put("users", {
+  ...demoStudent,
   id: "kid-two",
   name: "Demo child two",
   email: "second@orbit.local",
@@ -152,7 +158,7 @@ try {
       const requestUrl = new URL(req.url());
       const target = `http://127.0.0.1:${api.address().port}${requestUrl.pathname}${requestUrl.search}`;
       if (req.method() === "POST" && requestUrl.pathname.endsWith("/notices"))
-        await new Promise(resolve => setTimeout(resolve, 1800));
+        await new Promise((resolve) => setTimeout(resolve, 1800));
       const response = await fetch(target, {
         method: req.method(),
         headers: {
@@ -252,22 +258,50 @@ try {
     .getByRole("button", { name: "Switch to light mode", exact: true })
     .click();
   await inspect("light profile");
-  const extraLogin = await fetch(`http://127.0.0.1:${api.address().port}/api/auth/login`, {
-    method: "POST", headers: { "Content-Type": "application/json", "User-Agent": "Isolated extra browser" },
-    body: JSON.stringify({ email: "principal@orbit.local", password: "OrbitDemo123!" }),
-  }).then(r => r.json());
+  const extraLogin = await fetch(
+    `http://127.0.0.1:${api.address().port}/api/auth/login`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "User-Agent": "Isolated extra browser",
+      },
+      body: JSON.stringify({
+        email: "principal@orbit.local",
+        password: "OrbitDemo123!",
+      }),
+    },
+  ).then((r) => r.json());
   if (!extraLogin.token) throw Error("Could not create isolated extra session");
-  await page.getByRole("button", { name: "Active sessions", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Active sessions", exact: true })
+    .click();
   await header("Active sessions").waitFor();
   await page.getByText("Current sign-in", { exact: true }).waitFor();
   await inspect("active sessions account security");
-  await page.getByRole("button", { name: "Sign out other sessions", exact: true }).click();
-  await page.getByRole("button", { name: "Cancel session sign-out", exact: true }).click();
-  await page.getByRole("button", { name: "Sign out other sessions", exact: true }).click();
-  await page.getByRole("button", { name: "Confirm sign out other sessions", exact: true }).click();
-  await page.getByText("1 other sessions signed out.", { exact: true }).waitFor();
-  const revoked = await fetch(`http://127.0.0.1:${api.address().port}/api/me`, { headers: { Authorization: `Bearer ${extraLogin.token}` } });
-  if (revoked.status !== 401) throw Error("Other demo session still authorized");
+  await page
+    .getByRole("button", { name: "Sign out other sessions", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Cancel session sign-out", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Sign out other sessions", exact: true })
+    .click();
+  await page
+    .getByRole("button", {
+      name: "Confirm sign out other sessions",
+      exact: true,
+    })
+    .click();
+  await page
+    .getByText("1 other sessions signed out.", { exact: true })
+    .waitFor();
+  const revoked = await fetch(`http://127.0.0.1:${api.address().port}/api/me`, {
+    headers: { Authorization: `Bearer ${extraLogin.token}` },
+  });
+  if (revoked.status !== 401)
+    throw Error("Other demo session still authorized");
   await inspect("session revocation confirmation");
 
   await home();
@@ -392,12 +426,18 @@ try {
   await page
     .getByRole("button", { name: "Confirm and save", exact: true })
     .click();
-  await page.getByRole("progressbar", { name: "Saving your changes…", exact: true }).waitFor();
-  const ring = page.getByRole("progressbar", { name: "Saving your changes…", exact: true }).locator('div[style*="rotate"]').first();
-  const before = await ring.evaluate(el => getComputedStyle(el).transform);
+  await page
+    .getByRole("progressbar", { name: "Saving your changes…", exact: true })
+    .waitFor();
+  const ring = page
+    .getByRole("progressbar", { name: "Saving your changes…", exact: true })
+    .locator('div[style*="rotate"]')
+    .first();
+  const before = await ring.evaluate((el) => getComputedStyle(el).transform);
   await page.waitForTimeout(150);
-  const after = await ring.evaluate(el => getComputedStyle(el).transform);
-  if (before === after) throw Error("Submission orbit did not animate with motion enabled");
+  const after = await ring.evaluate((el) => getComputedStyle(el).transform);
+  if (before === after)
+    throw Error("Submission orbit did not animate with motion enabled");
   await page.screenshot({ path: "apps/api/data/mobile-saving-motion.png" });
   await inspect("animated submission loader");
   await page
@@ -405,19 +445,57 @@ try {
     .waitFor();
   await action("Record attendance");
   await page.getByRole("button", { name: cls.name, exact: true }).click();
-  const pupil = (await store.all("users")).find(
-    (u) => u.role === "student" && u.classIds.includes(cls.id),
+  const chosenDate = page.getByLabel("Attendance date", { exact: true });
+  const today = new Date();
+  const expectedToday = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+  if ((await chosenDate.inputValue()) !== expectedToday)
+    throw Error("Attendance date does not default to today");
+  await chosenDate.fill("2026-10-19");
+  if (await page.getByRole("button", { name: "Review class attendance", exact: true }).isEnabled()) throw Error("Unmarked roster allowed review");
+  await page
+    .getByRole("button", { name: "Mark remaining present", exact: true })
+    .click();
+  await page
+    .getByRole("radio", { name: "absent for Demo classmate", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Review class attendance", exact: true })
+    .click();
+  await inspect("class-wide attendance review");
+  await page.setViewportSize({ width: 320, height: 568 });
+  await inspect("320px class attendance review");
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.screenshot({ path: "apps/api/data/mobile-attendance-review.png" });
+  await page
+    .getByRole("button", { name: "Edit class attendance", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Review class attendance", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Confirm class attendance", exact: true })
+    .click();
+  await page
+    .getByText("Class attendance saved for 2026-10-19: 2 students.", {
+      exact: true,
+    })
+    .waitFor();
+  const savedRows = (await store.all("attendance")).filter(
+    (r) => r.classId === cls.id && r.date === "2026-10-19",
   );
-  await page.getByRole("button", { name: pupil.name, exact: true }).click();
-  await page.getByLabel("Date YYYY-MM-DD", { exact: true }).fill("2026-10-19");
-  await page.getByRole("button", { name: "present", exact: true }).click();
-  await page
-    .getByRole("button", { name: "Review details", exact: true })
-    .click();
-  await page
-    .getByRole("button", { name: "Confirm and save", exact: true })
-    .click();
-  await page.getByText("date: 2026-10-19", { exact: true }).waitFor();
+  if (
+    savedRows.length !== 2 ||
+    !savedRows.some(
+      (r) => r.studentId === "bulk-classmate" && r.status === "absent",
+    )
+  )
+    throw Error("Class attendance was not saved together");
+  await page.getByRole("button", { name: "Refresh school records", exact: true }).click();
+  await page.getByRole("button", { name: cls.name, exact: true }).click();
+  await page.getByLabel("Attendance date", { exact: true }).fill("2026-10-19");
+  await page.getByText("All students are already recorded. Use Attendance corrections for changes.", { exact: true }).waitFor();
+  if (await page.getByRole("button", { name: "Review class attendance", exact: true }).isEnabled()) throw Error("Saved class attendance allowed direct overwrite");
+
   await page.getByRole("button", { name: "Sign out", exact: true }).click();
   await page.emulateMedia({ reducedMotion: "reduce" });
   await login("student");

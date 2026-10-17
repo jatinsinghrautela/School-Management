@@ -23,7 +23,8 @@
           "configureAndroidBackup": true
         }
       ],
-      "expo-sharing"
+      "expo-sharing",
+      "@react-native-community/datetimepicker"
     ],
     "web": {
       "bundler": "metro"

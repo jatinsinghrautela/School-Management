@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { View } from "react-native";
 import { randomUUID } from "expo-crypto";
+import { DateField } from "./date-field";
 import { LoadingMotion, SavedMotion } from "./feedback";
 import { useMobile } from "../provider";
 import { Button, Card, Copy, ErrorText, Field } from "./ui";
@@ -15,6 +16,7 @@ export type Input = {
   choices?: Choice[];
   multiple?: boolean;
   optional?: boolean;
+  date?: boolean;
   numeric?: boolean;
   secure?: boolean;
   initial?: string;
@@ -27,12 +29,14 @@ export function Pick({
   selected,
   onChange,
   multiple = false,
+  disabled = false,
 }: {
   label: string;
   options: Choice[];
   selected: string;
   onChange: (v: string) => void;
   multiple?: boolean;
+  disabled?: boolean;
 }) {
   const selectedIds = selected.split(",").filter(Boolean);
   const [search, setSearch] = useState("");
@@ -54,6 +58,7 @@ export function Pick({
             <Button
               key={o.id}
               icon={false}
+              disabled={disabled}
               label={`${selectedIds.includes(o.id) ? "✓ " : ""}${o.name}`}
               secondary={!selectedIds.includes(o.id)}
               onPress={() =>
@@ -168,6 +173,14 @@ export function Form({
                 options={f.choices}
                 selected={data[f.key] || ""}
                 multiple={f.multiple}
+                onChange={(v) => setData((d) => ({ ...d, [f.key]: v }))}
+              />
+            ) : f.date ? (
+              <DateField
+                key={f.key}
+                label={f.label}
+                value={data[f.key] || ""}
+                optional={f.optional}
                 onChange={(v) => setData((d) => ({ ...d, [f.key]: v }))}
               />
             ) : (

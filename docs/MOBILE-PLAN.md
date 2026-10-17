@@ -13,11 +13,12 @@ This table is the current source of truth; dated implementation notes below are 
 | M3 Teacher | Attendance/corrections, configured marks, learning/homework, notices and leave | Implemented and automated checks pass | Teacher phone walkthrough against dummy data |
 | M4 Leadership and mobile usability | Selected operational/approval/fees services; sidebar Services pages, Profile, glass/icons/motion | Implemented; complex desk work explicitly opens website guidance | Leadership phone walkthrough; retain imports/setup on web |
 | M4.1 Account security | Active sign-ins, confirmed sign-out of other sessions, account-scoped client guards | Implemented 17 October 2026 | Automated checks passed; owner two-device check pending |
+| M4.2 Daily task efficiency | Simplified dashboard, selectable dates, class-wide attendance review/save | Implemented 17 October 2026 | Automated batch checks; native calendar/roster phone walkthrough pending |
 | M5.1 Pilot preparation | Reproducible build setup, dependency review, signing and device matrix | Checklist documented; signed build not started | Resolve/review upstream audit gates, verify SDK/licenses and private signing setup |
 | M5.2 Device pilot | Signed Android preview, iOS preview route, lifecycle/slow-network/accessibility checks | Pending | Record actual device results and fix failures; owner accepts pilot |
 | M6 Optional extensions | Push, carefully scoped offline reads/sync, additional mobile management | Planned, not enabled | Define feature contracts and cost/privacy constraints individually; no offline writes or push without separate acceptance |
 
-Next development priority after M4.1 is M5.1/M5.2, not expanding into unverified push/offline features. No paid build/store subscription, production data mutation or public mobile distribution is part of the current work. Existing website phases are separate and remain documented in the web plan.
+Next development priority after M4.2 is M5.1/M5.2, not expanding into unverified push/offline features. No paid build/store subscription, production data mutation or public mobile distribution is part of the current work. Existing website phases are separate and remain documented in the web plan.
 
 ## Feasibility and stack
 

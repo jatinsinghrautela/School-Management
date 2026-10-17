@@ -43,6 +43,50 @@ test("mobile client uses existing bearer API, school boundaries, mandatory passw
     assert.equal((await api.me(foreign.token)).user.role, "teacher");
     assert.equal((await session.activeSessions()).sessions.length, 1);
     await api.logout(foreign.token);
+    const pupil = (await store.all("users")).find(
+      (u) => u.email === "student@orbit.local",
+    );
+    const second = { ...pupil, id: "batch-pupil", email: "batch@orbit.local" };
+    await store.put("users", second);
+    const batch = {
+      classId: pupil.classIds[0],
+      date: "2026-10-19",
+      entries: [
+        { studentId: pupil.id, status: "present" },
+        { studentId: second.id, status: "absent" },
+      ],
+    };
+    await assert.rejects(
+      session.school("/attendance/batch", {
+        ...batch,
+        entries: [batch.entries[0], { studentId: "foreign", status: "absent" }],
+      }),
+      (e) => e.status === 400,
+    );
+    assert.equal(
+      (await store.all("attendance")).filter((r) => r.date === batch.date)
+        .length,
+      0,
+    );
+    assert.equal((await session.school("/attendance/batch", batch)).saved, 2);
+    await session.school("/attendance/batch", batch);
+    assert.equal(
+      (await store.all("attendance")).filter((r) => r.date === batch.date)
+        .length,
+      2,
+    );
+    await assert.rejects(
+      session.school("/attendance/batch", {
+        ...batch,
+        entries: batch.entries.map((e) => ({ ...e, status: "late" })),
+      }),
+      (e) => e.status === 409,
+    );
+    assert.equal(
+      (await store.all("attendance")).find((r) => r.studentId === second.id)
+        .status,
+      "absent",
+    );
     const old = saved;
     await session.logout();
     assert.equal(saved, null);

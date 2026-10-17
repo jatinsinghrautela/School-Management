@@ -259,7 +259,11 @@ export function ServiceContent({
                         "Borrower",
                         rows("people").filter((r) => r.active),
                       ),
-                      { key: "dueDate", label: "Due date YYYY-MM-DD" },
+                      {
+                        key: "dueDate",
+                        date: true,
+                        label: "Due date",
+                      },
                     ],
                     "/library/loans",
                   )}
@@ -510,7 +514,7 @@ export function ServiceContent({
                 label: "Amount in minor units",
                 numeric: true,
               },
-              { key: "paidOn", label: "Payment date YYYY-MM-DD" },
+              { key: "paidOn", date: true, label: "Payment date" },
               {
                 key: "method",
                 label: "Method",

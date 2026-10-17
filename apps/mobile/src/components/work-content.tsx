@@ -1,7 +1,10 @@
+import { DateField } from "./date-field";
+import { localDate } from "../core/dates";
+import { AttendanceRegister } from "./attendance-register";
 import React, { useState } from "react";
 import { useMobile } from "../provider";
 import { useSchoolData } from "../daily-provider";
-import { Button, Card, Copy, ErrorText, Busy, Field } from "../components/ui";
+import { Button, Card, Copy, ErrorText, Busy } from "../components/ui";
 import { shareArtifact } from "../artifacts";
 import type { Artifact } from "../core/daily";
 import { Upload } from "../components/upload";
@@ -59,8 +62,8 @@ export function WorkContent({ tab }: { tab: string }) {
         (Array.isArray(s.teacherIds) && s.teacherIds.includes(user.id))),
   );
   const [subjectId, setSubjectId] = useState("");
-  const [date, setDate] = useState("");
-  const [selectedDate, setSelectedDate] = useState("");
+  const [date, setDate] = useState(localDate);
+  const [selectedDate, setSelectedDate] = useState(localDate);
   const schedule = useSchoolData<{ entries: Row[]; holidays: string[] }>(
     tab === "Timetable" && selectedDate
       ? `/timetable-date?date=${encodeURIComponent(selectedDate)}`
@@ -145,7 +148,7 @@ export function WorkContent({ tab }: { tab: string }) {
   if (tab === "Timetable")
     return (
       <>
-        <Field label="Date YYYY-MM-DD" value={date} onChangeText={setDate} />
+        <DateField label="Date" value={date} onChange={setDate} />
         <Button
           label="View dated timetable"
           disabled={!/^\d{4}-\d{2}-\d{2}$/.test(date)}
@@ -190,7 +193,7 @@ export function WorkContent({ tab }: { tab: string }) {
                   name: `${classes.find((c) => c.id === r.classId)?.name} · day ${r.day} · ${r.start}`,
                 })),
               },
-              { key: "date", label: "Date YYYY-MM-DD" },
+              { key: "date", date: true, label: "Date" },
               {
                 key: "teacherId",
                 label: "Cover teacher",
@@ -214,8 +217,8 @@ export function WorkContent({ tab }: { tab: string }) {
               fields={[
                 { key: "title", label: "Title" },
                 { key: "description", label: "Description", optional: true },
-                { key: "startDate", label: "From YYYY-MM-DD" },
-                { key: "endDate", label: "Until YYYY-MM-DD" },
+                { key: "startDate", date: true, label: "From" },
+                { key: "endDate", date: true, label: "Until" },
                 {
                   key: "kind",
                   label: "Kind",
@@ -324,7 +327,8 @@ export function WorkContent({ tab }: { tab: string }) {
             { key: "url", label: "HTTPS link (optional)", optional: true },
             {
               key: "dueDate",
-              label: "Due date YYYY-MM-DD (optional)",
+              date: true,
+              label: "Due date (optional)",
               optional: true,
             },
           ]}
@@ -345,7 +349,8 @@ export function WorkContent({ tab }: { tab: string }) {
             { key: "description", label: "Description", optional: true },
             {
               key: "dueDate",
-              label: "Due YYYY-MM-DD (optional)",
+              date: true,
+              label: "Due (optional)",
               optional: true,
             },
           ]}
@@ -434,35 +439,9 @@ export function WorkContent({ tab }: { tab: string }) {
           onChange={setClassId}
         />
         {classId ? (
-          <Form
-            key={classId}
-            title="Record attendance"
-            fields={[
-              student,
-              { key: "date", label: "Date YYYY-MM-DD" },
-              {
-                key: "status",
-                label: "Status",
-                choices: choices("present", "absent", "late", "excused"),
-              },
-              {
-                key: "sessionId",
-                label: "Session (optional; daily if empty)",
-                choices: named(
-                  list(w.attendanceSessions).filter((r) => r.active),
-                ),
-                optional: true,
-              },
-            ]}
-            submit={(d) =>
-              post("/attendance/batch", {
-                classId,
-                date: d.date,
-                sessionId: d.sessionId || null,
-                entries: [{ studentId: d.studentId, status: d.status }],
-              })
-            }
-            done={refresh}
+          <AttendanceRegister
+            key={`${session.scope()}:${classId}`}
+            classId={classId}
           />
         ) : null}
         <Records
@@ -629,8 +608,8 @@ export function WorkContent({ tab }: { tab: string }) {
         <Form
           title="Request leave"
           fields={[
-            { key: "startDate", label: "From YYYY-MM-DD" },
-            { key: "endDate", label: "Until YYYY-MM-DD" },
+            { key: "startDate", date: true, label: "From" },
+            { key: "endDate", date: true, label: "Until" },
             {
               key: "type",
               label: "Type",

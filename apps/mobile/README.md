@@ -125,3 +125,12 @@ The latest mobile update adds original local SVG icons (`react-native-svg`), str
 ### Account security and phase tracking
 
 Active sessions is available from Profile and Services → Security. It uses existing /auth/sessions and /auth/revoke-others endpoints. Confirming ends other sign-ins for the same account across schools, keeping the current sign-in; refresh manually after a connection interruption before retrying. No backend redeploy or environment change is required. Current phase status: [MOBILE-PLAN.md](../../docs/MOBILE-PLAN.md). Signed build and physical-device gates: [MOBILE-PILOT-CHECKLIST.md](../../docs/MOBILE-PILOT-CHECKLIST.md).
+
+
+### M4.2 — Dates and class attendance
+
+Install dependencies and restart Metro after this update. Native dates now use @react-native-community/datetimepicker (SDK 57-compatible); custom development binaries need rebuilding. Compatible Expo Go includes the native picker. Web preview uses the browser date control.
+
+Attendance defaults to the device's local today. Choose the class/session, mark remaining students present, adjust exceptions and review/confirm once for the class. Existing saved entries are locked and require corrections. Refresh school records after saving or after an interrupted response. No backend redeploy or migration required.
+
+The 17 October dependency audit now reports 22 findings (19 high, 3 moderate); the added picker has an indirect advisory path via Expo. This extends the previously documented upstream audit gate and is not a clean audit claim. Resolve/review compatibility before wider distribution; do not apply forced major-version upgrades.

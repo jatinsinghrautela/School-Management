@@ -267,20 +267,6 @@ export function Dashboard() {
               </Copy>
             </Card>
           ) : null}
-          {staff ? (
-            <Button
-              label="School workspace"
-              secondary
-              onPress={() => open(features.find((f) => f.screen === "work")!)}
-            />
-          ) : null}
-          {role !== "owner" ? (
-            <Button
-              label="School services"
-              secondary
-              onPress={() => router.push("/services")}
-            />
-          ) : null}
           <Button
             label="Browse all services"
             secondary

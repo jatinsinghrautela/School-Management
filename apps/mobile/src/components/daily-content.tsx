@@ -1,3 +1,4 @@
+import { DateField } from "./date-field";
 import React, { useEffect, useRef, useState } from "react";
 import { Alert, Image, Linking } from "react-native";
 import { useMobile } from "../provider";
@@ -311,10 +312,10 @@ function Timetable() {
   );
   return (
     <>
-      <Field
-        label="Timetable date (YYYY-MM-DD)"
+      <DateField
+        label="Timetable date"
         value={draft}
-        onChangeText={setDraft}
+        onChange={setDraft}
       />
       <Button
         label="View date"
