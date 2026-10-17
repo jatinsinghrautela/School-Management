@@ -63,3 +63,8 @@ The app now uses original local SVG line icons for dashboard tiles, Services, na
 Screen changes use a 440 ms eased lift/zoom/fade alongside native Stack sliding; fixed navigation stays in place. Loading records uses an orbit around a school mark with a breathing centre. Sign-in, password changes, document sharing and submissions expose busy feedback; shared forms show a larger saving state and upload forms say Uploading your file. A spring checkmark appears only after a successful response. Indeterminate indicators do not claim percentage progress or impose minimum wait times. Existing write locks, error messages, school boundaries and manual retry behavior remain unchanged.
 
 Reduced Motion disables the orbit/pulse and transition motion while preserving loading labels. Loading loops stop when their screen loses focus, the app backgrounds, or the component unmounts. Transform/opacity animations use the native driver on devices. Verify their feel on both phones; browser animation checks cannot measure device frame rate.
+
+
+## M4.1 — Active account sessions
+
+Profile and Services → Security now expose Active sessions for every role, including the platform owner. This is account-wide security, not a school administration permission. Users can inspect their own sign-in metadata and confirm signing out other sessions while keeping the current sign-in. Cancellation is available before the write; the result is refreshed after server acknowledgement. No tokens are displayed or copied, no automatic write retry, no new backend route or migration. A stale account/school response is rejected by the client and a 401 clears the signed-in state. See MOBILE-PILOT-CHECKLIST.md for the two-device acceptance walkthrough and remaining release gates.

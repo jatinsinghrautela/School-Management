@@ -120,3 +120,8 @@ The top bar shows Schoolglass Desk on login, the school on Home, and the current
 ### Icon and loading feedback refresh
 
 The latest mobile update adds original local SVG icons (`react-native-svg`), stronger screen entry motion, orbit loaders and a successful-save checkmark. Install mobile dependencies and restart Metro with the commands above. A custom development client must be rebuilt for added native modules. Reduced Motion keeps clear static progress feedback. No API deployment, new environment variable or school data change is required.
+
+
+### Account security and phase tracking
+
+Active sessions is available from Profile and Services → Security. It uses existing /auth/sessions and /auth/revoke-others endpoints. Confirming ends other sign-ins for the same account across schools, keeping the current sign-in; refresh manually after a connection interruption before retrying. No backend redeploy or environment change is required. Current phase status: [MOBILE-PLAN.md](../../docs/MOBILE-PLAN.md). Signed build and physical-device gates: [MOBILE-PILOT-CHECKLIST.md](../../docs/MOBILE-PILOT-CHECKLIST.md).

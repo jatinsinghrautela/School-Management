@@ -293,19 +293,67 @@ test("school requests ignore late responses and clear revoked sessions", async (
   assert.equal(x.session.state.workspace, null);
 });
 
-
 test("multi-school director chooses before any workspace read; foreground restore preserves a valid choice", async () => {
-  const director = { ...identity, user: { ...identity.user, role: "director" } };
+  const director = {
+    ...identity,
+    user: { ...identity.user, role: "director" },
+  };
   const reads = [];
-  const { session } = setup({ me: async () => director, workspace: async (_, schoolId) => { reads.push(schoolId); return { school: { id: schoolId, name: schoolId } }; } });
+  const { session } = setup({
+    me: async () => director,
+    workspace: async (_, schoolId) => {
+      reads.push(schoolId);
+      return { school: { id: schoolId, name: schoolId } };
+    },
+  });
   await session.login("director@example.test", "temporary");
   assert.equal(session.state.schoolId, "");
   assert.equal(session.state.workspace, null);
   assert.deepEqual(reads, []);
   await assert.rejects(session.school("/operations"), /authorized school/);
-  await session.selectSchool("foreign"); assert.deepEqual(reads, []);
-  await session.selectSchool("b"); assert.deepEqual(reads, ["b"]);
-  await session.restore(); assert.equal(session.state.schoolId, "b"); assert.deepEqual(reads, ["b", "b"]);
-  session.chooseAnotherSchool(); assert.equal(session.state.schoolId, ""); assert.equal(session.state.workspace, null);
+  await session.selectSchool("foreign");
+  assert.deepEqual(reads, []);
+  await session.selectSchool("b");
+  assert.deepEqual(reads, ["b"]);
+  await session.restore();
+  assert.equal(session.state.schoolId, "b");
+  assert.deepEqual(reads, ["b", "b"]);
+  session.chooseAnotherSchool();
+  assert.equal(session.state.schoolId, "");
+  assert.equal(session.state.workspace, null);
   await session.logout();
+});
+
+test("account security rejects late data across logout and clears a revoked session", async () => {
+  const pending = deferred();
+  const x = setup({ sessions: async () => pending.promise });
+  await assert.rejects(x.session.activeSessions(), /Sign in/);
+  await x.session.login("user@school.local", "password");
+  const read = x.session.activeSessions();
+  await x.session.logout();
+  pending.resolve({ sessions: [{ id: "private", device: "old device" }] });
+  await assert.rejects(read, /context changed/);
+  const y = setup({
+    revokeOthers: async () => {
+      throw new ApiError("Expired", 401);
+    },
+  });
+  await y.session.login("user@school.local", "password");
+  await assert.rejects(y.session.revokeOtherSessions(), /Expired/);
+  assert.equal(y.session.state.status, "signedOut");
+  assert.equal(y.token, null);
+});
+
+test("account security never automatically repeats an uncertain revocation", async () => {
+  let calls = 0;
+  const x = setup({
+    revokeOthers: async () => {
+      calls++;
+      throw new ApiError("Connection lost", 0);
+    },
+  });
+  await x.session.login("user@school.local", "password");
+  await assert.rejects(x.session.revokeOtherSessions(), /Connection lost/);
+  assert.equal(calls, 1);
+  assert.equal(x.session.state.status, "ready");
 });

@@ -46,7 +46,8 @@ export class Session {
       schoolId = this.state.schoolId;
     if (
       this.state.status !== "ready" ||
-      !schoolId || this.state.schoolChoiceRequired ||
+      !schoolId ||
+      this.state.schoolChoiceRequired ||
       this.state.identity?.user.passwordChangeRequired
     )
       throw Error("Open an authorized school workspace first.");
@@ -114,7 +115,10 @@ export class Session {
       this.update({
         status: "ready",
         identity,
-        schoolChoiceRequired: identity.user.role === "director" && identity.schools.length > 1 && !identity.schools.some((s) => s.id === selectedSchool),
+        schoolChoiceRequired:
+          identity.user.role === "director" &&
+          identity.schools.length > 1 &&
+          !identity.schools.some((s) => s.id === selectedSchool),
         error: "",
         busy: false,
         activity: "",
@@ -192,7 +196,13 @@ export class Session {
     )
       return;
     this.schoolVersion++;
-    this.update({ schoolId: "", schoolChoiceRequired: true, workspace: null, busy: false, error: "" });
+    this.update({
+      schoolId: "",
+      schoolChoiceRequired: true,
+      workspace: null,
+      busy: false,
+      error: "",
+    });
   }
   async selectSchool(id: string) {
     if (
@@ -258,6 +268,35 @@ export class Session {
           });
       }
   }
+  private async account<T>(action: (token: string) => Promise<T>): Promise<T> {
+    if (
+      this.state.status !== "ready" ||
+      !this.token ||
+      this.state.identity?.user.passwordChangeRequired
+    )
+      throw Error("Sign in and finish your password change first.");
+    const scope = this.scope();
+    try {
+      const result = await action(this.token);
+      if (scope !== this.scope())
+        throw Error("Account context changed. Reopen this view.");
+      return result;
+    } catch (error) {
+      if (
+        scope === this.scope() &&
+        error instanceof ApiError &&
+        error.status === 401
+      )
+        await this.clear("Your session ended. Please sign in again.");
+      throw error;
+    }
+  }
+  activeSessions() {
+    return this.account((token) => this.api.sessions(token));
+  }
+  revokeOtherSessions() {
+    return this.account((token) => this.api.revokeOthers(token));
+  }
   async changePassword(current: string, password: string) {
     if (password.length < 12 || password === current)
       throw Error("Choose a different password of at least 12 characters.");
@@ -279,5 +318,10 @@ export class Session {
 }
 
 export function needsSchoolChoice(state: SessionState) {
-  return state.status === "ready" && !state.identity?.user.passwordChangeRequired && state.identity?.user.role === "director" && state.schoolChoiceRequired;
+  return (
+    state.status === "ready" &&
+    !state.identity?.user.passwordChangeRequired &&
+    state.identity?.user.role === "director" &&
+    state.schoolChoiceRequired
+  );
 }

@@ -20,6 +20,13 @@ export type Workspace = {
   resources?: unknown[];
   [key: string]: unknown;
 };
+export type DeviceSession = {
+  id: string;
+  device: string;
+  createdAt: string;
+  expires: number;
+  current: boolean;
+};
 export type Login = { token: string; user: User; mode: string };
 export type Api = {
   school<T>(
@@ -28,6 +35,8 @@ export type Api = {
     path: string,
     body?: unknown,
   ): Promise<T>;
+  sessions(token: string): Promise<{ sessions: DeviceSession[] }>;
+  revokeOthers(token: string): Promise<{ ok: boolean; count: number }>;
   prepare(): Promise<void>;
   login(email: string, password: string): Promise<Login>;
   me(token: string): Promise<Identity>;
@@ -174,6 +183,8 @@ export function createApi(
         password,
       }),
     me: (token) => request("/me", token),
+    sessions: (token) => request("/auth/sessions", token),
+    revokeOthers: (token) => request("/auth/revoke-others", token, {}),
     workspace: (token, id) =>
       request(`/schools/${encodeURIComponent(id)}/workspace`, token),
     logout: (token) => request("/auth/logout", token, {}),

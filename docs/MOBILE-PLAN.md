@@ -1,6 +1,23 @@
 # Mobile development plan — Schoolglass Desk
 
-Planned 15 October 2026. This is an implementation plan, not a shipped mobile app. Existing website/data remain intact. Android-first is the recommended initial target; maintain iOS-compatible source.
+Started 15 October 2026; status reviewed 17 October 2026. Native source and Expo previews are implemented; no signed production mobile release has shipped. Existing website/data remain intact. Android-first is the recommended initial target; maintain iOS-compatible source.
+
+## Current phases and next steps
+
+This table is the current source of truth; dated implementation notes below are history. “Implemented” means source and automated checks, not completed physical-device acceptance. Detailed coverage: [MOBILE-WORKFLOWS.md](MOBILE-WORKFLOWS.md). Device/release checklist: [MOBILE-PILOT-CHECKLIST.md](MOBILE-PILOT-CHECKLIST.md).
+
+| Phase | Scope | Current status | Exit criteria / next action |
+| --- | --- | --- | --- |
+| M1 Foundation | Session, secure token storage, school identity/selection, password gate, shared API | Implemented; basic Expo sign-in confirmed by owner | Complete full background/expiry/keychain checks on phones |
+| M2 Student and guardian | Daily reads, homework answers/attachments, private documents, child isolation | Implemented and automated checks pass | Physical file picker/sharing, school/child switching and accessibility acceptance |
+| M3 Teacher | Attendance/corrections, configured marks, learning/homework, notices and leave | Implemented and automated checks pass | Teacher phone walkthrough against dummy data |
+| M4 Leadership and mobile usability | Selected operational/approval/fees services; sidebar Services pages, Profile, glass/icons/motion | Implemented; complex desk work explicitly opens website guidance | Leadership phone walkthrough; retain imports/setup on web |
+| M4.1 Account security | Active sign-ins, confirmed sign-out of other sessions, account-scoped client guards | Implemented 17 October 2026 | Automated checks passed; owner two-device check pending |
+| M5.1 Pilot preparation | Reproducible build setup, dependency review, signing and device matrix | Checklist documented; signed build not started | Resolve/review upstream audit gates, verify SDK/licenses and private signing setup |
+| M5.2 Device pilot | Signed Android preview, iOS preview route, lifecycle/slow-network/accessibility checks | Pending | Record actual device results and fix failures; owner accepts pilot |
+| M6 Optional extensions | Push, carefully scoped offline reads/sync, additional mobile management | Planned, not enabled | Define feature contracts and cost/privacy constraints individually; no offline writes or push without separate acceptance |
+
+Next development priority after M4.1 is M5.1/M5.2, not expanding into unverified push/offline features. No paid build/store subscription, production data mutation or public mobile distribution is part of the current work. Existing website phases are separate and remain documented in the web plan.
 
 ## Feasibility and stack
 
@@ -25,7 +42,7 @@ Prioritize students, guardians and teachers for mobile daily tasks. Keep platfor
 
 ## Design
 
-Use native navigation with role-relevant bottom tabs and a More screen. Compact cards, accessible touch targets, readable typography, reduced-motion support and controlled glass effects. Match school logo/name and existing fixed palette; system appearance initially, explicit light/dark override. Respect safe areas, keyboard, back button and screen-reader labels. Clear selected school/child identity on all relevant screens.
+Use native navigation with Home, School day, Services and Profile tabs. Compact cards, accessible touch targets, readable typography, reduced-motion support and controlled glass effects. Match school logo/name and existing fixed palette; system appearance initially, explicit light/dark override. Respect safe areas, keyboard, back button and screen-reader labels. Clear selected school/child identity on all relevant screens.
 
 ## Authentication and API safety
 
@@ -64,10 +81,12 @@ No new credentials are required for planning. For M1 implementation, default to 
 
 - [x] Existing API and repository feasibility review.
 - [x] Initial native stack and staged delivery plan.
-- [ ] Verify Node/Expo SDK compatibility and workspace dependency layout before scaffold.
+- [x] Verify SDK 57 dependency compatibility and isolated mobile workspace layout.
 - [ ] Verify Android SDK/licenses/device; do not infer readiness from adb alone.
-- [ ] Implement M1 and provide reproducible device instructions.
-- [ ] Complete subsequent milestone acceptance individually.
+- [x] Implement M1 and provide reproducible Expo preview instructions.
+- [x] Implement M2–M4 daily workflows, navigation and visual refinements.
+- [x] Implement M4.1 account session security.
+- [ ] Complete physical-device acceptance and M5 signed pilot release gates.
 
 ## Official references checked for planning
 
@@ -91,11 +110,11 @@ Implemented the eight daily sections, guardian child switching and record refres
 
 ## M3 / leadership daily expansion — 17 October 2026
 
-Teacher daily workflows and selected leadership operational flows are now implemented, alongside student homework submission and shared school services. This supersedes the earlier M2 read-only homework note. Three brand-aligned style previews are available in-app. See MOBILE-WORKFLOWS.md for the feature matrix, deliberately web-based desk work, validation and remaining physical-device/release acceptance; no blanket native management parity is claimed.
+Teacher daily workflows and selected leadership operational flows are now implemented, alongside student homework submission and shared school services. This supersedes the earlier M2 read-only homework note. Three style previews were evaluated; Glass is now the only selected style. See MOBILE-WORKFLOWS.md for the feature matrix, deliberately web-based desk work, validation and remaining physical-device/release acceptance; no blanket native management parity is claimed.
 
 ## Selected Glass layout
 
-The owner selected Glass. The temporary three-style chooser is retired. The app now has a compact school dashboard, feature search, four quick actions, a feature grid and fixed bottom navigation. More retains role-relevant website-only features with an accessible explanatory popup. Screen transitions honor reduced motion; see MOBILE-WORKFLOWS.md for the current behavior and device acceptance.
+The owner selected Glass. The temporary three-style chooser is retired. The app now has a compact school dashboard, feature search, four quick actions, a feature grid and fixed bottom navigation. Services retains role-relevant website-only features with an accessible explanatory popup. Screen transitions honor reduced motion; see MOBILE-WORKFLOWS.md for the current behavior and device acceptance.
 
 
 ### 17 October 2026 — mobile navigation and glass refinement

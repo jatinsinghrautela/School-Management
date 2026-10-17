@@ -1,4 +1,5 @@
 import React from "react";
+import { AccountSecurity } from "../../components/account-security";
 import { ScrollView } from "react-native";
 import { Redirect, router, useLocalSearchParams } from "expo-router";
 import { useMobile } from "../../provider";
@@ -46,7 +47,7 @@ export default function Service() {
       }}
     >
       <Copy muted>{state.workspace?.school.name || "Schoolglass Desk"}</Copy>
-      {feature.screen && role !== "owner" ? (
+      {feature.screen && feature.screen !== "security" && role !== "owner" ? (
         <Button
           label="Refresh school records"
           secondary
@@ -107,6 +108,8 @@ export default function Service() {
             </Card>
           ) : null}
         </>
+      ) : feature.screen === "security" ? (
+        <AccountSecurity key={scope} />
       ) : !state.workspace ? (
         <Copy muted>
           {state.busy

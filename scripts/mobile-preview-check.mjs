@@ -252,6 +252,24 @@ try {
     .getByRole("button", { name: "Switch to light mode", exact: true })
     .click();
   await inspect("light profile");
+  const extraLogin = await fetch(`http://127.0.0.1:${api.address().port}/api/auth/login`, {
+    method: "POST", headers: { "Content-Type": "application/json", "User-Agent": "Isolated extra browser" },
+    body: JSON.stringify({ email: "principal@orbit.local", password: "OrbitDemo123!" }),
+  }).then(r => r.json());
+  if (!extraLogin.token) throw Error("Could not create isolated extra session");
+  await page.getByRole("button", { name: "Active sessions", exact: true }).click();
+  await header("Active sessions").waitFor();
+  await page.getByText("Current sign-in", { exact: true }).waitFor();
+  await inspect("active sessions account security");
+  await page.getByRole("button", { name: "Sign out other sessions", exact: true }).click();
+  await page.getByRole("button", { name: "Cancel session sign-out", exact: true }).click();
+  await page.getByRole("button", { name: "Sign out other sessions", exact: true }).click();
+  await page.getByRole("button", { name: "Confirm sign out other sessions", exact: true }).click();
+  await page.getByText("1 other sessions signed out.", { exact: true }).waitFor();
+  const revoked = await fetch(`http://127.0.0.1:${api.address().port}/api/me`, { headers: { Authorization: `Bearer ${extraLogin.token}` } });
+  if (revoked.status !== 401) throw Error("Other demo session still authorized");
+  await inspect("session revocation confirmation");
+
   await home();
   await inspect("light glass dashboard");
   await page.screenshot({ path: "apps/api/data/mobile-overview-light.png" });

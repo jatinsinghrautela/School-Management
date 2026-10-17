@@ -32,6 +32,17 @@ test("mobile client uses existing bearer API, school boundaries, mandatory passw
     await session.login("principal@orbit.local", "OrbitDemo123!");
     assert.equal(session.state.status, "ready");
     assert.equal(session.state.workspace.school.id, "school-north");
+    const other = await api.login("principal@orbit.local", "OrbitDemo123!");
+    const foreign = await api.login("teacher@orbit.local", "OrbitDemo123!");
+    const sessions = (await session.activeSessions()).sessions;
+    assert.equal(sessions.length, 2);
+    assert.equal(sessions.filter((s) => s.current).length, 1);
+    assert.ok(sessions.every((s) => !("token" in s)));
+    assert.equal((await session.revokeOtherSessions()).count, 1);
+    await assert.rejects(api.me(other.token), (e) => e.status === 401);
+    assert.equal((await api.me(foreign.token)).user.role, "teacher");
+    assert.equal((await session.activeSessions()).sessions.length, 1);
+    await api.logout(foreign.token);
     const old = saved;
     await session.logout();
     assert.equal(saved, null);
@@ -43,6 +54,7 @@ test("mobile client uses existing bearer API, school boundaries, mandatory passw
     await session.login("student@orbit.local", "OrbitDemo123!");
     assert.equal(session.state.identity.user.passwordChangeRequired, true);
     assert.equal(session.state.workspace, null);
+    await assert.rejects(session.activeSessions(), /password change/);
     await assert.rejects(
       api.workspace(saved, "school-north"),
       (e) => e.status === 403,

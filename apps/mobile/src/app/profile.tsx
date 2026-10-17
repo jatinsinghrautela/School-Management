@@ -1,6 +1,6 @@
 import React from "react";
 import { Image, ScrollView, View } from "react-native";
-import { Redirect } from "expo-router";
+import { Redirect, router } from "expo-router";
 import { useMobile } from "../provider";
 import { ChangePassword } from "../components/change-password";
 import { Button, Card, Copy } from "../components/ui";
@@ -91,6 +91,21 @@ export default function Profile() {
         <Button
           label={dark ? "Switch to light mode" : "Switch to dark mode"}
           onPress={toggle}
+        />
+      </Card>
+      <Card>
+        <Copy>Account security</Copy>
+        <Copy muted>
+          Review your active sign-ins and sign out other devices.
+        </Copy>
+        <Button
+          label="Active sessions"
+          onPress={() =>
+            router.push({
+              pathname: "/service/[id]",
+              params: { id: "active-sessions" },
+            })
+          }
         />
       </Card>
       <ChangePassword />

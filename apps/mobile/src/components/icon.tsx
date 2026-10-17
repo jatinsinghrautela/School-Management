@@ -57,7 +57,7 @@ export function iconName(label: string) {
     [/inbox|message/, "mail"],
     [/photo|gallery/, "gallery"],
     [/transport/, "transport"],
-    [/privacy|security|password|impersonation/, "shield"],
+    [/privacy|security|password|impersonation|sessions/, "shield"],
     [/fees|fee |payment|receipt|ledger|concession/, "fees"],
     [/staff|leave/, "leave"],
     [/support/, "support"],

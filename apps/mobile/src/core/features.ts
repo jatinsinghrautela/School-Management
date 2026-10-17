@@ -2,7 +2,7 @@ import { dailySections } from "./capabilities.ts";
 export type Feature = {
   label: string;
   icon: string;
-  screen?: "daily" | "work" | "services" | "settings" | "group";
+  screen?: "daily" | "work" | "services" | "settings" | "group" | "security";
   children?: string[];
   section?: string;
   reason?: string;
@@ -136,6 +136,7 @@ export function featuresFor(role: string): Feature[] {
         icon,
         "This platform administration feature is available from the website.",
       );
+  add("Active sessions", "◇", "security");
   add("Account & appearance", "⚙", "settings");
   return result;
 }
@@ -171,7 +172,11 @@ export function sidebarFeatures(role: string): Feature[] {
     ]),
     group("Inbox", "◉", ["Inbox", "Messages"]),
     group("Gallery", "▧", ["School gallery", "Publish event photos"]),
-    group("Security", "◇", ["Privacy & data", "Account & appearance"]),
+    group("Security", "◇", [
+      "Active sessions",
+      "Privacy & data",
+      "Account & appearance",
+    ]),
   ];
   if (role === "owner")
     return [
@@ -179,6 +184,7 @@ export function sidebarFeatures(role: string): Feature[] {
       group("Schools", "▣", ["Schools & organizations"]),
       group("People", "♙", ["Leadership onboarding"]),
       group("Security", "◇", [
+        "Active sessions",
         "Support impersonation",
         "Backups & deployment",
         "Account & appearance",
