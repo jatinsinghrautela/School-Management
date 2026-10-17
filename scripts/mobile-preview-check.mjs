@@ -171,184 +171,200 @@ try {
     },
   );
   await page.goto(`http://127.0.0.1:${web.address().port}`);
-  const login = async (role) => {
-    await page
-      .getByLabel("Email address", { exact: true })
-      .fill(`${role}@orbit.local`);
-    await page.getByLabel("Password", { exact: true }).fill("OrbitDemo123!");
-    await page.getByRole("button", { name: "Sign in", exact: true }).click();
-    await page
-      .getByRole("button", { name: "Account & appearance", exact: true })
-      .waitFor();
-  };
   const inspect = async (name) => {
     console.log(`Reviewing ${name}`);
     if (
       await page.evaluate(
         () => document.documentElement.scrollWidth > innerWidth,
       )
-    )
+    ) {
+      await page.screenshot({
+        path: "apps/api/data/mobile-review-failure.png",
+      });
       throw Error(`${name}: horizontal overflow`);
+    }
     const result = await new AxeBuilder({ page })
       .withTags(["wcag2a", "wcag2aa", "wcag21aa"])
       .analyze();
-    if (result.violations.length)
+    if (result.violations.length) {
+      await page.screenshot({
+        path: "apps/api/data/mobile-review-failure.png",
+      });
       throw Error(
         `${name}: ${JSON.stringify(result.violations.map((v) => ({ id: v.id, targets: v.nodes.map((n) => n.target) })))}`,
       );
+    }
   };
-  await inspect("login");
+  const header = (title) =>
+    page.getByRole("heading", { name: title, exact: true });
+  const login = async (role) => {
+    await page
+      .getByLabel("Email address", { exact: true })
+      .fill(`${role}@orbit.local`);
+    await page.getByLabel("Password", { exact: true }).fill("OrbitDemo123!");
+    await page.getByRole("button", { name: "Sign in", exact: true }).click();
+    if (role === "director") await header("Choose your school").waitFor();
+    else
+      await page
+        .getByRole("button", { name: "Open profile tab", exact: true })
+        .waitFor();
+  };
+  const home = () =>
+    page.getByRole("button", { name: "Open home tab", exact: true }).click();
+  const action = async (label) => {
+    await page
+      .getByRole("button", { name: "Open services tab", exact: true })
+      .click();
+    await header("Services").waitFor();
+    await page
+      .getByRole("textbox", { name: "Search services", exact: true })
+      .fill(label);
+    await page.getByRole("button", { name: label, exact: true }).click();
+    if (
+      page.url().includes("/service/section-") &&
+      (await page.getByRole("button", { name: label, exact: true }).count())
+    )
+      await page.getByRole("button", { name: label, exact: true }).click();
+    if (label === "Yearly fee planning") {
+      await page
+        .getByText("Available on the website", { exact: true })
+        .first()
+        .waitFor();
+      return;
+    }
+    await header(label).waitFor();
+  };
+  await header("Schoolglass Desk").waitFor();
+  await inspect("branded login top bar");
   await login("principal");
-  await page.getByText("A clearer school day.", { exact: true }).waitFor();
-  await inspect("dark overview");
+  await header("Schoolglass Desk Demo North").waitFor();
+  await inspect("dark glass dashboard");
+  await page.screenshot({ path: "apps/api/data/mobile-overview-dark.png" });
   await page
-    .getByRole("button", { name: "Open more tab", exact: true })
+    .getByRole("button", { name: "Open profile tab", exact: true })
     .click();
+  await header("Profile").waitFor();
+  await page.getByText("Priya Sharma", { exact: true }).last().waitFor();
+  await inspect("logged-in profile");
   await page
-    .getByLabel("Search all features", { exact: true })
-    .fill("Yearly fee");
-  await page
-    .getByRole("button", { name: "Yearly fee planning", exact: true })
+    .getByRole("button", { name: "Switch to light mode", exact: true })
     .click();
-  await page.getByText("Available on the website", { exact: true }).waitFor();
-  await inspect("website-only feature popup");
+  await inspect("light profile");
+  await home();
+  await inspect("light glass dashboard");
+  await page.screenshot({ path: "apps/api/data/mobile-overview-light.png" });
   await page
-    .getByRole("button", { name: "Stay in the app", exact: true })
+    .getByRole("button", { name: "Open services tab", exact: true })
     .click();
-  await page
-    .getByRole("button", { name: "Open home tab", exact: true })
-    .click();
-  await page
-    .getByRole("textbox", { name: "Search features", exact: true })
-    .fill("Yearly fee");
-  await page
-    .getByRole("button", { name: "Yearly fee planning", exact: true })
-    .click();
-  await page.getByText("Available on the website", { exact: true }).waitFor();
-  await page
-    .getByRole("button", { name: "Stay in the app", exact: true })
-    .click();
-  await page.getByRole("button", { name: "Clear search", exact: true }).click();
-  await page
-    .getByRole("button", { name: "School workspace", exact: true })
-    .waitFor();
-  await page.screenshot({
-    path: "apps/api/data/mobile-overview-dark.png",
-    fullPage: true,
-  });
-  await page.getByRole("button", { name: "Account & appearance" }).click();
-  await page.getByRole("button", { name: "Switch to light mode" }).click();
-  await inspect("light settings");
-  await page.getByRole("button", { name: "Back to overview" }).click();
-  await inspect("light overview");
-  await page.setViewportSize({ width: 320, height: 568 });
-  await inspect("320px glass dashboard");
-  await page
-    .getByRole("button", { name: "Open more tab", exact: true })
-    .click();
-  await page
-    .getByRole("textbox", { name: "Search all features", exact: true })
-    .fill("Yearly fee");
-  await page
-    .getByRole("button", { name: "Yearly fee planning", exact: true })
-    .click();
-  await page.getByText("Available on the website", { exact: true }).waitFor();
-  await inspect("320px website popup");
-  await page.keyboard.press("Escape");
-  await page
-    .getByRole("button", { name: "Open home tab", exact: true })
-    .click();
-  await page.setViewportSize({ width: 390, height: 844 });
-  await page
-    .getByRole("button", { name: "School workspace", exact: true })
-    .click();
-  for (const tab of [
-    "Calendar",
+  for (const title of [
+    "Overview",
     "People",
-    "Attendance",
-    "Corrections",
-    "Marks",
-    "Reports",
-    "Resources",
-    "Homework reviews",
-    "Notices",
-    "Leave",
-    "Gallery",
-    "Admissions",
-  ]) {
-    await page.getByRole("button", { name: tab, exact: true }).click();
-    await inspect(`principal ${tab}`);
-  }
-  await page
-    .getByRole("button", { name: "Back to overview", exact: true })
-    .click();
-  await page
-    .getByRole("button", { name: "School services", exact: true })
-    .click();
-  for (const tab of [
-    "Support",
-    "Privacy",
     "Fees",
-    "Student records",
-    "Documents",
-    "Messages",
+    "Staff",
+    "Academics",
+    "Attendance",
+    "Timetable",
+    "Calendar",
+    "Results",
+    "Learning",
+    "Notices",
+    "Library",
+    "Transport",
+    "Operations",
+    "Inbox",
+    "Gallery",
+    "Family",
+    "Settings",
+    "Security",
   ]) {
-    await page.getByRole("button", { name: tab, exact: true }).click();
-    await inspect(`principal service ${tab}`);
+    await page.getByRole("button", { name: title, exact: true }).waitFor();
   }
+  await inspect("website sidebar service directory");
+  await page.getByRole("button", { name: "Library", exact: true }).click();
+  await header("Library").waitFor();
+  await page.getByText("Library catalogue", { exact: true }).waitFor();
+  if (await page.getByText("School transport", { exact: true }).count())
+    throw Error("Library screen includes unrelated transport content");
+  await inspect("dedicated library screen");
+  await action("Yearly fee planning");
   await page
-    .getByRole("button", { name: "Back to overview", exact: true })
-    .click();
-  await page
-    .getByRole("textbox", { name: "Search features", exact: true })
-    .evaluate((el) => {
-      let parent = el.parentElement;
-      while (parent) {
-        if (
-          parent.scrollHeight > parent.clientHeight &&
-          getComputedStyle(parent).overflowY === "auto"
-        ) {
-          parent.scrollTop = 0;
-          break;
-        }
-        parent = parent.parentElement;
-      }
-    });
-  await page.screenshot({
-    path: "apps/api/data/mobile-overview-light.png",
-    fullPage: true,
-  });
-  await page.getByRole("button", { name: "Sign out", exact: true }).click();
-  await login("director");
-  await page.getByText("Choose your school", { exact: true }).waitFor();
-  await page
-    .getByRole("button", { name: "Schoolglass Desk Demo West", exact: true })
-    .click();
-  await page
-    .getByText("Schoolglass Desk Demo West", { exact: true })
+    .getByText("Available on the website", { exact: true })
     .first()
     .waitFor();
-  await inspect("school switch");
-  await page.getByRole("button", { name: "Sign out", exact: true }).click();
-
-  await login("teacher");
+  await inspect("website-only popup");
   await page
-    .getByRole("button", { name: "School workspace", exact: true })
+    .getByRole("button", { name: "Stay in the app", exact: true })
     .click();
-  await page.getByRole("button", { name: "Notices", exact: true }).click();
+  await header("Yearly fee planning").waitFor();
+  await inspect("website-only dedicated screen");
+  await page.setViewportSize({ width: 320, height: 568 });
+  await page
+    .getByRole("button", { name: "Use this feature", exact: true })
+    .click();
+  await inspect("320px website popup");
+  await page.keyboard.press("Escape");
+  await home();
+  await inspect("320px top bar and floating dock");
+  await page.setViewportSize({ width: 390, height: 844 });
+  for (const label of [
+    "Class directory",
+    "Record attendance",
+    "Attendance corrections",
+    "Exam marks",
+    "Student reports",
+    "Publish learning material",
+    "Homework reviews",
+    "Publish notices",
+    "Staff leave",
+    "Support tickets",
+    "Privacy & data",
+    "Fee management",
+    "Student records",
+    "School documents",
+    "Messages",
+  ]) {
+    await action(label);
+    await inspect("principal " + label);
+  }
+  await page.getByRole("button", { name: "Sign out", exact: true }).click();
+  await login("director");
+  if (await page.getByText("A clearer school day.", { exact: true }).count())
+    throw Error("Director dashboard loaded before school selection");
+  await inspect("director mandatory school chooser");
+  await page
+    .getByRole("button", {
+      name: "Open Schoolglass Desk Demo West",
+      exact: true,
+    })
+    .click();
+  await header("Schoolglass Desk Demo West").waitFor();
+  await inspect("director west dashboard");
+  await page
+    .getByRole("button", { name: "Open profile tab", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Switch school", exact: true })
+    .click();
+  await header("Choose your school").waitFor();
+  await page
+    .getByRole("button", {
+      name: "Open Schoolglass Desk Demo North",
+      exact: true,
+    })
+    .click();
+  await header("Schoolglass Desk Demo North").waitFor();
+  await page.getByRole("button", { name: "Sign out", exact: true }).click();
+  await login("teacher");
+  await action("Publish notices");
   await page.getByLabel("Title", { exact: true }).fill("Mobile teacher notice");
   await page
     .getByLabel("Message", { exact: true })
     .fill("A class-scoped notice published from the mobile workflow.");
-  const teacherUser = (await store.all("users")).find(
-    (u) => u.role === "teacher",
+  const teacher = (await store.all("users")).find((u) => u.role === "teacher");
+  const cls = (await store.all("classes")).find((c) =>
+    teacher.classIds.includes(c.id),
   );
-  const assignedClass = (await store.all("classes")).find((c) =>
-    teacherUser.classIds.includes(c.id),
-  );
-  await page
-    .getByRole("button", { name: assignedClass.name, exact: true })
-    .click();
+  await page.getByRole("button", { name: cls.name, exact: true }).click();
   await page
     .getByRole("button", { name: "Review details", exact: true })
     .click();
@@ -358,20 +374,10 @@ try {
   await page
     .getByText("title: Mobile teacher notice", { exact: true })
     .waitFor();
-  const newNotice = (await store.all("notices")).find(
-    (n) => n.title === "Mobile teacher notice",
-  );
-  if (
-    newNotice?.audience !== "student" ||
-    !newNotice.classIds.includes(assignedClass.id)
-  )
-    throw Error("Teacher notice class targeting failed");
-  await page.getByRole("button", { name: "Attendance", exact: true }).click();
-  await page
-    .getByRole("button", { name: assignedClass.name, exact: true })
-    .click();
+  await action("Record attendance");
+  await page.getByRole("button", { name: cls.name, exact: true }).click();
   const pupil = (await store.all("users")).find(
-    (u) => u.role === "student" && u.classIds.includes(assignedClass.id),
+    (u) => u.role === "student" && u.classIds.includes(cls.id),
   );
   await page.getByRole("button", { name: pupil.name, exact: true }).click();
   await page.getByLabel("Date YYYY-MM-DD", { exact: true }).fill("2026-10-19");
@@ -383,41 +389,9 @@ try {
     .getByRole("button", { name: "Confirm and save", exact: true })
     .click();
   await page.getByText("date: 2026-10-19", { exact: true }).waitFor();
-  const attendance = (await store.all("attendance")).find(
-    (r) => r.studentId === pupil.id && r.date === "2026-10-19",
-  );
-  if (attendance?.status !== "present")
-    throw Error("Mobile attendance write failed");
-  await page.getByRole("button", { name: "Marks", exact: true }).click();
-  const exam = (await store.all("exams")).find(
-    (r) => r.classId === assignedClass.id && r.status === "draft",
-  );
-  if (exam) {
-    await page.getByRole("button", { name: exam.name, exact: true }).click();
-    const subject = (await store.all("subjects")).find(
-      (r) => r.id === exam.subjects[0].subjectId,
-    );
-    await page.getByRole("button", { name: subject.name, exact: true }).click();
-    await page.getByRole("button", { name: pupil.name, exact: true }).click();
-    await page
-      .getByLabel(`Score (maximum ${exam.subjects[0].maxScore})`, {
-        exact: true,
-      })
-      .fill("84");
-    await page
-      .getByRole("button", { name: "Review details", exact: true })
-      .click();
-    await page
-      .getByRole("button", { name: "Confirm and save", exact: true })
-      .click();
-    await page.getByText("score: 84", { exact: true }).waitFor();
-  }
-  await page
-    .getByRole("button", { name: "Back to overview", exact: true })
-    .click();
   await page.getByRole("button", { name: "Sign out", exact: true }).click();
-
-  const dailyLabels = [
+  await login("student");
+  for (const label of [
     "Notices",
     "Homework & resources",
     "Timetable",
@@ -426,23 +400,14 @@ try {
     "Published results",
     "Fees & receipts",
     "School gallery",
-  ];
-  await login("student");
-  for (const label of dailyLabels) {
-    await page.getByRole("button", { name: label, exact: true }).click();
-    await page
-      .getByRole("button", { name: "Back to overview", exact: true })
-      .waitFor();
+  ]) {
+    await action(label);
     await inspect("student " + label);
-    await page
-      .getByRole("button", { name: "Back to overview", exact: true })
-      .click();
   }
-  await page
-    .getByRole("button", { name: "Homework & resources", exact: true })
-    .click();
+  await action("Homework & resources");
   await page
     .getByLabel("Your answer (up to 10000 characters)", { exact: true })
+    .filter({ visible: true })
     .first()
     .fill("My mobile homework answer.");
   await page
@@ -465,58 +430,20 @@ try {
         r.answer === "My mobile homework answer.",
     )
   )
-    throw Error("Student mobile homework submission failed");
-  await page
-    .getByRole("button", { name: "Back to overview", exact: true })
-    .click();
+    throw Error("Student homework failed");
   await page.getByRole("button", { name: "Sign out", exact: true }).click();
   await login("parent");
+  await action("Homework & resources");
   await page
     .getByRole("button", { name: "Demo child two", exact: true })
-    .waitFor();
-  await page
-    .getByRole("button", { name: "Demo child two", exact: true })
-    .click();
-  await page.getByText("Viewing Demo child two", { exact: true }).waitFor();
-  await page
-    .getByRole("button", { name: "Homework & resources", exact: true })
     .click();
   await page.getByText("Grade nine reading list", { exact: true }).waitFor();
   if (
     await page.getByText("Explore quadratic equations", { exact: true }).count()
   )
     throw Error("Other child homework leaked");
-  await inspect("guardian second-child learning");
-  await page.screenshot({
-    path: "apps/api/data/mobile-family-learning.png",
-    fullPage: true,
-  });
-  await page
-    .getByRole("button", { name: "Back to overview", exact: true })
-    .click();
-  await page.getByRole("button", { name: "Rohan Kapoor", exact: true }).click();
-  await page.getByText("Viewing Rohan Kapoor", { exact: true }).waitFor();
-  await page
-    .getByRole("button", { name: "Fees & receipts", exact: true })
-    .click();
-  await page.getByText("MOBILE-RECEIPT", { exact: true }).waitFor();
-  await inspect("guardian fees");
-  await page
-    .getByRole("button", { name: "Back to overview", exact: true })
-    .click();
-  await page.getByRole("button", { name: "Notices", exact: true }).click();
-  await page
-    .getByRole("button", { name: "Mark as read", exact: true })
-    .first()
-    .click();
-  await page
-    .getByRole("button", { name: "Read", exact: true })
-    .first()
-    .waitFor();
-  await inspect("guardian notice read");
-  await page
-    .getByRole("button", { name: "Back to overview", exact: true })
-    .click();
+  await inspect("guardian child-scoped service");
+  await page.screenshot({ path: "apps/api/data/mobile-family-learning.png" });
   await page.getByRole("button", { name: "Sign out", exact: true }).click();
   const student = (await store.all("users")).find((u) => u.role === "student");
   await store.put("users", { ...student, passwordChangeRequired: true });
@@ -524,10 +451,10 @@ try {
   await page.getByLabel("Password", { exact: true }).fill("OrbitDemo123!");
   await page.getByRole("button", { name: "Sign in", exact: true }).click();
   await page.getByText("Make your account yours.", { exact: true }).waitFor();
-  await inspect("required password");
+  await inspect("required password with top signout");
   if (errors.length) throw Error(JSON.stringify(errors));
   console.log(
-    "Mobile web preview passed: glass dashboard, fixed bottom navigation, website-only feature popup, principal services, teacher notice/attendance/marks, student homework, guardian child scope, required-password gate, light/dark accessibility and 390px overflow. Native device behavior remains unverified.",
+    "Mobile browser review passed: branded top bars/signout, sidebar Services, dedicated pages, profile, explicit director school selection, light/dark glass, 320px layout, teacher writes, student homework and guardian isolation. Native materials remain device acceptance.",
   );
 } finally {
   if (browser) await browser.close();

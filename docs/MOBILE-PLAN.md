@@ -96,3 +96,8 @@ Teacher daily workflows and selected leadership operational flows are now implem
 ## Selected Glass layout
 
 The owner selected Glass. The temporary three-style chooser is retired. The app now has a compact school dashboard, feature search, four quick actions, a feature grid and fixed bottom navigation. More retains role-relevant website-only features with an accessible explanatory popup. Screen transitions honor reduced motion; see MOBILE-WORKFLOWS.md for the current behavior and device acceptance.
+
+
+### 17 October 2026 — mobile navigation and glass refinement
+
+Implemented a global school/service title bar with Sign out, a complete role-specific sidebar catalogue under Services, separate section/action routes, Profile instead of More, and explicit multi-school director selection before workspace reads. Added native Liquid Glass capability checks, bounded navigation blur, colour washes, opaque screen backing and accessibility fallbacks. Web UI and live school data remain unchanged. See MOBILE-WORKFLOWS.md for coverage and device acceptance; this is a mobile preview refinement, not a signed store release.

@@ -11,10 +11,15 @@ import {
 import { router, usePathname } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { endpoint, useMobile } from "../provider";
-import { featuresFor, type Feature } from "../core/features";
+import { featuresFor, featureId, type Feature } from "../core/features";
+import { needsSchoolChoice } from "../core/session";
+import { GlassSurface } from "./glass";
 import { useReducedMotion } from "./motion";
 import { Button, Copy, ErrorText } from "./ui";
-const Context = createContext<((feature: Feature) => void) | null>(null);
+const Context = createContext<{
+  open: (feature: Feature) => void;
+  website: (feature: Feature) => void;
+} | null>(null);
 export function FeatureNavigation({ children }: { children: React.ReactNode }) {
   const { session, state, colors } = useMobile();
   const reduced = useReducedMotion();
@@ -23,31 +28,29 @@ export function FeatureNavigation({ children }: { children: React.ReactNode }) {
     feature: Feature;
   } | null>(null);
   const [error, setError] = useState("");
+  function website(feature: Feature) {
+    setError("");
+    setNotice({ scope: session.scope(), feature });
+  }
   function open(feature: Feature) {
-    if (!feature.screen) {
-      setError("");
-      setNotice({ scope: session.scope(), feature });
+    if (feature.screen === "settings") {
+      router.navigate("/profile");
       return;
     }
-    if (feature.screen === "daily")
-      router.push({
-        pathname: "/daily/[section]",
-        params: { section: feature.section! },
-      });
-    else if (feature.screen === "settings") router.navigate("/settings");
-    else
-      router.push({
-        pathname: feature.screen === "work" ? "/work" : "/services",
-        params: { section: feature.section! },
-      });
+    router.push({
+      pathname: "/service/[id]",
+      params: { id: featureId(feature) },
+    });
+    if (!feature.screen) website(feature);
   }
   const visible =
     !!notice &&
     notice.scope === session.scope() &&
     state.status === "ready" &&
+    !needsSchoolChoice(state) &&
     !state.identity?.user.passwordChangeRequired;
   return (
-    <Context.Provider value={open}>
+    <Context.Provider value={{ open, website }}>
       <View
         style={{ flex: 1 }}
         aria-hidden={visible}
@@ -119,16 +122,25 @@ export function FeatureNavigation({ children }: { children: React.ReactNode }) {
   );
 }
 export function useFeatureNavigation() {
-  const open = useContext(Context);
-  if (!open) throw Error("Feature navigation missing");
-  return open;
+  const context = useContext(Context);
+  if (!context) throw Error("Feature navigation missing");
+  return context.open;
+}
+export function useWebsiteNotice() {
+  const context = useContext(Context);
+  if (!context) throw Error("Feature navigation missing");
+  return context.website;
 }
 export function BottomBar() {
   const { state, colors } = useMobile();
   const inset = useSafeAreaInsets();
   const path = usePathname();
   const open = useFeatureNavigation();
-  if (state.status !== "ready" || state.identity?.user.passwordChangeRequired)
+  if (
+    state.status !== "ready" ||
+    state.identity?.user.passwordChangeRequired ||
+    needsSchoolChoice(state)
+  )
     return null;
   const role = state.identity!.user.role;
   const first = featuresFor(role).find(
@@ -145,43 +157,36 @@ export function BottomBar() {
     {
       name: "School day",
       icon: "▤",
-      active: path.startsWith("/daily") || path === "/work",
+      active: path.startsWith("/daily") || path.startsWith("/service/") || path === "/work",
       action: () =>
         first
           ? open(first)
-          : open({
-              label: "Platform management",
-              icon: "▣",
-              reason: "Manage schools and organizations on the website.",
-            }),
+          : router.navigate("/services"),
     },
     {
       name: "Services",
       icon: "▣",
       active: path === "/services",
-      action: () =>
-        role === "owner"
-          ? open({ label: "Platform services", icon: "▣" })
-          : router.navigate("/services"),
+      action: () => router.navigate("/services"),
     },
     {
-      name: "More",
-      icon: "⊞",
-      active: path === "/more" || path === "/settings",
-      action: () => router.navigate("/more"),
+      name: "Profile",
+      icon: "♙",
+      active: path === "/profile" || path === "/settings",
+      action: () => router.navigate("/profile"),
     },
   ];
   return (
-    <View
+    <GlassSurface
       style={{
         position: "absolute",
-        bottom: 0,
-        left: 0,
-        right: 0,
-        paddingBottom: Math.max(inset.bottom, 10),
+        bottom: Math.max(inset.bottom, 10),
+        left: 12,
+        right: 12,
+        paddingBottom: 10,
         paddingTop: 10,
         paddingHorizontal: 16,
-        borderTopWidth: 1,
+        borderRadius: 30,
         borderColor: colors.line,
         backgroundColor: colors.surface,
         flexDirection: "row",
@@ -225,6 +230,6 @@ export function BottomBar() {
           </Text>
         </Pressable>
       ))}
-    </View>
+    </GlassSurface>
   );
 }

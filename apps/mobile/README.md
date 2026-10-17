@@ -105,4 +105,13 @@ If it still times out, open https://schoolglass.jatinsinghrautela.com/api/ready 
 
 ## Daily workflows and glass layout
 
-See [mobile coverage and deployment](../../docs/MOBILE-WORKFLOWS.md). Student homework answers/attachments, teacher workflows and leadership daily services extend M2. Glass is the selected style, with the website mint/teal brand. The compact dashboard has feature search and bottom navigation; More lists native and website-only tools. Website-only tools open an explanation popup with an explicit browser action. Deploy the new API route before testing private submission attachments, install mobile dependencies and restart Expo Go. No new environment variables or database migration. Physical file picking/sharing acceptance remains pending.
+See [mobile coverage and deployment](../../docs/MOBILE-WORKFLOWS.md). Student homework answers/attachments, teacher workflows and leadership daily services extend M2. Glass is the selected style, with the website mint/teal brand. The compact dashboard has feature search, a school/service title top bar with Sign out, and bottom navigation; Services mirrors the website sidebar with separate service pages; Profile replaces More. Website-only tools open an explanation popup with an explicit browser action. Deploy the new API route before testing private submission attachments, install mobile dependencies and restart Expo Go. No new environment variables or database migration. Physical file picking/sharing acceptance remains pending.
+
+
+## Navigation and glass update — 17 October 2026
+
+Run `npm --prefix apps/mobile ci`, then restart Metro with `npm --prefix apps/mobile start -- --clear` and reload the app. This mobile-only change needs no Render deployment, environment changes or data migration. Use a compatible SDK 57 Expo Go for the bundled Expo modules; rebuild a custom development client after adding native dependencies. Android/iOS JS bundle export does not produce a signed installable app.
+
+The top bar shows Schoolglass Desk on login, the school on Home, and the current service title elsewhere, with Sign out after login. Services contains role-specific website sidebar sections and separate action screens. Profile contains user details, appearance/password controls and school access. Multi-school directors choose a school before workspace data loads; use Profile → Switch school to choose again.
+
+`expo-glass-effect`, `expo-blur` and `expo-linear-gradient` provide native material where supported and readable fallbacks elsewhere. iOS Liquid Glass availability is checked at runtime; Reduce Transparency uses an opaque surface. Older Android uses a tinted fallback. Live effects are limited to navigation bars. Verify the actual material and transitions on both phones before wider distribution.

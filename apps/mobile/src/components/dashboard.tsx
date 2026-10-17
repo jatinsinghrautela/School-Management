@@ -14,7 +14,6 @@ export function Dashboard() {
   const [query, setQuery] = useState("");
   const identity = state.identity!;
   const role = identity.user.role;
-  const selected = identity.schools.find((s) => s.id === state.schoolId);
   const logo = state.workspace?.schoolSettings?.logoDataUri;
   const features = featuresFor(role);
   const staff = ["teacher", "admin", "principal", "director", "staff"].includes(
@@ -66,7 +65,7 @@ export function Dashboard() {
         )}
         <View style={{ flex: 1, gap: 3 }}>
           <Text style={{ fontSize: 10, color: colors.muted }}>
-            Hello, {identity.user.name.split(" ")[0]}
+            Welcome back · {identity.user.role}
           </Text>
           <Text
             style={{
@@ -76,7 +75,7 @@ export function Dashboard() {
               color: colors.ink,
             }}
           >
-            {selected?.name || "Schoolglass Desk"}
+            {identity.user.name}
           </Text>
         </View>
         <Pressable
@@ -98,8 +97,8 @@ export function Dashboard() {
         </Pressable>
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="Account & appearance"
-          onPress={() => router.navigate("/settings")}
+          accessibilityLabel="Open profile"
+          onPress={() => router.navigate("/profile")}
           style={{
             minWidth: 44,
             minHeight: 44,
@@ -169,19 +168,6 @@ export function Dashboard() {
         </Card>
       ) : (
         <>
-          {identity.schools.length > 1 ? (
-            <Card>
-              <Copy>Choose your school</Copy>
-              {identity.schools.map((s) => (
-                <Button
-                  key={s.id}
-                  label={`${s.id === state.schoolId ? "✓ " : ""}${s.name}`}
-                  secondary={s.id !== state.schoolId}
-                  onPress={() => void session.selectSchool(s.id)}
-                />
-              ))}
-            </Card>
-          ) : null}
           {identity.mode === "demo" ? (
             <Copy muted>Demo workspace · temporary test data</Copy>
           ) : null}
@@ -210,7 +196,7 @@ export function Dashboard() {
                 <Pressable
                   accessibilityRole="button"
                   accessibilityLabel="See all features"
-                  onPress={() => router.navigate("/more")}
+                  onPress={() => router.navigate("/services")}
                   style={{ padding: 10 }}
                 >
                   <Text
@@ -284,7 +270,7 @@ export function Dashboard() {
             <Button
               label="School workspace"
               secondary
-              onPress={() => router.push("/work")}
+              onPress={() => open(features.find((f) => f.screen === "work")!)}
             />
           ) : null}
           {role !== "owner" ? (
@@ -295,17 +281,12 @@ export function Dashboard() {
             />
           ) : null}
           <Button
-            label="Browse all features"
+            label="Browse all services"
             secondary
-            onPress={() => router.navigate("/more")}
+            onPress={() => router.navigate("/services")}
           />
         </>
       )}
-      <Button
-        label="Sign out"
-        secondary
-        onPress={() => void session.logout()}
-      />
       <Copy muted>Powered by Schoolglass Desk</Copy>
     </>
   );

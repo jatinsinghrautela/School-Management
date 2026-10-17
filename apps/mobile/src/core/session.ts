@@ -4,6 +4,7 @@ export type SessionState = {
   status: "restoring" | "signedOut" | "locked" | "ready";
   identity: Identity | null;
   schoolId: string;
+  schoolChoiceRequired: boolean;
   workspace: Workspace | null;
   busy: boolean;
   error: string;
@@ -13,6 +14,7 @@ const initial = (): SessionState => ({
   status: "restoring",
   identity: null,
   schoolId: "",
+  schoolChoiceRequired: false,
   workspace: null,
   busy: false,
   error: "",
@@ -44,7 +46,7 @@ export class Session {
       schoolId = this.state.schoolId;
     if (
       this.state.status !== "ready" ||
-      !schoolId ||
+      !schoolId || this.state.schoolChoiceRequired ||
       this.state.identity?.user.passwordChangeRequired
     )
       throw Error("Open an authorized school workspace first.");
@@ -73,6 +75,7 @@ export class Session {
     return next;
   }
   async restore() {
+    const selectedSchool = this.state.schoolId;
     const g = ++this.generation;
     this.update({ ...initial() });
     try {
@@ -90,7 +93,7 @@ export class Session {
       });
       await this.api.prepare();
       if (g !== this.generation) return;
-      await this.identify(g);
+      await this.identify(g, selectedSchool);
     } catch (error) {
       if (g === this.generation)
         this.update({
@@ -104,13 +107,14 @@ export class Session {
         });
     }
   }
-  private async identify(g: number) {
+  private async identify(g: number, selectedSchool = "") {
     try {
       const identity = await this.api.me(this.token);
       if (g !== this.generation) return;
       this.update({
         status: "ready",
         identity,
+        schoolChoiceRequired: identity.user.role === "director" && identity.schools.length > 1 && !identity.schools.some((s) => s.id === selectedSchool),
         error: "",
         busy: false,
         activity: "",
@@ -118,9 +122,17 @@ export class Session {
       if (
         !identity.user.passwordChangeRequired &&
         identity.user.role !== "owner" &&
-        identity.schools.length
+        identity.schools.length &&
+        !(
+          identity.user.role === "director" &&
+          identity.schools.length > 1 &&
+          !identity.schools.some((s) => s.id === selectedSchool)
+        )
       )
-        await this.selectSchool(identity.schools[0].id);
+        await this.selectSchool(
+          identity.schools.find((s) => s.id === selectedSchool)?.id ||
+            identity.schools[0].id,
+        );
     } catch (error) {
       if (g !== this.generation) return;
       if (error instanceof ApiError && error.status === 401) {
@@ -173,6 +185,15 @@ export class Session {
         });
     }
   }
+  chooseAnotherSchool() {
+    if (
+      this.state.identity?.user.role !== "director" ||
+      this.state.identity.schools.length < 2
+    )
+      return;
+    this.schoolVersion++;
+    this.update({ schoolId: "", schoolChoiceRequired: true, workspace: null, busy: false, error: "" });
+  }
   async selectSchool(id: string) {
     if (
       !this.state.identity?.schools.some((s) => s.id === id) ||
@@ -185,7 +206,7 @@ export class Session {
     try {
       const workspace = await this.api.workspace(this.token, id);
       if (g === this.generation && v === this.schoolVersion)
-        this.update({ workspace, busy: false });
+        this.update({ workspace, busy: false, schoolChoiceRequired: false });
     } catch (error) {
       if (g !== this.generation || v !== this.schoolVersion) return;
       if (error instanceof ApiError && error.status === 401) {
@@ -255,4 +276,8 @@ export class Session {
     if (g === this.generation)
       await this.clear("Password changed. Sign in with your new password.");
   }
+}
+
+export function needsSchoolChoice(state: SessionState) {
+  return state.status === "ready" && !state.identity?.user.passwordChangeRequired && state.identity?.user.role === "director" && state.schoolChoiceRequired;
 }

@@ -4,15 +4,17 @@ Updated 17 October 2026. The mobile app uses the same Node.js API, MySQL databas
 
 ## Selected design and navigation
 
-Glass is now the chosen app style. The temporary Clay/Maximalism chooser has been removed. The mint/deep-teal palette and original Schoolglass mark continue to match the website; uploaded school logos identify the workspace header.
+Glass is the chosen app style. The website's mint/deep-teal identity and original Schoolglass mark remain, with soft blue, mint and pink colour washes behind readable light/dark cards. The supplied layout inspired the compact dashboard; no external artwork or shopping-company assets were copied.
 
-The dashboard uses a compact school/account header, feature search, four quick actions, an icon grid, a compact branded card and small summary cards. The supplied reference informed the layout; no shopping-company logos, banking content or external artwork were copied. A fixed safe-area-aware bottom bar provides Home, School day, Services and More. Scrollable screens reserve space so final controls remain reachable above the bar.
+A global safe-area-aware top bar displays **Schoolglass Desk** before sign-in, the selected **school name** on Home, and the **service title** on each service page. Back navigation is available on service pages and **Sign out** stays in the top bar throughout the signed-in session, including mandatory password change and school selection.
 
-More and dashboard search list role-relevant native and website-only features. Website tools show **Available on the website**, a short explanation, **Open website** and **Stay in the app**. Opening the website is explicit and does not transfer credentials or the app token. The popup dismisses when school/session context changes, hides background accessibility content, supports platform back/Escape, and scrolls on small screens.
+The floating bottom bar has **Home, School day, Services and Profile**. Profile replaces More and displays the current user's name, email, role, school and accessible classes, with appearance/password controls and school switching when applicable. Services mirrors the website sidebar for the current role. Each sidebar section and its eligible actions have separate routes; shared workflow components preserve the existing permissions and forms. Library and Transport have distinct focused pages. Platform administration and other desktop workflows remain discoverable through their own explanatory pages and **Available on the website** popup. Opening the website is explicit and does not transfer credentials or the app token.
 
-Native Stack uses short sliding screen transitions; the web preview gets a short fade/translation. Reduced motion disables these transitions and popup fades. The existing decorative hero animation remains background/focus-aware. Glass surfaces keep text readable without expensive per-card blur filters. Light/dark still starts with the device appearance.
+A director with multiple authorized schools must choose a school on a separate screen after sign-in, before any workspace fetch. Profile's Switch school returns to that chooser; a valid selection survives foreground session revalidation. A fresh app launch asks again. Single-school users enter their workspace directly. Selection does not grant any new server permissions.
 
-See [current dashboard preview](screenshots/mobile-dashboard-glass.png). Older three-style screenshots are retained as design history, not current selectable modes.
+Navigation chrome uses the SDK 57 native Liquid Glass material on supported iOS devices, with a blur/tinted fallback elsewhere and an opaque iOS Reduce Transparency fallback. Only the navigation bars use live materials; record cards remain inexpensive translucent surfaces. Each stacked screen has its own backed colour wash so earlier text cannot show through. Native Stack slides between screens, the web preview uses a short fade/translation, and reduced motion disables decorative transitions. The hero animation remains background/focus-aware. Light/dark starts with the device appearance; all new chrome uses the shared colour palette.
+
+See [current dashboard preview](screenshots/mobile-dashboard-glass.png). Browser previews verify layout/contrast, not native optical material fidelity; physical iOS/Android appearance, transitions and file sharing remain acceptance steps.
 
 ## Native workflow coverage
 

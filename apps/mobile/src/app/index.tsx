@@ -5,9 +5,10 @@ import {
   RefreshControl,
   ScrollView,
   StyleSheet,
-  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { Redirect } from "expo-router";
+import { needsSchoolChoice } from "../core/session";
 import { api, endpoint, useMobile } from "../provider";
 import { Busy, Button, Card, Copy, ErrorText, Field } from "../components/ui";
 import { Hero } from "../components/hero";
@@ -143,18 +144,14 @@ function PasswordChange() {
           onPress={() => void change()}
         />
       </Card>
-      <Button
-        label="Sign out"
-        secondary
-        onPress={() => void session.logout()}
-      />
     </>
   );
 }
 export default function Home() {
   const { state, session, colors } = useMobile();
+  if (needsSchoolChoice(state)) return <Redirect href="/choose-school" />;
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }}>
+    <SafeAreaView edges={["left", "right"]} style={{ flex: 1 }}>
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
@@ -172,11 +169,6 @@ export default function Home() {
             ) : undefined
           }
         >
-          {state.status !== "ready" ? (
-            <View style={styles.row}>
-              <Copy muted>SCHOOLGLASS DESK</Copy>
-            </View>
-          ) : null}
           {state.status === "restoring" ? (
             <>
               <Busy />
@@ -219,5 +211,4 @@ const styles = StyleSheet.create({
     alignSelf: "center",
     paddingBottom: 120,
   },
-  row: { flexDirection: "row", gap: 14, alignItems: "center" },
 });

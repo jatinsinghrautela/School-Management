@@ -292,3 +292,20 @@ test("school requests ignore late responses and clear revoked sessions", async (
   assert.equal(x.session.state.status, "signedOut");
   assert.equal(x.session.state.workspace, null);
 });
+
+
+test("multi-school director chooses before any workspace read; foreground restore preserves a valid choice", async () => {
+  const director = { ...identity, user: { ...identity.user, role: "director" } };
+  const reads = [];
+  const { session } = setup({ me: async () => director, workspace: async (_, schoolId) => { reads.push(schoolId); return { school: { id: schoolId, name: schoolId } }; } });
+  await session.login("director@example.test", "temporary");
+  assert.equal(session.state.schoolId, "");
+  assert.equal(session.state.workspace, null);
+  assert.deepEqual(reads, []);
+  await assert.rejects(session.school("/operations"), /authorized school/);
+  await session.selectSchool("foreign"); assert.deepEqual(reads, []);
+  await session.selectSchool("b"); assert.deepEqual(reads, ["b"]);
+  await session.restore(); assert.equal(session.state.schoolId, "b"); assert.deepEqual(reads, ["b", "b"]);
+  session.chooseAnotherSchool(); assert.equal(session.state.schoolId, ""); assert.equal(session.state.workspace, null);
+  await session.logout();
+});

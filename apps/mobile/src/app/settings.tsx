@@ -6,11 +6,11 @@ import { useMobile } from "../provider";
 import { ChangePassword } from "../components/change-password";
 import { Button, Card, Copy } from "../components/ui";
 export default function Settings() {
-  const { state, session, colors, dark, toggle } = useMobile();
+  const { state, dark, toggle } = useMobile();
   if (state.status !== "ready" || state.identity?.user.passwordChangeRequired)
     return <Redirect href="/" />;
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }}>
+    <SafeAreaView edges={["left", "right"]} style={{ flex: 1 }}>
       <ScrollView
         contentContainerStyle={{
           padding: 22,
@@ -50,11 +50,6 @@ export default function Settings() {
           Private school records are not stored offline in this preview.
           Sessions are checked when the app returns to the foreground.
         </Copy>
-        <Button
-          label="Sign out"
-          secondary
-          onPress={() => void session.logout()}
-        />
       </ScrollView>
     </SafeAreaView>
   );

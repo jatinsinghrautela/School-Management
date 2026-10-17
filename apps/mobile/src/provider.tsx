@@ -29,8 +29,8 @@ const vault = {
   },
 };
 const light = {
-  bg: "#ecf4f1",
-  surface: "rgba(255,255,255,0.94)",
+  bg: "#edf3fb",
+  surface: "rgba(255,255,255,0.88)",
   hero: "#123c38",
   ink: "#162e30",
   muted: "#51686b",
@@ -40,8 +40,8 @@ const light = {
   error: "#a12635",
 };
 const dark = {
-  bg: "#101f23",
-  surface: "rgba(25,43,48,0.96)",
+  bg: "#111d2d",
+  surface: "rgba(22,38,52,0.92)",
   hero: "#153d3b",
   ink: "#f0f7f5",
   muted: "#b2c8cb",
