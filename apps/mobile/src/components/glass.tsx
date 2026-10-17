@@ -91,7 +91,12 @@ export function GlassScene({ children }: { children: React.ReactNode }) {
   );
 }
 /** Restrict live materials to navigation chrome; ordinary record cards stay inexpensive. */
-export function GlassSurface({ children, style, ...props }: ViewProps) {
+export function GlassSurface({
+  children,
+  style,
+  green = false,
+  ...props
+}: ViewProps & { green?: boolean }) {
   const target = useContext(Context);
   const { dark, colors } = useMobile();
   const [opaque, setOpaque] = useState(Platform.OS === "ios");
@@ -139,8 +144,9 @@ export function GlassSurface({ children, style, ...props }: ViewProps) {
         <GlassView
           pointerEvents="none"
           glassEffectStyle="regular"
+          isInteractive={green}
           colorScheme={dark ? "dark" : "light"}
-          tintColor={dark ? "#203e4b22" : "#edfff122"}
+          tintColor={green ? "#46bc8e55" : dark ? "#203e4b22" : "#edfff122"}
           style={[StyleSheet.absoluteFill, { overflow: "hidden" }]}
         />
       ) : (
@@ -153,9 +159,13 @@ export function GlassSurface({ children, style, ...props }: ViewProps) {
           style={[
             StyleSheet.absoluteFill,
             {
-              backgroundColor: dark
-                ? "rgba(20,35,49,0.85)"
-                : "rgba(250,253,255,0.82)",
+              backgroundColor: green
+                ? dark
+                  ? "rgba(43,100,83,0.45)"
+                  : "rgba(163,227,199,0.50)"
+                : dark
+                  ? "rgba(20,35,49,0.85)"
+                  : "rgba(250,253,255,0.82)",
             },
           ]}
         />

@@ -265,6 +265,6 @@ const styles = StyleSheet.create({
     width: "100%",
     maxWidth: 620,
     alignSelf: "center",
-    paddingBottom: 120,
+    paddingBottom: 24,
   },
 });

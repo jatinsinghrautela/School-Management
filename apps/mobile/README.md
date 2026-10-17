@@ -134,3 +134,10 @@ Install dependencies and restart Metro after this update. Native dates now use @
 Attendance defaults to the device's local today. Choose the class/session, mark remaining students present, adjust exceptions and review/confirm once for the class. Existing saved entries are locked and require corrections. Refresh school records after saving or after an interrupted response. No backend redeploy or migration required.
 
 The 17 October dependency audit now reports 22 findings (19 high, 3 moderate); the added picker has an indirect advisory path via Expo. This extends the previously documented upstream audit gate and is not a clean audit claim. Resolve/review compatibility before wider distribution; do not apply forced major-version upgrades.
+
+
+### M4.5 — Calendar, reports and glass tab navigation
+
+Reload the app after restarting Metro. No dependency install, API redeploy or migration is needed. Calendar has a month grid, holiday/event legend, selected-date details and monthly holiday list. Published results render as school-branded tables, with authenticated PDF download/save/share actions for eligible students/guardians and teachers. The PDFs use existing configured school logos, report formatting and teacher/principal sign-off names/lines; this update does not generate handwritten signatures.
+
+Swipe horizontally between Home, School day, Services and Profile, or drag the green-tinted glass indicator. Pages keep the tab that opened them. Tapping the active tab returns to its hub. The supplied reference inspired the elastic capsule motion; actual native optical refraction varies by platform. Verify native gestures/keyboard/back interactions, PDF sharing and glass rendering on both phones before wider distribution. Reduced Motion and Reduce Transparency fallbacks remain available.

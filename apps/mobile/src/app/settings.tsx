@@ -16,7 +16,7 @@ export default function Settings() {
         contentContainerStyle={{
           padding: 22,
           gap: 22,
-          paddingBottom: 120,
+          paddingBottom: 24,
           width: "100%",
           maxWidth: 620,
           alignSelf: "center",

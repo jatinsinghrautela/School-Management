@@ -40,14 +40,14 @@ export default function Service() {
       contentContainerStyle={{
         padding: 20,
         gap: 20,
-        paddingBottom: 120,
+        paddingBottom: 24,
         maxWidth: 680,
         width: "100%",
         alignSelf: "center",
       }}
     >
       <Copy muted>{state.workspace?.school.name || "Schoolglass Desk"}</Copy>
-      {feature.screen && feature.screen !== "security" && role !== "owner" ? (
+      {["daily", "work"].includes(feature.screen || "") && role !== "owner" ? (
         <Button
           label="Refresh school records"
           secondary

@@ -32,13 +32,15 @@ export function TopBar() {
             ? feature?.label || "School service"
             : path === "/profile"
               ? "Profile"
-              : path === "/services"
+              : path === "/school-day"
+                ? "School day"
+                : path === "/services"
                 ? "Services"
                 : path === "/settings"
                   ? "Account & appearance"
                   : "School workspace";
   const back =
-    ready && !selection && !["/", "/services", "/profile"].includes(path);
+    ready && !selection && !["/", "/services", "/profile", "/school-day"].includes(path);
   return (
     <SafeAreaView
       edges={["top", "left", "right"]}

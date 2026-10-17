@@ -1,3 +1,6 @@
+import { Pick } from "./workflow";
+import { ReportCard, type SchoolReport } from "./report-card";
+import { MonthCalendar } from "./month-calendar";
 import { sentenceLabel } from "../core/text";
 import { DateField } from "./date-field";
 import React, { useEffect, useRef, useState } from "react";
@@ -258,7 +261,9 @@ function Attendance() {
               {r.date} · {r.sessionName || "Daily"}
             </Copy>
             <Copy muted>
-              {r.excludedFromAttendance ? "Holiday — excluded" : sentenceLabel(r.status || "")}
+              {r.excludedFromAttendance
+                ? "Holiday — excluded"
+                : sentenceLabel(r.status || "")}
             </Copy>
           </Card>
         )}
@@ -273,23 +278,7 @@ function Calendar() {
     state.identity?.user.role === "parent"
       ? family?.child?.calendar || []
       : rows(state.workspace?.calendar);
-  return (
-    <List
-      entries={[...entries].sort((a, b) =>
-        (a.startDate || "").localeCompare(b.startDate || ""),
-      )}
-      render={(e) => (
-        <Card>
-          <Copy large>{e.title}</Copy>
-          <Copy muted>
-            {e.startDate}
-            {e.endDate !== e.startDate ? ` – ${e.endDate}` : ""}
-          </Copy>
-          <Copy>{e.description}</Copy>
-        </Card>
-      )}
-    />
-  );
+  return <MonthCalendar entries={entries} />;
 }
 function Timetable() {
   const { state } = useMobile();
@@ -313,11 +302,7 @@ function Timetable() {
   );
   return (
     <>
-      <DateField
-        label="Timetable date"
-        value={draft}
-        onChange={setDraft}
-      />
+      <DateField label="Timetable date" value={draft} onChange={setDraft} />
       <Button
         label="View date"
         disabled={!/^\d{4}-\d{2}-\d{2}$/.test(draft)}
@@ -354,31 +339,16 @@ function Timetable() {
     </>
   );
 }
-function Report({ report }: { report: Entry }) {
-  return (
-    <Card>
-      <Copy large>{report.examName}</Copy>
-      <Copy>
-        {report.grade} ·{" "}
-        {typeof report.percentage === "number"
-          ? `${report.percentage.toFixed(2)}%`
-          : ""}
-      </Copy>
-      <Copy muted>Published version {report.version}</Copy>
-      {report.rows?.map((r, i) => (
-        <Copy key={i}>
-          {r.name}: {r.score} / {r.maxScore}
-        </Copy>
-      ))}
-    </Card>
-  );
-}
 function Results() {
   const { state } = useMobile();
   const { family } = useFamily();
   const parent = state.identity?.user.role === "parent";
-  const [exam, setExam] = useState("");
-  const remote = useSchoolData<Entry>(
+  const [exam, setExam] = useState(
+    () =>
+      rows(state.workspace?.exams).find((e) => e.status === "published")?.id ||
+      "",
+  );
+  const remote = useSchoolData<SchoolReport>(
     !parent && exam
       ? `/reports/${encodeURIComponent(exam)}/${encodeURIComponent(state.identity!.user.id)}`
       : null,
@@ -386,42 +356,56 @@ function Results() {
   const doc = useDocument();
   const reports = parent
     ? family?.child?.reports || []
-    : rows(state.workspace?.exams);
+    : rows(state.workspace?.exams).filter((e) => e.status === "published");
   return (
     <>
       <ErrorText message={remote.error || doc.error} />
       {remote.loading ? <Busy /> : null}
-      <List
-        entries={reports}
-        render={(r) => (
-          <Card>
-            <Copy large>{r.examName || r.name}</Copy>
-            {parent ? (
-              <Report report={r} />
-            ) : (
-              <Button
-                secondary
-                label={`View result: ${r.name}`}
-                onPress={() => setExam(r.id)}
-              />
-            )}
+      {parent ? (
+        reports.map((r) => (
+          <React.Fragment key={r.id}>
+            <ReportCard report={r} />
             <Button
-              label="Share published report"
+              label={`Download report: ${r.examName || "Report card"}`}
               busy={doc.busy}
-              disabled={doc.busy}
               secondary
               onPress={() =>
-                void doc.download(
-                  parent
-                    ? `/family/reports/${encodeURIComponent(r.id)}`
-                    : `/reports/${encodeURIComponent(r.id)}/${encodeURIComponent(state.identity!.user.id)}/pdf`,
-                )
+                void doc.download(`/family/reports/${encodeURIComponent(r.id)}`)
               }
             />
-          </Card>
-        )}
-      />
-      {remote.data ? <Report report={remote.data} /> : null}
+          </React.Fragment>
+        ))
+      ) : (
+        <>
+          <Pick
+            label="Published exam"
+            options={reports.map((r) => ({
+              id: r.id,
+              name: r.name || "Published exam",
+            }))}
+            selected={exam}
+            onChange={setExam}
+            disabled={doc.busy}
+          />
+          {remote.data ? (
+            <>
+              <ReportCard report={remote.data} />
+              <Button
+                label="Download report card PDF"
+                busy={doc.busy}
+                onPress={() =>
+                  void doc.download(
+                    `/reports/${encodeURIComponent(exam)}/${encodeURIComponent(state.identity!.user.id)}/pdf`,
+                  )
+                }
+              />
+            </>
+          ) : null}
+        </>
+      )}
+      {!reports.length ? (
+        <Copy muted>No published results are available.</Copy>
+      ) : null}
     </>
   );
 }

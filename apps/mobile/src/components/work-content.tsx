@@ -1,3 +1,4 @@
+import { TeacherReports } from "./teacher-reports";
 import { sentenceLabel } from "../core/text";
 import { DateField } from "./date-field";
 import { localDate } from "../core/dates";
@@ -109,36 +110,7 @@ export function WorkContent({ tab }: { tab: string }) {
         />
       </>
     );
-  if (tab === "Reports")
-    return (
-      <Form
-        title="Share a published report"
-        fields={[
-          {
-            key: "examId",
-            label: "Published exam",
-            choices: named(
-              list(w.exams).filter((r) => r.status === "published"),
-            ),
-          },
-          {
-            key: "studentId",
-            label: "Student",
-            choices: named(users.filter((r) => r.role === "student")),
-          },
-        ]}
-        submit={async (d) => {
-          const scope = session.scope();
-          const artifact = await session.school<Artifact>(
-            `/reports/${encoded(d.examId)}/${encoded(d.studentId)}/pdf`,
-          );
-          await shareArtifact(
-            artifact,
-            () => alive() && session.scope() === scope,
-          );
-        }}
-      />
-    );
+  if (tab === "Reports") return <TeacherReports />;
   if (tab === "People")
     return (
       <Records

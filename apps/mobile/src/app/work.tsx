@@ -48,7 +48,7 @@ function StaffWork({ initialTab }: { initialTab?: string }) {
           maxWidth: 680,
           width: "100%",
           alignSelf: "center",
-          paddingBottom: 120,
+          paddingBottom: 24,
         }}
       >
         <Button

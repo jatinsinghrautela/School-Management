@@ -97,6 +97,48 @@ await store.put("attendance", {
   status: "present",
 });
 
+const currentYear = new Date().getFullYear();
+const holidayDate = `${currentYear}-10-21`;
+await store.put("calendar", {
+  id: "mobile-holiday",
+  schoolId: "school-north",
+  title: "School foundation holiday",
+  description: "The campus is closed for the foundation celebration.",
+  startDate: holidayDate,
+  endDate: holidayDate,
+  kind: "holiday",
+  audience: "all",
+});
+const examFixture = (await store.all("exams")).find(
+  (e) => e.id === "exam-demo",
+);
+await store.put("exams", { ...examFixture, status: "published", version: 1 });
+await store.put("reports", {
+  id: "mobile-report",
+  schoolId: "school-north",
+  classId: demoStudent.classIds[0],
+  studentId: demoStudent.id,
+  examId: "exam-demo",
+  version: 1,
+  studentName: demoStudent.name,
+  schoolName: "Schoolglass Desk Demo North",
+  schoolCity: "Bengaluru",
+  className: "Grade 10",
+  academicYear: "2026–2027",
+  examName: examFixture.name,
+  rows: [
+    { name: "Mathematics", score: 86, maxScore: 100, weight: 1, passed: true },
+    { name: "Science", score: 91, maxScore: 100, weight: 1, passed: true },
+  ],
+  totalScore: 177,
+  totalMax: 200,
+  percentage: 88.5,
+  grade: "A",
+  passed: true,
+  publishedAt: new Date().toISOString(),
+  publishedBy: "Priya Sharma",
+  reportStyle: { principal: "Priya Sharma", classTeacher: "Demo teacher" },
+});
 const api = createApp(store, { mailer: null, scanner: async () => {} }).listen(
   0,
   "127.0.0.1",
@@ -244,29 +286,81 @@ try {
   };
   await header("Schoolglass Desk").waitFor();
   await inspect("branded login top bar");
-  const scrollOverflow = await page.evaluate(() => [...document.querySelectorAll('div')].some(el => ['auto','scroll'].includes(getComputedStyle(el).overflowY) && el.clientHeight > 0 && el.scrollHeight > el.clientHeight + 2));
+  const scrollOverflow = await page.evaluate(() =>
+    [...document.querySelectorAll("div")].some(
+      (el) =>
+        ["auto", "scroll"].includes(getComputedStyle(el).overflowY) &&
+        el.clientHeight > 0 &&
+        el.scrollHeight > el.clientHeight + 2,
+    ),
+  );
   if (scrollOverflow) throw Error("Normal-height login still needs scrolling");
   await page.screenshot({ path: "apps/api/data/mobile-login-compact.png" });
   await page.emulateMedia({ reducedMotion: "no-preference" });
-  const ambient = page.getByTestId("ambient-flow").filter({ visible: true }).last();
-  const aurora = page.getByTestId("ambient-aurora").filter({ visible: true }).last();
-  const glowBefore = await aurora.evaluate(el => getComputedStyle(el).transform);
-  const still = await ambient.evaluate(el => getComputedStyle(el).transform);
+  const ambient = page
+    .getByTestId("ambient-flow")
+    .filter({ visible: true })
+    .last();
+  const aurora = page
+    .getByTestId("ambient-aurora")
+    .filter({ visible: true })
+    .last();
+  const glowBefore = await aurora.evaluate(
+    (el) => getComputedStyle(el).transform,
+  );
+  const still = await ambient.evaluate((el) => getComputedStyle(el).transform);
   await page.waitForTimeout(180);
-  const moving = await ambient.evaluate(el => getComputedStyle(el).transform);
-  if (still === moving) throw Error("Ambient motion is not running on a focused screen");
-  const glowAfter = await aurora.evaluate(el => getComputedStyle(el).transform);
+  const moving = await ambient.evaluate((el) => getComputedStyle(el).transform);
+  if (still === moving)
+    throw Error("Ambient motion is not running on a focused screen");
+  const glowAfter = await aurora.evaluate(
+    (el) => getComputedStyle(el).transform,
+  );
   if (glowBefore === glowAfter) throw Error("Aurora glow is not moving");
 
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.setViewportSize({ width: 320, height: 568 });
   await inspect("compact login at 320px");
-  await page.getByRole("button", { name: "Request password reset", exact: true }).scrollIntoViewIfNeeded();
+  await page
+    .getByRole("button", { name: "Request password reset", exact: true })
+    .scrollIntoViewIfNeeded();
   await page.setViewportSize({ width: 390, height: 844 });
 
   await login("principal");
   await header("Schoolglass Desk Demo North").waitFor();
   await inspect("dark glass dashboard");
+  await page
+    .getByRole("button", { name: "Open school day tab", exact: true })
+    .click();
+  await header("School day").waitFor();
+  await page.mouse.move(280, 112);
+  await page.mouse.down();
+  await page.mouse.move(65, 112, { steps: 12 });
+  await page.mouse.up();
+  await header("Services").waitFor();
+  await page.mouse.move(65, 112);
+  await page.mouse.down();
+  await page.mouse.move(280, 112, { steps: 12 });
+  await page.mouse.up();
+  await header("School day").waitFor();
+  const lens = await page.getByTestId("liquid-tab-indicator").boundingBox();
+  const profileTarget = await page
+    .getByRole("button", { name: "Open profile tab", exact: true })
+    .boundingBox();
+  await page.mouse.move(lens.x + lens.width / 2, lens.y + lens.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(
+    profileTarget.x + profileTarget.width / 2,
+    profileTarget.y + profileTarget.height / 2,
+    { steps: 16 },
+  );
+  await page.mouse.up();
+  await header("Profile").waitFor();
+  await page
+    .getByRole("button", { name: "Open home tab", exact: true })
+    .click();
+  await header("Schoolglass Desk Demo North").waitFor();
+
   await page.screenshot({ path: "apps/api/data/mobile-overview-dark.png" });
   await page
     .getByRole("button", { name: "Open profile tab", exact: true })
@@ -360,6 +454,13 @@ try {
   if (await page.getByText("School transport", { exact: true }).count())
     throw Error("Library screen includes unrelated transport content");
   await inspect("dedicated library screen");
+  if (
+    (await page
+      .getByRole("button", { name: "Open services tab", exact: true })
+      .getAttribute("aria-current")) !== "page"
+  )
+    throw Error("A page opened from Services did not keep Services active.");
+
   await action("Yearly fee planning");
   await page
     .getByText("Available on the website", { exact: true })
@@ -431,9 +532,31 @@ try {
   await login("teacher");
   await page.emulateMedia({ reducedMotion: "no-preference" });
   await action("Publish notices");
-  await page.getByLabel("Title", { exact: true }).fill("Mobile teacher notice");
+  await page
+    .getByRole("button", { name: "Open school day tab", exact: true })
+    .click();
+  await header("School day").waitFor();
+  await page
+    .getByRole("button", { name: "Student reports", exact: true })
+    .click();
+  await header("Student reports").waitFor();
+  await page
+    .getByRole("button", { name: examFixture.name, exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: demoStudent.name, exact: true })
+    .click();
+  await page.getByText("86 / 100", { exact: true }).waitFor();
+  await inspect("teacher in-app report table");
+  await page.screenshot({ path: "apps/api/data/mobile-report-card.png" });
+  await action("Publish notices");
+  await page
+    .getByLabel("Title", { exact: true })
+    .filter({ visible: true })
+    .fill("Mobile teacher notice");
   await page
     .getByLabel("Message", { exact: true })
+    .filter({ visible: true })
     .fill("A class-scoped notice published from the mobile workflow.");
   const teacher = (await store.all("users")).find((u) => u.role === "teacher");
   const cls = (await store.all("classes")).find((c) =>
@@ -471,7 +594,12 @@ try {
   if ((await chosenDate.inputValue()) !== expectedToday)
     throw Error("Attendance date does not default to today");
   await chosenDate.fill("2026-10-19");
-  if (await page.getByRole("button", { name: "Review class attendance", exact: true }).isEnabled()) throw Error("Unmarked roster allowed review");
+  if (
+    await page
+      .getByRole("button", { name: "Review class attendance", exact: true })
+      .isEnabled()
+  )
+    throw Error("Unmarked roster allowed review");
   await page
     .getByRole("button", { name: "Mark remaining present", exact: true })
     .click();
@@ -510,11 +638,23 @@ try {
     )
   )
     throw Error("Class attendance was not saved together");
-  await page.getByRole("button", { name: "Refresh school records", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Refresh school records", exact: true })
+    .click();
   await page.getByRole("button", { name: cls.name, exact: true }).click();
   await page.getByLabel("Attendance date", { exact: true }).fill("2026-10-19");
-  await page.getByText("All students are already recorded. Use Attendance corrections for changes.", { exact: true }).waitFor();
-  if (await page.getByRole("button", { name: "Review class attendance", exact: true }).isEnabled()) throw Error("Saved class attendance allowed direct overwrite");
+  await page
+    .getByText(
+      "All students are already recorded. Use Attendance corrections for changes.",
+      { exact: true },
+    )
+    .waitFor();
+  if (
+    await page
+      .getByRole("button", { name: "Review class attendance", exact: true })
+      .isEnabled()
+  )
+    throw Error("Saved class attendance allowed direct overwrite");
 
   await page.getByRole("button", { name: "Sign out", exact: true }).click();
   await page.emulateMedia({ reducedMotion: "reduce" });
@@ -532,6 +672,35 @@ try {
     await action(label);
     await inspect("student " + label);
   }
+  await action("Calendar");
+  // Move from the current month to the seeded October using real month controls.
+  const currentMonth = new Date().getMonth();
+  for (let i = currentMonth; i < 9; i++)
+    await page.getByRole("button", { name: "Next month", exact: true }).click();
+  for (let i = currentMonth; i > 9; i--)
+    await page
+      .getByRole("button", { name: "Previous month", exact: true })
+      .click();
+  await page
+    .getByRole("button", { name: new RegExp(`^${holidayDate}, Holiday`) })
+    .click();
+  await page
+    .getByText("The campus is closed for the foundation celebration.", {
+      exact: true,
+    })
+    .filter({ visible: true })
+    .first()
+    .waitFor();
+  await inspect("month calendar and holiday details");
+  await page.screenshot({ path: "apps/api/data/mobile-month-calendar.png" });
+  await action("Published results");
+
+  await page
+    .getByText("91 / 100", { exact: true })
+    .filter({ visible: true })
+    .first()
+    .waitFor();
+  await inspect("student in-app result table");
   await action("Homework & resources");
   await page
     .getByLabel("Your answer (up to 10000 characters)", { exact: true })

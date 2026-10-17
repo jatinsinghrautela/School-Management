@@ -22,7 +22,7 @@ export default function Profile() {
         maxWidth: 640,
         width: "100%",
         alignSelf: "center",
-        paddingBottom: 120,
+        paddingBottom: 24,
       }}
     >
       <Card>
@@ -104,7 +104,7 @@ export default function Profile() {
           onPress={() =>
             router.push({
               pathname: "/service/[id]",
-              params: { id: "active-sessions" },
+              params: { id: "active-sessions", tab: "profile" },
             })
           }
         />

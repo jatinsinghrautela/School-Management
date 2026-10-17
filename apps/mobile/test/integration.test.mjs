@@ -112,6 +112,76 @@ test("mobile client uses existing bearer API, school boundaries, mandatory passw
       (e) => e.status === 403,
     );
     assert.ok(session.state.workspace.users?.every((u) => u.id === student.id));
+    const exam = (await store.all("exams")).find((e) => e.id === "exam-demo");
+    await store.put("exams", { ...exam, status: "published", version: 1 });
+    const report = {
+      id: "test-report",
+      schoolId: "school-north",
+      classId: student.classIds[0],
+      studentId: student.id,
+      examId: exam.id,
+      version: 1,
+      schoolName: "Demo school",
+      studentName: student.name,
+      className: "Grade 10",
+      academicYear: "2026–2027",
+      examName: exam.name,
+      rows: [
+        {
+          name: "Mathematics",
+          score: 90,
+          maxScore: 100,
+          weight: 1,
+          passed: true,
+        },
+      ],
+      totalScore: 90,
+      totalMax: 100,
+      percentage: 90,
+      grade: "A",
+      passed: true,
+      publishedAt: new Date().toISOString(),
+      publishedBy: "Demo principal",
+      reportStyle: {
+        principal: "Demo principal",
+        classTeacher: "Demo teacher",
+      },
+    };
+    await store.put("reports", report);
+    await store.put("reports", {
+      ...report,
+      id: "other-report",
+      studentId: second.id,
+    });
+    assert.equal(
+      (await session.school(`/reports/${exam.id}/${student.id}`)).rows[0].score,
+      90,
+    );
+    await assert.rejects(
+      session.school(`/reports/${exam.id}/${second.id}`),
+      (e) => e.status === 403,
+    );
+    const pdf = await session.school(`/reports/${exam.id}/${student.id}/pdf`);
+    assert.equal(
+      Buffer.from(pdf.base64, "base64").subarray(0, 5).toString(),
+      "%PDF-",
+    );
+    const teacherLogin = await api.login(
+      "teacher@orbit.local",
+      "OrbitDemo123!",
+    );
+    assert.equal(
+      (
+        await api.school(
+          teacherLogin.token,
+          "school-north",
+          `/reports/${exam.id}/${student.id}`,
+        )
+      ).grade,
+      "A",
+    );
+    await api.logout(teacherLogin.token);
+
     await session.logout();
   } finally {
     await new Promise((r) => server.close(r));

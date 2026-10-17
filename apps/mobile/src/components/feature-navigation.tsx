@@ -1,20 +1,11 @@
-import { Icon } from "./icon";
+import { useTabs } from "../tab-provider";
+import { LiquidTabs } from "./liquid-tabs";
 import React, { createContext, useContext, useState } from "react";
-import {
-  Linking,
-  Platform,
-  Modal,
-  Pressable,
-  ScrollView,
-  Text,
-  View,
-} from "react-native";
-import { router, usePathname } from "expo-router";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Linking, Platform, Modal, ScrollView, View } from "react-native";
+import { router } from "expo-router";
 import { endpoint, useMobile } from "../provider";
-import { featuresFor, featureId, type Feature } from "../core/features";
+import { featureId, type Feature } from "../core/features";
 import { needsSchoolChoice } from "../core/session";
-import { GlassSurface } from "./glass";
 import { useReducedMotion } from "./motion";
 import { Button, Copy, ErrorText } from "./ui";
 const Context = createContext<{
@@ -24,6 +15,7 @@ const Context = createContext<{
 export function FeatureNavigation({ children }: { children: React.ReactNode }) {
   const { session, state, colors } = useMobile();
   const reduced = useReducedMotion();
+  const tabs = useTabs();
   const [notice, setNotice] = useState<{
     scope: string;
     feature: Feature;
@@ -38,9 +30,17 @@ export function FeatureNavigation({ children }: { children: React.ReactNode }) {
       router.navigate("/profile");
       return;
     }
-    router.push({
+    router.navigate({
       pathname: "/service/[id]",
-      params: { id: featureId(feature) },
+      params: {
+        id: featureId(feature),
+        tab:
+          tabs.active === "home"
+            ? ["daily", "work"].includes(feature.screen || "")
+              ? "day"
+              : "services"
+            : tabs.active,
+      },
     });
     if (!feature.screen) website(feature);
   }
@@ -133,106 +133,6 @@ export function useWebsiteNotice() {
   return context.website;
 }
 export function BottomBar() {
-  const { state, colors } = useMobile();
-  const inset = useSafeAreaInsets();
-  const path = usePathname();
-  const open = useFeatureNavigation();
-  if (
-    state.status !== "ready" ||
-    state.identity?.user.passwordChangeRequired ||
-    needsSchoolChoice(state)
-  )
-    return null;
-  const role = state.identity!.user.role;
-  const first = featuresFor(role).find(
-    (f) =>
-      f.screen === (["student", "parent"].includes(role) ? "daily" : "work"),
-  );
-  const tabs = [
-    {
-      name: "Home",
-      icon: "⌂",
-      active: path === "/",
-      action: () => router.dismissTo("/"),
-    },
-    {
-      name: "School day",
-      icon: "▤",
-      active:
-        path.startsWith("/daily") ||
-        path.startsWith("/service/") ||
-        path === "/work",
-      action: () => (first ? open(first) : router.navigate("/services")),
-    },
-    {
-      name: "Services",
-      icon: "▣",
-      active: path === "/services",
-      action: () => router.navigate("/services"),
-    },
-    {
-      name: "Profile",
-      icon: "♙",
-      active: path === "/profile" || path === "/settings",
-      action: () => router.navigate("/profile"),
-    },
-  ];
-  return (
-    <GlassSurface
-      style={{
-        position: "absolute",
-        bottom: Math.max(inset.bottom, 10),
-        left: 12,
-        right: 12,
-        paddingBottom: 8,
-        paddingTop: 8,
-        paddingHorizontal: 10,
-        borderRadius: 28,
-        shadowColor: "#061f31",
-        shadowOffset: { width: 0, height: 8 },
-        shadowOpacity: 0.18,
-        shadowRadius: 18,
-        elevation: 8,
-        borderColor: colors.line,
-        backgroundColor: colors.surface,
-        flexDirection: "row",
-        gap: 4,
-      }}
-    >
-      {tabs.map((t) => (
-        <Pressable
-          key={t.name}
-          accessibilityRole="button"
-          accessibilityLabel={`Open ${t.name.toLowerCase()} tab`}
-          accessibilityState={{ selected: t.active }}
-          onPress={t.action}
-          style={({ pressed }) => ({
-            flex: 1,
-            minHeight: 52,
-            alignItems: "center",
-            justifyContent: "center",
-            gap: 3,
-            borderRadius: 16,
-            backgroundColor: t.active ? colors.accent : "transparent",
-            opacity: pressed ? 0.7 : 1,
-          })}
-        >
-          <Icon
-            name={t.name}
-            color={t.active ? colors.onAccent : colors.muted}
-            size={24}
-          />
-          <Text
-            style={{
-              color: t.active ? colors.onAccent : colors.muted,
-              fontSize: 10,
-              fontWeight: "700",
-            }}
-          >
-            {t.name}
-          </Text>
-        </Pressable>
-      ))}
-    </GlassSurface>
-  );
+  const tabs = useTabs();
+  return tabs.enabled ? <LiquidTabs /> : null;
 }

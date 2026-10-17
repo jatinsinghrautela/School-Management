@@ -55,7 +55,10 @@ Record device model, OS, Expo Go/custom build version, date, role, steps, expect
 | Sign in, readiness/cold start and clear failure message | Pending | Pending |
 | Mandatory password change, reset disabled/delivery state | Pending | Pending |
 | Multi-school director explicit choice and switching | Pending | Pending |
-| Guardian child isolation and switching during requests | Pending | Pending |
+| Guardian child isolation and switching during requests, including calendar and report tables | Pending | Pending |
+| Month navigation, holiday details/legend and multi-day ranges | Pending | Pending |
+| Student/teacher report table and branded PDF save/share with configured sign-off names | Pending | Pending |
+| Screen swipes, draggable glass indicator, active-tab hub return and service ownership | Pending | Pending |
 | Background/resume, expired/revoked session, logout | Pending | Pending |
 | Light/dark, native glass fallback, Reduce Transparency | Pending | Pending |
 | Reduced Motion, screen transitions, loaders and interrupted saves | Pending | Pending |

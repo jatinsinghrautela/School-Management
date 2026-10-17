@@ -5,6 +5,8 @@ export type Entry = {
   body?: string;
   description?: string;
   type?: string;
+  kind?: string;
+  cancelled?: boolean;
   date?: string;
   startDate?: string;
   endDate?: string;
@@ -31,7 +33,13 @@ export type Entry = {
   percentage?: number;
   grade?: string;
   version?: number;
-  rows?: { name: string; score: number; maxScore: number }[];
+  rows?: {
+    name: string;
+    score: number;
+    maxScore: number;
+    passed?: boolean;
+    weight?: number;
+  }[];
   amountMinor?: number;
   paidMinor?: number;
   concessionMinor?: number;
