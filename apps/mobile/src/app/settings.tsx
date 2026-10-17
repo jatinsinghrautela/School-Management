@@ -2,14 +2,14 @@ import { sentenceLabel } from "../core/text";
 import React from "react";
 import { ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Redirect, router } from "expo-router";
+import { router } from "expo-router";
 import { useMobile } from "../provider";
 import { ChangePassword } from "../components/change-password";
 import { Button, Card, Copy } from "../components/ui";
 export default function Settings() {
   const { state, dark, toggle } = useMobile();
   if (state.status !== "ready" || state.identity?.user.passwordChangeRequired)
-    return <Redirect href="/" />;
+    return null;
   return (
     <SafeAreaView edges={["left", "right"]} style={{ flex: 1 }}>
       <ScrollView

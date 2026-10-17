@@ -42,7 +42,7 @@ export function TopBar() {
   const back =
     ready &&
     !selection &&
-    !["/", "/services", "/profile", "/school-day"].includes(path);
+    !["/", "/login", "/services", "/profile", "/school-day"].includes(path);
   return (
     <SafeAreaView
       edges={["top", "left", "right"]}
@@ -63,7 +63,7 @@ export function TopBar() {
               accessibilityRole="button"
               accessibilityLabel="Go back"
               onPress={() =>
-                router.canGoBack() ? router.back() : router.dismissTo("/")
+                router.canGoBack() ? router.back() : router.navigate("/")
               }
               style={{
                 minWidth: 44,

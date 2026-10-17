@@ -23,12 +23,9 @@ export default function Service() {
     website = useWebsiteNotice();
   const role = state.identity?.user.role || "";
   const feature = allFeatures(role).find((f) => featureId(f) === id);
-  if (
-    state.status !== "ready" ||
-    state.identity?.user.passwordChangeRequired ||
-    !feature
-  )
-    return <Redirect href="/services" />;
+  if (state.status !== "ready" || state.identity?.user.passwordChangeRequired)
+    return null;
+  if (!feature) return <Redirect href="/services" />;
   const children = featuresFor(role).filter((f) =>
     feature.children?.includes(f.label),
   );
@@ -71,7 +68,7 @@ export default function Service() {
           {feature.label === "Overview" ? (
             <Button
               label="Open dashboard"
-              onPress={() => router.dismissTo("/")}
+              onPress={() => router.navigate("/")}
             />
           ) : null}
           {["Library", "Transport"].includes(feature.label) &&

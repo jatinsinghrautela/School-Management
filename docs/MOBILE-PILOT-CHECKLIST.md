@@ -78,3 +78,6 @@ Push: register/revoke device tokens securely, authorize account/school delivery,
 Offline: begin with an explicit privacy/cache policy and conflict model. No persistent private school cache or queued attendance/marks writes are currently enabled. Any write synchronization needs server versions, visible conflicts and user review.
 
 Distribution: signed pilot approval precedes wider distribution. App-store accounts, publishing, notifications and production data testing remain separate decisions. The existing website/API remains the shared backend; no second database or hosting service is needed for this milestone.
+
+
+M4.7 native navigation acceptance: reload the new route graph (restart Metro with --clear if needed). Test left/right tab swipes, distant tab taps, rapid reversal, dock drags, service Back, keyboard/vertical scrolling, Reduce Motion, and logout after browsing several services. Slides should move both pages together in tab order; they begin after swipe release. Confirm /login appears on logout and Back cannot restore a previous user's tab or form. Browser tests measure paired transforms, but do not establish phone frame-rate.

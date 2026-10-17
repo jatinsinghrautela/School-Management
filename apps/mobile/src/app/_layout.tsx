@@ -7,13 +7,23 @@ import { GlassBackdrop, GlassScene, GlassContent } from "../components/glass";
 import { TopBar } from "../components/top-bar";
 import { View } from "react-native";
 import { FeatureNavigation, BottomBar } from "../components/feature-navigation";
-import { RouteStage, useReducedMotion } from "../components/motion";
+import { useReducedMotion } from "../components/motion";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { MobileProvider, useMobile } from "../provider";
 import { DailyProvider } from "../daily-provider";
-function SceneLayout({ children }: { children: React.ReactNode }) {
-  return <GlassScene>{children}</GlassScene>;
+function SceneLayout({
+  children,
+  route,
+}: {
+  children: React.ReactNode;
+  route: { name: string };
+}) {
+  return route.name === "(tabs)" ? (
+    <>{children}</>
+  ) : (
+    <GlassScene>{children}</GlassScene>
+  );
 }
 function Navigation() {
   const { dark, colors, state } = useMobile();
@@ -38,58 +48,52 @@ function Navigation() {
         <TopBar />
         <GlassContent>
           <TabSwipe>
-            <RouteStage>
-              <Stack
-                screenLayout={SceneLayout}
-                screenOptions={{
-                  animation: reduced ? "none" : "slide_from_right",
-                  animationDuration: 240,
-                  headerShown: false,
-                  contentStyle: { backgroundColor: "transparent" },
-                }}
+            <Stack
+              screenLayout={SceneLayout}
+              screenOptions={{
+                animation: reduced ? "none" : "slide_from_right",
+                animationDuration: 240,
+                headerShown: false,
+                contentStyle: { backgroundColor: "transparent" },
+              }}
+            >
+              <Stack.Protected
+                guard={
+                  state.status !== "ready" ||
+                  !!state.identity?.user.passwordChangeRequired
+                }
               >
-                <Stack.Screen name="index" options={{ animation: "none" }} />
-                <Stack.Protected guard={choice}>
-                  <Stack.Screen name="choose-school" />
-                </Stack.Protected>
+                <Stack.Screen name="login" options={{ animation: "none" }} />
+              </Stack.Protected>
+              <Stack.Protected guard={choice}>
+                <Stack.Screen name="choose-school" />
+              </Stack.Protected>
+              <Stack.Protected
+                guard={
+                  state.status === "ready" &&
+                  !state.identity?.user.passwordChangeRequired &&
+                  !choice
+                }
+              >
+                <Stack.Screen name="(tabs)" options={{ animation: "none" }} />
+                <Stack.Screen name="settings" />
+                <Stack.Screen name="service/[id]" />
+                <Stack.Screen name="work" />
                 <Stack.Protected
-                  guard={
-                    state.status === "ready" &&
-                    !state.identity?.user.passwordChangeRequired &&
-                    !choice
-                  }
+                  guard={[
+                    "student",
+                    "parent",
+                    "teacher",
+                    "staff",
+                    "admin",
+                    "principal",
+                    "director",
+                  ].includes(state.identity?.user.role || "")}
                 >
-                  <Stack.Screen name="settings" />
-                  <Stack.Screen
-                    name="profile"
-                    options={{ animation: "none" }}
-                  />
-                  <Stack.Screen name="service/[id]" />
-                  <Stack.Screen name="work" />
-                  <Stack.Screen
-                    name="services"
-                    options={{ animation: "none" }}
-                  />
-                  <Stack.Screen
-                    name="school-day"
-                    options={{ animation: "none" }}
-                  />
-                  <Stack.Protected
-                    guard={[
-                      "student",
-                      "parent",
-                      "teacher",
-                      "staff",
-                      "admin",
-                      "principal",
-                      "director",
-                    ].includes(state.identity?.user.role || "")}
-                  >
-                    <Stack.Screen name="daily/[section]" />
-                  </Stack.Protected>
+                  <Stack.Screen name="daily/[section]" />
                 </Stack.Protected>
-              </Stack>
-            </RouteStage>
+              </Stack.Protected>
+            </Stack>
           </TabSwipe>
         </GlassContent>
         <BottomBar />

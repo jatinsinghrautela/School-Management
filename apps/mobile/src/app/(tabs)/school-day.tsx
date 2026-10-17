@@ -1,9 +1,9 @@
 import React from "react";
 import { ScrollView } from "react-native";
-import { useMobile } from "../provider";
-import { featuresFor } from "../core/features";
-import { FeatureGrid } from "../components/feature-grid";
-import { Card, Copy } from "../components/ui";
+import { useMobile } from "../../provider";
+import { featuresFor } from "../../core/features";
+import { FeatureGrid } from "../../components/feature-grid";
+import { Card, Copy } from "../../components/ui";
 export default function SchoolDay() {
   const { state } = useMobile();
   const features = featuresFor(state.identity?.user.role || "").filter(

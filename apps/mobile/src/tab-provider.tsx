@@ -23,8 +23,7 @@ export function TabProvider({ children }: { children: React.ReactNode }) {
   function go(next: number) {
     if (!enabled || next < 0 || next > 3) return;
     const targets = ["/", "/school-day", "/services", "/profile"] as const;
-    if (next === 0) router.dismissTo("/");
-    else router.navigate(targets[next]);
+    router.navigate(targets[next]);
   }
   return (
     <Context.Provider

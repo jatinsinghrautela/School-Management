@@ -192,7 +192,10 @@ try {
   const page = await context.newPage();
   page.setDefaultTimeout(20000);
   const errors = [];
-  page.on("pageerror", (e) => errors.push(e.message));
+  page.on("pageerror", (e) => {
+    errors.push(e.message);
+    console.error("Mobile runtime:", e.message);
+  });
   await page.route(
     "https://schoolglass.jatinsinghrautela.com/api/**",
     async (route) => {
@@ -365,20 +368,58 @@ try {
   await login("principal");
   await header("Schoolglass Desk Demo North").waitFor();
   await inspect("dark glass dashboard");
+  await action("Messages");
+  await page.getByRole("button", { name: "Sign out", exact: true }).click();
+  await page
+    .getByLabel("Email address", { exact: true })
+    .waitFor({ timeout: 5000 });
+  console.log("Service logout guard passed");
+  await login("principal");
+
   await page
     .getByRole("button", { name: "Open school day tab", exact: true })
     .click();
   await header("School day").waitFor();
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await page.waitForTimeout(450);
   await page.mouse.move(280, 112);
   await page.mouse.down();
   await page.mouse.move(65, 112, { steps: 12 });
   await page.mouse.up();
   await header("Services").waitFor();
+  // Both real tab pages must move left together, rather than fading a swapped route.
+  await page.waitForFunction(() => {
+    const x = (id) => {
+      let node = document.querySelector(`[data-testid="${id}"]`);
+      while (node && node !== document.body) {
+        const transform = getComputedStyle(node).transform;
+        if (transform !== "none") return new DOMMatrixReadOnly(transform).m41;
+        node = node.parentElement;
+      }
+      return 0;
+    };
+    return x("tab-page-services") > 1 && x("tab-page-school-day") < -1;
+  });
+  await page.waitForTimeout(420);
   await page.mouse.move(65, 112);
   await page.mouse.down();
   await page.mouse.move(280, 112, { steps: 12 });
   await page.mouse.up();
   await header("School day").waitFor();
+  await page.waitForFunction(() => {
+    const x = (id) => {
+      let node = document.querySelector(`[data-testid="${id}"]`);
+      while (node && node !== document.body) {
+        const transform = getComputedStyle(node).transform;
+        if (transform !== "none") return new DOMMatrixReadOnly(transform).m41;
+        node = node.parentElement;
+      }
+      return 0;
+    };
+    return x("tab-page-school-day") < -1 && x("tab-page-services") > 1;
+  });
+  await page.waitForTimeout(420);
+  await page.emulateMedia({ reducedMotion: "reduce" });
   const lens = await page.getByTestId("liquid-tab-indicator").boundingBox();
   const profileTarget = await page
     .getByRole("button", { name: "Open profile tab", exact: true })
@@ -825,6 +866,24 @@ try {
   console.log(
     "Mobile browser review passed: branded top bars/signout, sidebar Services, dedicated pages, profile, explicit director school selection, light/dark glass, 320px layout, teacher writes, student homework and guardian isolation. Native materials remain device acceptance.",
   );
+} catch (error) {
+  if (browser) {
+    const activePage = browser.contexts()[0]?.pages()[0];
+    if (activePage)
+      console.error(
+        "Failure page",
+        activePage.url(),
+        await activePage
+          .locator("body")
+          .innerText({ timeout: 2000 })
+          .catch(() => "unavailable"),
+      );
+    if (activePage)
+      await activePage
+        .screenshot({ path: "apps/api/data/mobile-review-failure.png" })
+        .catch(() => {});
+  }
+  throw error;
 } finally {
   if (browser) await browser.close();
   await new Promise((r) => web.close(r));

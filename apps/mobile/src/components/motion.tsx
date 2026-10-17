@@ -1,13 +1,5 @@
-import { useTabs } from "../tab-provider";
-import React, { useEffect, useState, useRef } from "react";
-import {
-  AccessibilityInfo,
-  Animated,
-  Easing,
-  Platform,
-  View,
-} from "react-native";
-import { usePathname } from "expo-router";
+import { useEffect, useState } from "react";
+import { AccessibilityInfo } from "react-native";
 export function useReducedMotion() {
   const [reduced, setReduced] = useState(true);
   useEffect(() => {
@@ -27,61 +19,4 @@ export function useReducedMotion() {
     };
   }, []);
   return reduced;
-}
-/** Directional tab entry; native stack retains service back gestures. */
-export function RouteStage({ children }: { children: React.ReactNode }) {
-  const path = usePathname(),
-    tabs = useTabs(),
-    reduced = useReducedMotion();
-  const previous = useRef(tabs.index);
-  const [direction, setDirection] = useState(0);
-  const [progress] = useState(() => new Animated.Value(1));
-  useEffect(() => {
-    const changed = tabs.index !== previous.current;
-    setDirection(
-      tabs.index === previous.current
-        ? 0
-        : tabs.index > previous.current
-          ? 1
-          : -1,
-    );
-    previous.current = tabs.index;
-    if (reduced || !changed) {
-      progress.setValue(1);
-      return;
-    }
-    progress.setValue(0);
-    const animation = Animated.timing(progress, {
-      toValue: 1,
-      duration: 180,
-      easing: Easing.out(Easing.cubic),
-      useNativeDriver: Platform.OS !== "web",
-      isInteraction: false,
-    });
-    animation.start();
-    return () => animation.stop();
-  }, [path, tabs.index, reduced, progress]);
-  return (
-    <View style={{ flex: 1, overflow: "hidden" }}>
-      <Animated.View
-        style={{
-          flex: 1,
-          opacity: progress.interpolate({
-            inputRange: [0, 1],
-            outputRange: [0.92, 1],
-          }),
-          transform: [
-            {
-              translateX: progress.interpolate({
-                inputRange: [0, 1],
-                outputRange: [direction * 18, 0],
-              }),
-            },
-          ],
-        }}
-      >
-        {children}
-      </Animated.View>
-    </View>
-  );
 }

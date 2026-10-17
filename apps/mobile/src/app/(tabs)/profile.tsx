@@ -1,16 +1,16 @@
-import { sentenceLabel, fieldLabel, recordText } from "../core/text";
+import { sentenceLabel, fieldLabel, recordText } from "../../core/text";
 import React from "react";
 import { Image, ScrollView, View } from "react-native";
-import { Redirect, router } from "expo-router";
-import { useMobile } from "../provider";
-import { ChangePassword } from "../components/change-password";
-import { Button, Card, Copy } from "../components/ui";
-import { BrandMark } from "../components/hero";
-import { list, value } from "../components/workflow";
+import { router } from "expo-router";
+import { useMobile } from "../../provider";
+import { ChangePassword } from "../../components/change-password";
+import { Button, Card, Copy } from "../../components/ui";
+import { BrandMark } from "../../components/hero";
+import { list, value } from "../../components/workflow";
 export default function Profile() {
   const { state, session, dark, toggle } = useMobile();
   if (state.status !== "ready" || state.identity?.user.passwordChangeRequired)
-    return <Redirect href="/" />;
+    return null;
   const user = state.identity!.user;
   const current = list(state.workspace?.users).find((u) => u.id === user.id);
   const logo = state.workspace?.schoolSettings?.logoDataUri;
