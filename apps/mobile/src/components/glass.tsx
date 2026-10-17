@@ -148,7 +148,7 @@ export function GlassSurface({ children, style, ...props }: ViewProps) {
           pointerEvents="none"
           blurTarget={target || undefined}
           blurMethod="dimezisBlurViewSdk31Plus"
-          intensity={50}
+          intensity={65}
           tint={dark ? "dark" : "light"}
           style={[
             StyleSheet.absoluteFill,
@@ -160,6 +160,19 @@ export function GlassSurface({ children, style, ...props }: ViewProps) {
           ]}
         />
       )}
+      {!opaque ? (
+        <LinearGradient
+          pointerEvents="none"
+          colors={
+            dark
+              ? ["#bcecff25", "#ffffff00", "#7ed8c412"]
+              : ["#ffffffaa", "#ffffff00", "#b8e1e833"]
+          }
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={StyleSheet.absoluteFill}
+        />
+      ) : null}
       {children}
     </View>
   );

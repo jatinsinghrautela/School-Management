@@ -90,3 +90,10 @@ The top bar now carries the original brand mark and an icon/text Sign out action
 Login is compact, with a short welcome header, account form and small brand/endpoint footer. Removed the oversized hero and signed-in footer clearance from login. At normal phone heights it fits without scrolling; actual measured overflow enables scrolling on small screens, larger accessibility text, keyboard resize and longer errors/status messages. Keyboard avoidance and reachable reset/sign-in controls take precedence over rigid clipping. Native keyboard and device smoothness still need phone acceptance. No API, account, school data or dependency changes.
 
 Preview: [compact login](screenshots/mobile-login-compact.png). Screenshots are local dummy data; animations require the running app.
+
+
+## M4.4 — Aurora and glass refinement
+
+Added softly graduated mint/violet aurora shapes behind screen content, drifting and breathing on the same focused animation phase as the orbit/rail. Radial gradients provide a soft-focus appearance without an animated blur filter. The shared loop runs every 10 seconds, pauses when inactive/unfocused and becomes static with Reduced Motion. Screen entry now uses a 520 ms eased fade/lift with a small zoom overshoot and settle, clipped to the content boundary to prevent transient horizontal overflow.
+
+Navigation's blur fallback intensity is 65, with a diagonal glass highlight above native/fallback material. Text and record surfaces stay backed; no extra record-card BlurView, image download, network polling or new dependency. Native Liquid Glass and Reduce Transparency fallbacks remain capability checked. Device smoothness/material fidelity remains a phone acceptance item; browser checks validate transform movement, contrast and layout.

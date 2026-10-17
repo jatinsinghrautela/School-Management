@@ -15,11 +15,12 @@ This table is the current source of truth; dated implementation notes below are 
 | M4.1 Account security | Active sign-ins, confirmed sign-out of other sessions, account-scoped client guards | Implemented 17 October 2026 | Automated checks passed; owner two-device check pending |
 | M4.2 Daily task efficiency | Simplified dashboard, selectable dates, class-wide attendance review/save | Implemented 17 October 2026 | Automated batch checks; native calendar/roster phone walkthrough pending |
 | M4.3 Ambient motion and navigation | Branded glass top bar, selected-tab capsules, compact responsive login, focused ambient flow/orbits | Implemented 17 October 2026 | Browser fit/motion checks and physical keyboard/frame-rate acceptance |
+| M4.4 Glass and motion refinement | Drifting mint/violet aurora, faster orbit flow, settling zoom, navigation glass highlights | Implemented 17 October 2026 | Contrast/motion regressions and physical-device performance acceptance |
 | M5.1 Pilot preparation | Reproducible build setup, dependency review, signing and device matrix | Checklist documented; signed build not started | Resolve/review upstream audit gates, verify SDK/licenses and private signing setup |
 | M5.2 Device pilot | Signed Android preview, iOS preview route, lifecycle/slow-network/accessibility checks | Pending | Record actual device results and fix failures; owner accepts pilot |
 | M6 Optional extensions | Push, carefully scoped offline reads/sync, additional mobile management | Planned, not enabled | Define feature contracts and cost/privacy constraints individually; no offline writes or push without separate acceptance |
 
-Next development priority after M4.3 is M5.1/M5.2, not expanding into unverified push/offline features. No paid build/store subscription, production data mutation or public mobile distribution is part of the current work. Existing website phases are separate and remain documented in the web plan.
+Next development priority after M4.4 is M5.1/M5.2, not expanding into unverified push/offline features. No paid build/store subscription, production data mutation or public mobile distribution is part of the current work. Existing website phases are separate and remain documented in the web plan.
 
 ## Feasibility and stack
 

@@ -1,3 +1,4 @@
+import Svg, { Defs, RadialGradient, Stop, Ellipse } from "react-native-svg";
 import React, { useCallback, useEffect, useState } from "react";
 import {
   Animated,
@@ -37,7 +38,7 @@ export function AmbientMotion() {
     const motion = Animated.loop(
       Animated.timing(phase, {
         toValue: 1,
-        duration: 14000,
+        duration: 10000,
         easing: Easing.linear,
         useNativeDriver: Platform.OS !== "web",
         isInteraction: false,
@@ -55,6 +56,68 @@ export function AmbientMotion() {
       importantForAccessibility="no-hide-descendants"
       style={[StyleSheet.absoluteFill, { overflow: "hidden" }]}
     >
+      <Animated.View
+        testID="ambient-aurora"
+        style={{
+          position: "absolute",
+          top: 40,
+          right: -100,
+          width: 340,
+          height: 430,
+          opacity: dark ? 0.7 : 0.8,
+          transform: [
+            {
+              translateX: phase.interpolate({
+                inputRange: [0, 0.5, 1],
+                outputRange: [0, -55, 0],
+              }),
+            },
+            {
+              translateY: phase.interpolate({
+                inputRange: [0, 0.5, 1],
+                outputRange: [0, 70, 0],
+              }),
+            },
+            {
+              scale: phase.interpolate({
+                inputRange: [0, 0.5, 1],
+                outputRange: [1, 1.18, 1],
+              }),
+            },
+          ],
+        }}
+      >
+        <Svg width="100%" height="100%" viewBox="0 0 340 430">
+          <Defs>
+            <RadialGradient id="mint">
+              <Stop
+                offset="0"
+                stopColor={dark ? "#388b8b" : "#8fd8c8"}
+                stopOpacity=".8"
+              />
+              <Stop
+                offset="1"
+                stopColor={dark ? "#388b8b" : "#8fd8c8"}
+                stopOpacity="0"
+              />
+            </RadialGradient>
+            <RadialGradient id="violet">
+              <Stop
+                offset="0"
+                stopColor={dark ? "#7764a9" : "#c2a9e9"}
+                stopOpacity=".7"
+              />
+              <Stop
+                offset="1"
+                stopColor={dark ? "#7764a9" : "#c2a9e9"}
+                stopOpacity="0"
+              />
+            </RadialGradient>
+          </Defs>
+          <Ellipse cx="160" cy="140" rx="170" ry="140" fill="url(#mint)" />
+          <Ellipse cx="170" cy="295" rx="160" ry="135" fill="url(#violet)" />
+        </Svg>
+      </Animated.View>
       <Animated.View
         testID="ambient-flow"
         style={{

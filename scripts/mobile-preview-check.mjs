@@ -249,10 +249,15 @@ try {
   await page.screenshot({ path: "apps/api/data/mobile-login-compact.png" });
   await page.emulateMedia({ reducedMotion: "no-preference" });
   const ambient = page.getByTestId("ambient-flow").filter({ visible: true }).last();
+  const aurora = page.getByTestId("ambient-aurora").filter({ visible: true }).last();
+  const glowBefore = await aurora.evaluate(el => getComputedStyle(el).transform);
   const still = await ambient.evaluate(el => getComputedStyle(el).transform);
   await page.waitForTimeout(180);
   const moving = await ambient.evaluate(el => getComputedStyle(el).transform);
   if (still === moving) throw Error("Ambient motion is not running on a focused screen");
+  const glowAfter = await aurora.evaluate(el => getComputedStyle(el).transform);
+  if (glowBefore === glowAfter) throw Error("Aurora glow is not moving");
+
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.setViewportSize({ width: 320, height: 568 });
   await inspect("compact login at 320px");
