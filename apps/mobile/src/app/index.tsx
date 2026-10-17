@@ -12,6 +12,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { api, endpoint, useMobile } from "../provider";
 import { Busy, Button, Card, Copy, ErrorText, Field } from "../components/ui";
+import { Hero } from "../components/hero";
 import { DailyMenu } from "../components/daily-menu";
 function SignIn() {
   const { session, state } = useMobile();
@@ -33,7 +34,7 @@ function SignIn() {
   }
   return (
     <>
-      <Copy large>Your school day, connected.</Copy>
+      <Hero title="Your school day, connected." detail="A space for bright ideas, everyday progress and everything school." />
       <Copy muted>
         Sign in with the account provided by your school. No self-registration
         is required.
@@ -205,13 +206,7 @@ function Dashboard() {
         </Card>
       ) : state.workspace ? (
         <>
-          <Card>
-            <Copy large>A clearer school day.</Copy>
-            <Copy muted>
-              Your account and school connection are ready. Open your daily
-              school views below. Additional staff workflows are coming next.
-            </Copy>
-          </Card>
+          <Hero title="A clearer school day." detail="Your learning, people and plans. Beautifully connected in one place." />
           <View style={styles.row}>
             <View style={{ flex: 1 }}>
               <Card>

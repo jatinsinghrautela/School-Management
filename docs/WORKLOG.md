@@ -422,3 +422,11 @@ Validation: 13 mobile tests, typecheck and lint passed; Android/iOS/web JavaScri
 Implemented mobile daily navigation, current linked-child switching, scoped notices/read receipts, homework/resources and feedback reads, dated timetables, calendar, attendance summaries, published results, fees/manual receipts and lazy paginated gallery. Added native authenticated export sharing with app-private temporary file cleanup and stale-context/unmount guards. No public object URLs, offline writes, real account creation or data migrations. Added guardian dated-timetable and receipt reads and child payment history; shared receipt renderer preserves existing exports. Fixed guardian resource downloads to use the established cloud storage adapter.
 
 Validation: 77 API tests passed, 17 mobile tests/typecheck/lint passed, web build and Android/iOS/web JS exports passed, Expo Doctor 21/21 passed. Isolated 390px UI/axe checks cover all student sections and guardian child/class changes, fees and notice acknowledgement. Test harness now forwards query strings correctly and bounds locator waits. Native file sharing/new guardian route live-deployment acceptance remains pending. No live school data or provider configuration was changed. MOBILE-DAILY-VIEWS.md documents deployment and device tests.
+
+
+## 17 October 2026 — Mobile visual refresh
+
+- Refreshed the mobile light/dark palette with indigo accents, translucent high-opacity cards, soft raised surfaces and pastel daily-view tiles. Text-bearing surfaces remain deliberately opaque enough to read.
+- Added an original code-drawn orbit hero on sign-in and overview, plus press feedback. One native-driven transform loop pauses on background/navigation blur and respects reduced motion; no blur filters, external artwork, dependencies or network animation traffic added.
+- Verified TypeScript, Expo lint, all 17 mobile tests and web export. Isolated browser checks passed login, school switching, student/guardian daily flows, light/dark accessibility and 390px overflow. Physical-device animation smoothness remains for Android/iOS acceptance.
+- Reload Expo Go to see the mobile update. This change does not modify web/backend behavior, school data or deployment configuration.

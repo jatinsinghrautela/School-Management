@@ -29,25 +29,25 @@ const vault = {
   },
 };
 const light = {
-  bg: "#eef5f3",
-  surface: "#ffffff",
+  bg: "#edf1fb",
+  surface: "rgba(255,255,255,0.94)",
   hero: "#123c38",
   ink: "#162e30",
   muted: "#51686b",
-  line: "#cededb",
-  accent: "#096e61",
+  line: "#cbd5e6",
+  accent: "#3854a8",
   onAccent: "#ffffff",
   error: "#a12635",
 };
 const dark = {
-  bg: "#0d1d23",
-  surface: "#172d34",
+  bg: "#101626",
+  surface: "rgba(30,40,61,0.96)",
   hero: "#153d3b",
   ink: "#f0f7f5",
   muted: "#b2c8cb",
-  line: "#38535a",
-  accent: "#9be4cc",
-  onAccent: "#102e29",
+  line: "#43516c",
+  accent: "#b6c8ff",
+  onAccent: "#17254a",
   error: "#ffb3bc",
 };
 type Context = {

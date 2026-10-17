@@ -68,7 +68,8 @@ export function Button({
         {
           backgroundColor: secondary ? colors.surface : colors.accent,
           borderColor: colors.line,
-          opacity: disabled ? 0.5 : pressed ? 0.75 : 1,
+          opacity: disabled ? 0.5 : pressed ? 0.8 : 1,
+          transform: [{ scale: pressed ? 0.98 : 1 }],
         },
       ]}
     >
@@ -126,7 +127,11 @@ export function ErrorText({ message }: { message: string }) {
   ) : null;
 }
 const styles = StyleSheet.create({
-  card: { padding: 20, borderRadius: 24, borderWidth: 1, gap: 16 },
+  card: {
+    padding: 20, borderRadius: 26, borderWidth: 1, gap: 16,
+    shadowColor: "#111c40", shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.09, shadowRadius: 16, elevation: 2,
+  },
   button: {
     minHeight: 48,
     paddingHorizontal: 18,
