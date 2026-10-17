@@ -81,6 +81,7 @@ export function Upload({
           <Form
             key={asset.uri}
             title={title}
+            pendingLabel="Uploading your file…"
             fields={fields}
             submit={async (data) => {
               const body = new FormData();

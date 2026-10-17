@@ -115,3 +115,8 @@ Run `npm --prefix apps/mobile ci`, then restart Metro with `npm --prefix apps/mo
 The top bar shows Schoolglass Desk on login, the school on Home, and the current service title elsewhere, with Sign out after login. Services contains role-specific website sidebar sections and separate action screens. Profile contains user details, appearance/password controls and school access. Multi-school directors choose a school before workspace data loads; use Profile → Switch school to choose again.
 
 `expo-glass-effect`, `expo-blur` and `expo-linear-gradient` provide native material where supported and readable fallbacks elsewhere. iOS Liquid Glass availability is checked at runtime; Reduce Transparency uses an opaque surface. Older Android uses a tinted fallback. Live effects are limited to navigation bars. Verify the actual material and transitions on both phones before wider distribution.
+
+
+### Icon and loading feedback refresh
+
+The latest mobile update adds original local SVG icons (`react-native-svg`), stronger screen entry motion, orbit loaders and a successful-save checkmark. Install mobile dependencies and restart Metro with the commands above. A custom development client must be rebuilt for added native modules. Reduced Motion keeps clear static progress feedback. No API deployment, new environment variable or school data change is required.

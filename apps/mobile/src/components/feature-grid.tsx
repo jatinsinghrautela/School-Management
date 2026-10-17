@@ -1,3 +1,4 @@
+import { Icon } from "./icon";
 import React from "react";
 import { Pressable, Text, View } from "react-native";
 import { useMobile } from "../provider";
@@ -46,7 +47,7 @@ export function FeatureGrid({
                 : ["#d9ede6", "#f3e7d9", "#e6e5f3", "#dceef0"][index % 4],
             }}
           >
-            <Text style={{ color: colors.accent, fontSize: 24 }}>{f.icon}</Text>
+            <Icon name={f.label} color={colors.accent} size={25} />
           </View>
           <Text
             style={{

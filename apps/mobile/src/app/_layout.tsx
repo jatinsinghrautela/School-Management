@@ -41,7 +41,7 @@ function Navigation() {
             screenLayout={({ children }) => <GlassScene>{children}</GlassScene>}
             screenOptions={{
               animation: reduced ? "none" : "slide_from_right",
-              animationDuration: 240,
+              animationDuration: 420,
               headerShown: false,
               contentStyle: { backgroundColor: "transparent" },
             }}

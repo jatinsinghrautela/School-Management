@@ -36,6 +36,7 @@ export function ChangePassword() {
       <ErrorText message={error} />
       <Button
         label="Update password"
+        busy={busy}
         disabled={busy || next.length < 12 || next !== confirm || !current}
         onPress={() => {
           setBusy(true);

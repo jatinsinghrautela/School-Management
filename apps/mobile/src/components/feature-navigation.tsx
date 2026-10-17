@@ -1,3 +1,4 @@
+import { Icon } from "./icon";
 import React, { createContext, useContext, useState } from "react";
 import {
   Linking,
@@ -157,11 +158,11 @@ export function BottomBar() {
     {
       name: "School day",
       icon: "▤",
-      active: path.startsWith("/daily") || path.startsWith("/service/") || path === "/work",
-      action: () =>
-        first
-          ? open(first)
-          : router.navigate("/services"),
+      active:
+        path.startsWith("/daily") ||
+        path.startsWith("/service/") ||
+        path === "/work",
+      action: () => (first ? open(first) : router.navigate("/services")),
     },
     {
       name: "Services",
@@ -211,14 +212,11 @@ export function BottomBar() {
             opacity: pressed ? 0.7 : 1,
           })}
         >
-          <Text
-            style={{
-              color: t.active ? colors.accent : colors.muted,
-              fontSize: 24,
-            }}
-          >
-            {t.icon}
-          </Text>
+          <Icon
+            name={t.name}
+            color={t.active ? colors.accent : colors.muted}
+            size={24}
+          />
           <Text
             style={{
               color: t.active ? colors.ink : colors.muted,

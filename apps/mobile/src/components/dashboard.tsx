@@ -1,3 +1,4 @@
+import { Icon } from "./icon";
 import React, { useState } from "react";
 import { Image, Pressable, Text, TextInput, View } from "react-native";
 import { router } from "expo-router";
@@ -93,7 +94,7 @@ export function Dashboard() {
             backgroundColor: colors.surface,
           }}
         >
-          <Text style={{ color: colors.ink, fontSize: 21 }}>♧</Text>
+          <Icon name="Inbox" color={colors.ink} size={22} />
         </Pressable>
         <Pressable
           accessibilityRole="button"
@@ -108,7 +109,7 @@ export function Dashboard() {
             backgroundColor: colors.surface,
           }}
         >
-          <Text style={{ color: colors.ink, fontSize: 21 }}>⚙</Text>
+          <Icon name="Profile" color={colors.ink} size={22} />
         </Pressable>
       </View>
       <View
@@ -148,7 +149,7 @@ export function Dashboard() {
               justifyContent: "center",
             }}
           >
-            <Text style={{ color: colors.muted, fontSize: 24 }}>×</Text>
+            <Icon name="close" color={colors.muted} size={22} />
           </Pressable>
         ) : null}
       </View>

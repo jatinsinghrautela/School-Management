@@ -54,3 +54,12 @@ The picker requests PDF/PNG/JPEG up to 5 MB; backend signature checks and the co
 Verification: the existing backend suite passed 78 tests in the preceding workflow release; this UI update leaves the API unchanged. All 19 mobile tests passed; TypeScript and Expo lint passed; web/Android/iOS bundles exported. The isolated mobile browser suite covers the glass dashboard and website-only popup in light/dark, bottom navigation and 320px/390px layouts, narrow-screen accessibility, management tabs, teacher notices/attendance/marks, student homework and guardian isolation. Test writes use only an in-memory demo API, never live school records.
 
 Physical iPhone/Android acceptance still required: file picker/cancellation, PDF/image upload under the active upload policy, SecureStore/resume, OS sharing and animation smoothness with reduced motion. Current upstream dependency audit findings documented in apps/mobile/README.md remain distribution gates. No signed APK/IPA, store submission, paid build, push service or offline write queue is claimed.
+
+
+## Icons and motion feedback — 17 October 2026
+
+The app now uses original local SVG line icons for dashboard tiles, Services, navigation and action buttons. Icons scale without remote downloads or font loading; visible labels and accessible button names remain. Schoolglass and uploaded school identity marks are preserved. Choice chips stay compact without decorative arrows.
+
+Screen changes use a 440 ms eased lift/zoom/fade alongside native Stack sliding; fixed navigation stays in place. Loading records uses an orbit around a school mark with a breathing centre. Sign-in, password changes, document sharing and submissions expose busy feedback; shared forms show a larger saving state and upload forms say Uploading your file. A spring checkmark appears only after a successful response. Indeterminate indicators do not claim percentage progress or impose minimum wait times. Existing write locks, error messages, school boundaries and manual retry behavior remain unchanged.
+
+Reduced Motion disables the orbit/pulse and transition motion while preserving loading labels. Loading loops stop when their screen loses focus, the app backgrounds, or the component unmounts. Transform/opacity animations use the native driver on devices. Verify their feel on both phones; browser animation checks cannot measure device frame rate.

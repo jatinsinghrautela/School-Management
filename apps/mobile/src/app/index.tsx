@@ -67,6 +67,7 @@ function SignIn() {
         ) : null}
         <Button
           label="Sign in"
+          busy={state.busy}
           disabled={state.busy || sending || !email.trim() || !password}
           onPress={() => {
             void session.login(email, password);
@@ -75,6 +76,7 @@ function SignIn() {
         />
         <Button
           label="Request password reset"
+          busy={sending}
           secondary
           disabled={state.busy || sending || !email.trim()}
           onPress={() => void reset()}
@@ -140,6 +142,7 @@ function PasswordChange() {
         <ErrorText message={error} />
         <Button
           label="Change password"
+          busy={busy}
           disabled={busy}
           onPress={() => void change()}
         />

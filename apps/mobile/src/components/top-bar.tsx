@@ -1,3 +1,4 @@
+import { Icon } from "./icon";
 import React from "react";
 import { Pressable, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -64,7 +65,7 @@ export function TopBar() {
                 alignItems: "center",
               }}
             >
-              <Text style={{ color: colors.accent, fontSize: 30 }}>‹</Text>
+              <Icon name="back" color={colors.accent} size={24} />
             </Pressable>
           ) : null}
           <Text

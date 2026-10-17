@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { View } from "react-native";
 import { randomUUID } from "expo-crypto";
+import { LoadingMotion, SavedMotion } from "./feedback";
 import { useMobile } from "../provider";
 import { Button, Card, Copy, ErrorText, Field } from "./ui";
 export type Row = { id: string; [key: string]: unknown };
@@ -52,6 +53,7 @@ export function Pick({
           .map((o) => (
             <Button
               key={o.id}
+              icon={false}
               label={`${selectedIds.includes(o.id) ? "✓ " : ""}${o.name}`}
               secondary={!selectedIds.includes(o.id)}
               onPress={() =>
@@ -80,11 +82,13 @@ export function Form({
   fields,
   submit,
   done,
+  pendingLabel = "Saving your changes…",
 }: {
   title: string;
   fields: Input[];
   submit: (data: Record<string, string>) => Promise<unknown>;
   done?: () => void;
+  pendingLabel?: string;
 }) {
   const { session } = useMobile();
   const [data, setData] = useState<Record<string, string>>(() =>
@@ -137,9 +141,11 @@ export function Form({
     <Card>
       <Copy large>{title}</Copy>
       {saved ? (
-        <Copy>
-          Saved successfully. Refresh records to see the latest details.
-        </Copy>
+        <SavedMotion>
+          <Copy>
+            Saved successfully. Refresh records to see the latest details.
+          </Copy>
+        </SavedMotion>
       ) : (
         <>
           {fields.map((f) =>
@@ -178,10 +184,12 @@ export function Form({
             ),
           )}
           <ErrorText message={error} />
+          {busy ? <LoadingMotion label={pendingLabel} /> : null}
           {review ? (
             <>
               <Button
                 label={busy ? "Saving…" : "Confirm and save"}
+                busy={busy}
                 disabled={busy}
                 onPress={() => void save()}
               />

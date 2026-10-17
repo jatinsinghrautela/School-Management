@@ -1,6 +1,5 @@
 import React from "react";
 import {
-  ActivityIndicator,
   Pressable,
   StyleSheet,
   Text,
@@ -8,6 +7,8 @@ import {
   View,
   type TextInputProps,
 } from "react-native";
+import { Icon } from "./icon";
+import { LoadingMotion } from "./feedback";
 import { useMobile } from "../provider";
 export function Copy({
   children,
@@ -50,39 +51,67 @@ export function Button({
   onPress,
   disabled = false,
   secondary = false,
+  busy = false,
+  icon = true,
 }: {
   label: string;
   onPress: () => void;
   disabled?: boolean;
   secondary?: boolean;
+  busy?: boolean;
+  icon?: boolean;
 }) {
   const { colors } = useMobile();
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityState={{ disabled }}
-      disabled={disabled}
+      accessibilityLabel={label}
+      accessibilityState={{ disabled: disabled || busy, busy }}
+      disabled={disabled || busy}
       onPress={onPress}
       style={({ pressed }) => [
         styles.button,
         {
           backgroundColor: secondary ? colors.surface : colors.accent,
           borderColor: colors.line,
-          opacity: disabled ? 0.5 : pressed ? 0.8 : 1,
+          opacity: disabled && !busy ? 0.5 : pressed ? 0.8 : 1,
           transform: [{ scale: pressed ? 0.98 : 1 }],
         },
       ]}
     >
-      <Text
+      <View
         style={{
-          fontSize: 15,
-          fontWeight: "700",
-          color: secondary ? colors.ink : colors.onAccent,
-          textAlign: "center",
+          flexDirection: "row",
+          gap: 10,
+          alignItems: "center",
+          justifyContent: "center",
         }}
       >
-        {label}
-      </Text>
+        {busy ? (
+          <LoadingMotion
+            compact
+            label={label}
+            tint={secondary ? colors.ink : colors.onAccent}
+          />
+        ) : icon ? (
+          <Icon
+            name={label}
+            size={19}
+            color={secondary ? colors.ink : colors.onAccent}
+          />
+        ) : null}
+        <Text
+          style={{
+            flexShrink: 1,
+            fontSize: 15,
+            fontWeight: "700",
+            color: secondary ? colors.ink : colors.onAccent,
+            textAlign: "center",
+          }}
+        >
+          {label}
+        </Text>
+      </View>
     </Pressable>
   );
 }
@@ -109,11 +138,8 @@ export function Field({ label, ...props }: TextInputProps & { label: string }) {
     </View>
   );
 }
-export function Busy() {
-  const { colors } = useMobile();
-  return (
-    <ActivityIndicator accessibilityLabel="Loading" color={colors.accent} />
-  );
+export function Busy({ label = "Loading" }: { label?: string }) {
+  return <LoadingMotion label={label} />;
 }
 export function ErrorText({ message }: { message: string }) {
   const { colors } = useMobile();

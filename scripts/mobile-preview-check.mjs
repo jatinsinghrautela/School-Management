@@ -151,6 +151,8 @@ try {
       const req = route.request();
       const requestUrl = new URL(req.url());
       const target = `http://127.0.0.1:${api.address().port}${requestUrl.pathname}${requestUrl.search}`;
+      if (req.method() === "POST" && requestUrl.pathname.endsWith("/notices"))
+        await new Promise(resolve => setTimeout(resolve, 1800));
       const response = await fetch(target, {
         method: req.method(),
         headers: {
@@ -355,6 +357,7 @@ try {
   await header("Schoolglass Desk Demo North").waitFor();
   await page.getByRole("button", { name: "Sign out", exact: true }).click();
   await login("teacher");
+  await page.emulateMedia({ reducedMotion: "no-preference" });
   await action("Publish notices");
   await page.getByLabel("Title", { exact: true }).fill("Mobile teacher notice");
   await page
@@ -371,6 +374,14 @@ try {
   await page
     .getByRole("button", { name: "Confirm and save", exact: true })
     .click();
+  await page.getByRole("progressbar", { name: "Saving your changes…", exact: true }).waitFor();
+  const ring = page.getByRole("progressbar", { name: "Saving your changes…", exact: true }).locator('div[style*="rotate"]').first();
+  const before = await ring.evaluate(el => getComputedStyle(el).transform);
+  await page.waitForTimeout(150);
+  const after = await ring.evaluate(el => getComputedStyle(el).transform);
+  if (before === after) throw Error("Submission orbit did not animate with motion enabled");
+  await page.screenshot({ path: "apps/api/data/mobile-saving-motion.png" });
+  await inspect("animated submission loader");
   await page
     .getByText("title: Mobile teacher notice", { exact: true })
     .waitFor();
@@ -390,6 +401,7 @@ try {
     .click();
   await page.getByText("date: 2026-10-19", { exact: true }).waitFor();
   await page.getByRole("button", { name: "Sign out", exact: true }).click();
+  await page.emulateMedia({ reducedMotion: "reduce" });
   await login("student");
   for (const label of [
     "Notices",

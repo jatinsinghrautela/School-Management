@@ -117,6 +117,7 @@ function Notices() {
                 <Button
                   label={receipt.readAt ? "Read" : "Mark as read"}
                   secondary
+                  busy={action.busy}
                   disabled={!!receipt.readAt || action.busy}
                   onPress={() =>
                     void action.run(async () => {
@@ -175,6 +176,7 @@ function Learning() {
             {r.fileId || r.hasAttachment ? (
               <Button
                 label="Share class attachment"
+                busy={doc.busy}
                 disabled={doc.busy}
                 onPress={() =>
                   void doc.download(
@@ -200,6 +202,7 @@ function Learning() {
                       state.identity?.user.role === "student" ? (
                         <Button
                           label="Share my submitted attachment"
+                          busy={doc.busy}
                           disabled={doc.busy}
                           secondary
                           onPress={() =>
@@ -402,6 +405,7 @@ function Results() {
             )}
             <Button
               label="Share published report"
+              busy={doc.busy}
               disabled={doc.busy}
               secondary
               onPress={() =>
@@ -472,6 +476,7 @@ function Fees() {
             <Button
               secondary
               label="Share receipt"
+              busy={doc.busy}
               disabled={doc.busy}
               onPress={() =>
                 void doc.download(

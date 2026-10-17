@@ -1,5 +1,6 @@
+import { Icon } from "./icon";
 import React, { useState } from "react";
-import { Pressable, ScrollView, Text, View } from "react-native";
+import { Pressable, ScrollView, View } from "react-native";
 import { Redirect } from "expo-router";
 import { useMobile } from "../provider";
 import { featuresFor, sidebarFeatures } from "../core/features";
@@ -60,7 +61,7 @@ export function ServiceDirectory() {
                   justifyContent: "center",
                 }}
               >
-                <Text style={{ color: "#205a60", fontSize: 24 }}>{f.icon}</Text>
+                <Icon name={f.label} color="#205a60" size={26} />
               </View>
               <View style={{ flex: 1, gap: 4 }}>
                 <Copy>{f.label}</Copy>
@@ -72,7 +73,7 @@ export function ServiceDirectory() {
                       : "Website only"}
                 </Copy>
               </View>
-              <Text style={{ color: colors.accent, fontSize: 23 }}>›</Text>
+              <Icon name="arrow" color={colors.accent} size={20} />
             </View>
           </Card>
         </Pressable>
