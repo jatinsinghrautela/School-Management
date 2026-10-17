@@ -40,7 +40,7 @@ export default function Service() {
       contentContainerStyle={{
         padding: 20,
         gap: 20,
-        paddingBottom: 24,
+        paddingBottom: 120,
         maxWidth: 680,
         width: "100%",
         alignSelf: "center",

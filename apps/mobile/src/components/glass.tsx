@@ -28,8 +28,7 @@ export function GlassBackdrop({ children }: { children: React.ReactNode }) {
   return (
     <Context.Provider value={target}>
       <View style={{ flex: 1, backgroundColor: colors.bg }}>
-        <BlurTargetView
-          ref={target}
+        <View
           pointerEvents="none"
           style={[StyleSheet.absoluteFill, { overflow: "hidden" }]}
         >
@@ -65,10 +64,19 @@ export function GlassBackdrop({ children }: { children: React.ReactNode }) {
               opacity: 0.5,
             }}
           />
-        </BlurTargetView>
+        </View>
         {children}
       </View>
     </Context.Provider>
+  );
+}
+/** Capture actual page content once; floating navigation is rendered afterwards. */
+export function GlassContent({ children }: { children: React.ReactNode }) {
+  const target = useContext(Context);
+  return (
+    <BlurTargetView ref={target || undefined} style={{ flex: 1 }}>
+      {children}
+    </BlurTargetView>
   );
 }
 /** Each stacked page covers earlier content while keeping the colour wash. */
@@ -95,8 +103,9 @@ export function GlassSurface({
   children,
   style,
   green = false,
+  floating = false,
   ...props
-}: ViewProps & { green?: boolean }) {
+}: ViewProps & { green?: boolean; floating?: boolean }) {
   const target = useContext(Context);
   const { dark, colors } = useMobile();
   const [opaque, setOpaque] = useState(Platform.OS === "ios");
@@ -164,8 +173,12 @@ export function GlassSurface({
                   ? "rgba(43,100,83,0.45)"
                   : "rgba(163,227,199,0.50)"
                 : dark
-                  ? "rgba(20,35,49,0.85)"
-                  : "rgba(250,253,255,0.82)",
+                  ? floating
+                    ? "rgba(20,35,49,0.38)"
+                    : "rgba(20,35,49,0.85)"
+                  : floating
+                    ? "rgba(250,253,255,0.40)"
+                    : "rgba(250,253,255,0.82)",
             },
           ]}
         />

@@ -29,7 +29,7 @@ export function ServiceDirectory() {
       contentContainerStyle={{
         padding: 20,
         gap: 16,
-        paddingBottom: 24,
+        paddingBottom: 120,
         maxWidth: 640,
         width: "100%",
         alignSelf: "center",

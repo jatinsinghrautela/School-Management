@@ -30,7 +30,7 @@ export default function Daily() {
           width: "100%",
           maxWidth: 680,
           alignSelf: "center",
-          paddingBottom: 24,
+          paddingBottom: 120,
         }}
       >
         <Button

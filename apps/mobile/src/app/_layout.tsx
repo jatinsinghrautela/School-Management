@@ -3,7 +3,7 @@ import { TabSwipe } from "../components/tab-swipe";
 import React from "react";
 import { DarkTheme, DefaultTheme, ThemeProvider, Stack } from "expo-router";
 import { needsSchoolChoice } from "../core/session";
-import { GlassBackdrop, GlassScene } from "../components/glass";
+import { GlassBackdrop, GlassScene, GlassContent } from "../components/glass";
 import { TopBar } from "../components/top-bar";
 import { View } from "react-native";
 import { FeatureNavigation, BottomBar } from "../components/feature-navigation";
@@ -12,6 +12,9 @@ import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { MobileProvider, useMobile } from "../provider";
 import { DailyProvider } from "../daily-provider";
+function SceneLayout({ children }: { children: React.ReactNode }) {
+  return <GlassScene>{children}</GlassScene>;
+}
 function Navigation() {
   const { dark, colors, state } = useMobile();
   const reduced = useReducedMotion();
@@ -33,56 +36,62 @@ function Navigation() {
       <View style={{ flex: 1 }}>
         <StatusBar style={dark ? "light" : "dark"} />
         <TopBar />
-        <TabSwipe>
-          <RouteStage>
-            <Stack
-              screenLayout={({ children }) => (
-                <GlassScene>{children}</GlassScene>
-              )}
-              screenOptions={{
-                animation: reduced ? "none" : "slide_from_right",
-                animationDuration: 420,
-                headerShown: false,
-                contentStyle: { backgroundColor: "transparent" },
-              }}
-            >
-              <Stack.Screen name="index" options={{ animation: "none" }} />
-              <Stack.Protected guard={choice}>
-                <Stack.Screen name="choose-school" />
-              </Stack.Protected>
-              <Stack.Protected
-                guard={
-                  state.status === "ready" &&
-                  !state.identity?.user.passwordChangeRequired &&
-                  !choice
-                }
+        <GlassContent>
+          <TabSwipe>
+            <RouteStage>
+              <Stack
+                screenLayout={SceneLayout}
+                screenOptions={{
+                  animation: reduced ? "none" : "slide_from_right",
+                  animationDuration: 240,
+                  headerShown: false,
+                  contentStyle: { backgroundColor: "transparent" },
+                }}
               >
-                <Stack.Screen name="settings" />
-                <Stack.Screen name="profile" options={{ animation: "none" }} />
-                <Stack.Screen name="service/[id]" />
-                <Stack.Screen name="work" />
-                <Stack.Screen name="services" options={{ animation: "none" }} />
-                <Stack.Screen
-                  name="school-day"
-                  options={{ animation: "none" }}
-                />
-                <Stack.Protected
-                  guard={[
-                    "student",
-                    "parent",
-                    "teacher",
-                    "staff",
-                    "admin",
-                    "principal",
-                    "director",
-                  ].includes(state.identity?.user.role || "")}
-                >
-                  <Stack.Screen name="daily/[section]" />
+                <Stack.Screen name="index" options={{ animation: "none" }} />
+                <Stack.Protected guard={choice}>
+                  <Stack.Screen name="choose-school" />
                 </Stack.Protected>
-              </Stack.Protected>
-            </Stack>
-          </RouteStage>
-        </TabSwipe>
+                <Stack.Protected
+                  guard={
+                    state.status === "ready" &&
+                    !state.identity?.user.passwordChangeRequired &&
+                    !choice
+                  }
+                >
+                  <Stack.Screen name="settings" />
+                  <Stack.Screen
+                    name="profile"
+                    options={{ animation: "none" }}
+                  />
+                  <Stack.Screen name="service/[id]" />
+                  <Stack.Screen name="work" />
+                  <Stack.Screen
+                    name="services"
+                    options={{ animation: "none" }}
+                  />
+                  <Stack.Screen
+                    name="school-day"
+                    options={{ animation: "none" }}
+                  />
+                  <Stack.Protected
+                    guard={[
+                      "student",
+                      "parent",
+                      "teacher",
+                      "staff",
+                      "admin",
+                      "principal",
+                      "director",
+                    ].includes(state.identity?.user.role || "")}
+                  >
+                    <Stack.Screen name="daily/[section]" />
+                  </Stack.Protected>
+                </Stack.Protected>
+              </Stack>
+            </RouteStage>
+          </TabSwipe>
+        </GlassContent>
         <BottomBar />
       </View>
     </ThemeProvider>

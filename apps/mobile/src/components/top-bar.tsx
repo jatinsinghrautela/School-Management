@@ -1,3 +1,4 @@
+import { LoginGlow } from "./login-glow";
 import { BrandMark } from "./hero";
 import { Icon } from "./icon";
 import React from "react";
@@ -9,7 +10,7 @@ import { allFeatures, featureId } from "../core/features";
 import { needsSchoolChoice } from "../core/session";
 import { GlassSurface } from "./glass";
 export function TopBar() {
-  const { state, session, colors } = useMobile();
+  const { state, session, colors, dark, toggle } = useMobile();
   const path = usePathname();
   const id = decodeURIComponent(path.split("/").at(-1) || "");
   const ready = state.status === "ready";
@@ -35,12 +36,14 @@ export function TopBar() {
               : path === "/school-day"
                 ? "School day"
                 : path === "/services"
-                ? "Services"
-                : path === "/settings"
-                  ? "Account & appearance"
-                  : "School workspace";
+                  ? "Services"
+                  : path === "/settings"
+                    ? "Account & appearance"
+                    : "School workspace";
   const back =
-    ready && !selection && !["/", "/services", "/profile", "/school-day"].includes(path);
+    ready &&
+    !selection &&
+    !["/", "/services", "/profile", "/school-day"].includes(path);
   return (
     <SafeAreaView
       edges={["top", "left", "right"]}
@@ -73,7 +76,9 @@ export function TopBar() {
               <Icon name="back" color={colors.accent} size={24} />
             </Pressable>
           ) : null}
-          {!back ? (
+          {!ready ? (
+            <LoginGlow />
+          ) : !back ? (
             <View
               style={{
                 backgroundColor: colors.hero,
@@ -97,6 +102,27 @@ export function TopBar() {
           >
             {title}
           </Text>
+          {!ready ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={
+                dark ? "Switch to light mode" : "Switch to dark mode"
+              }
+              onPress={toggle}
+              style={{
+                width: 44,
+                height: 44,
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Icon
+                name={dark ? "sun" : "moon"}
+                color={colors.accent}
+                size={23}
+              />
+            </Pressable>
+          ) : null}
           {ready ? (
             <Pressable
               accessibilityRole="button"

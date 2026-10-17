@@ -97,6 +97,8 @@ export function LiquidTabs() {
             );
           settle();
           c.tabs.go(index);
+          // A changed tab is animated by the index effect alone.
+          if (index !== c.tabs.index) return;
           if (c.reduced) {
             position.setValue((index * c.width) / 4);
             return;
@@ -129,6 +131,7 @@ export function LiquidTabs() {
   const names = ["Home", "School day", "Services", "Profile"];
   return (
     <GlassSurface
+      floating
       style={{
         position: "absolute",
         bottom: Math.max(insets.bottom, 10),
@@ -137,7 +140,6 @@ export function LiquidTabs() {
         padding: 8,
         borderRadius: 30,
         borderColor: colors.line,
-        backgroundColor: colors.surface,
         shadowColor: "#071c24",
         shadowOpacity: 0.16,
         shadowRadius: 16,

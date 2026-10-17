@@ -1,3 +1,5 @@
+import { TimetableBoard } from "./timetable-board";
+import { MarksTable } from "./marks-table";
 import { TeacherReports } from "./teacher-reports";
 import { sentenceLabel } from "../core/text";
 import { DateField } from "./date-field";
@@ -132,28 +134,7 @@ export function WorkContent({ tab }: { tab: string }) {
         {schedule.data?.holidays.length ? (
           <Copy>Holiday: {schedule.data.holidays.join(", ")}</Copy>
         ) : null}
-        <Records
-          rows={
-            selectedDate
-              ? schedule.data?.entries || []
-              : list(w.timetable).map((r) => ({
-                  ...r,
-                  className: classes.find((c) => c.id === r.classId)?.name,
-                  subjectName: list(w.subjects).find(
-                    (s) => s.id === r.subjectId,
-                  )?.name,
-                }))
-          }
-          fields={[
-            "day",
-            "className",
-            "subjectName",
-            "teacherName",
-            "start",
-            "end",
-            "room",
-          ]}
-        />
+        <TimetableBoard entries={schedule.data?.entries || []} />
         {manager ? (
           <Form
             title="Assign a cover teacher"
@@ -502,13 +483,27 @@ export function WorkContent({ tab }: { tab: string }) {
             ) : null}
           </>
         ) : null}
-        <Records
-          rows={list(w.marks).map((r) => ({
-            ...r,
-            studentName: users.find((u) => u.id === r.studentId)?.name,
-          }))}
-          fields={["studentName", "exam", "subject", "score", "maxScore"]}
-        />
+        {exam && subjectId ? (
+          <MarksTable
+            students={users.filter(
+              (r) =>
+                r.role === "student" &&
+                Array.isArray(r.classIds) &&
+                r.classIds.includes(exam.classId),
+            )}
+            marks={list(w.marks).filter(
+              (r) => r.examId === examId && r.subjectId === subjectId,
+            )}
+            maximum={value(
+              specs.find((s) => s.id === subjectId) || { id: "" },
+              "maxScore",
+            )}
+          />
+        ) : (
+          <Copy muted>
+            Choose an exam and subject to view the class marks register.
+          </Copy>
+        )}
       </>
     );
   if (tab === "Corrections")

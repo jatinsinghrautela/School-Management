@@ -1,3 +1,4 @@
+import { TimetableBoard } from "./timetable-board";
 import { Pick } from "./workflow";
 import { ReportCard, type SchoolReport } from "./report-card";
 import { MonthCalendar } from "./month-calendar";
@@ -319,23 +320,7 @@ function Timetable() {
           <Copy muted>{data.data.holidays.join(", ")}</Copy>
         </Card>
       ) : null}
-      <List
-        entries={[...(data.data?.entries || [])].sort((a, b) =>
-          (a.start || "").localeCompare(b.start || ""),
-        )}
-        render={(e) => (
-          <Card>
-            <Copy large>{e.subjectName}</Copy>
-            <Copy>
-              {e.start} – {e.end}
-            </Copy>
-            <Copy muted>
-              {e.teacherName}
-              {e.room ? ` · ${e.room}` : ""}
-            </Copy>
-          </Card>
-        )}
-      />
+      <TimetableBoard entries={data.data?.entries || []} />
     </>
   );
 }

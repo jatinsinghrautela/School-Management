@@ -22,7 +22,7 @@ export default function Profile() {
         maxWidth: 640,
         width: "100%",
         alignSelf: "center",
-        paddingBottom: 24,
+        paddingBottom: 120,
       }}
     >
       <Card>

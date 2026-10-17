@@ -286,6 +286,13 @@ try {
   };
   await header("Schoolglass Desk").waitFor();
   await inspect("branded login top bar");
+  await page
+    .getByRole("button", { name: "Switch to light mode", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Switch to dark mode", exact: true })
+    .click();
+  await page.getByTestId("login-logo-glow").waitFor();
   const scrollOverflow = await page.evaluate(() =>
     [...document.querySelectorAll("div")].some(
       (el) =>
@@ -530,6 +537,18 @@ try {
   await header("Schoolglass Desk Demo North").waitFor();
   await page.getByRole("button", { name: "Sign out", exact: true }).click();
   await login("teacher");
+  await action("Exam marks");
+  await page
+    .getByRole("button", { name: examFixture.name, exact: true })
+    .click();
+  await page.getByRole("button", { name: "Mathematics", exact: true }).click();
+  await page.getByText("Class marks register", { exact: true }).waitFor();
+  await page
+    .getByRole("textbox", { name: "Search students in marks register" })
+    .fill(demoStudent.name);
+  await inspect("filtered teacher marks register");
+  await page.screenshot({ path: "apps/api/data/mobile-marks-register.png" });
+
   await page.emulateMedia({ reducedMotion: "no-preference" });
   await action("Publish notices");
   await page
@@ -586,6 +605,17 @@ try {
   await page
     .getByText("Title: Mobile teacher notice", { exact: true })
     .waitFor();
+  // The title also exists in the pre-submit review. Wait for the actual write
+  // and its workspace refresh before starting another school form.
+  await page
+    .getByRole("progressbar", { name: "Saving your changes…", exact: true })
+    .waitFor({ state: "hidden" });
+  await page.waitForFunction(() => {
+    const refresh = document.querySelector(
+      '[aria-label="Refresh school records"]',
+    );
+    return refresh && refresh.getAttribute("aria-disabled") !== "true";
+  });
   await action("Record attendance");
   await page.getByRole("button", { name: cls.name, exact: true }).click();
   const chosenDate = page.getByLabel("Attendance date", { exact: true });

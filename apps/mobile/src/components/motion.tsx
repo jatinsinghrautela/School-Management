@@ -37,6 +37,7 @@ export function RouteStage({ children }: { children: React.ReactNode }) {
   const [direction, setDirection] = useState(0);
   const [progress] = useState(() => new Animated.Value(1));
   useEffect(() => {
+    const changed = tabs.index !== previous.current;
     setDirection(
       tabs.index === previous.current
         ? 0
@@ -45,14 +46,14 @@ export function RouteStage({ children }: { children: React.ReactNode }) {
           : -1,
     );
     previous.current = tabs.index;
-    if (reduced) {
+    if (reduced || !changed) {
       progress.setValue(1);
       return;
     }
     progress.setValue(0);
     const animation = Animated.timing(progress, {
       toValue: 1,
-      duration: 380,
+      duration: 180,
       easing: Easing.out(Easing.cubic),
       useNativeDriver: Platform.OS !== "web",
       isInteraction: false,
@@ -67,19 +68,13 @@ export function RouteStage({ children }: { children: React.ReactNode }) {
           flex: 1,
           opacity: progress.interpolate({
             inputRange: [0, 1],
-            outputRange: [0.65, 1],
+            outputRange: [0.92, 1],
           }),
           transform: [
             {
               translateX: progress.interpolate({
                 inputRange: [0, 1],
-                outputRange: [direction * 72, 0],
-              }),
-            },
-            {
-              scale: progress.interpolate({
-                inputRange: [0, 1],
-                outputRange: [direction ? 0.975 : 0.99, 1],
+                outputRange: [direction * 18, 0],
               }),
             },
           ],
