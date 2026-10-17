@@ -33,12 +33,34 @@ export function Copy({
   );
 }
 export function Card({ children }: { children: React.ReactNode }) {
-  const { colors } = useMobile();
+  const { colors, design, dark } = useMobile();
   return (
     <View
       style={[
         styles.card,
-        { backgroundColor: colors.surface, borderColor: colors.line },
+        design === "clay"
+          ? {
+              borderRadius: 32,
+              borderWidth: 2,
+              shadowOpacity: 0.18,
+              shadowRadius: 9,
+              shadowOffset: { width: 5, height: 7 },
+              backgroundColor: dark ? "#243c3e" : "#e5f0eb",
+            }
+          : design === "maximalism"
+            ? {
+                borderRadius: 10,
+                borderWidth: 3,
+                shadowOpacity: 0.3,
+                shadowRadius: 0,
+                shadowOffset: { width: 5, height: 5 },
+              }
+            : {},
+        {
+          backgroundColor:
+            design === "clay" ? (dark ? "#243c3e" : "#e5f0eb") : colors.surface,
+          borderColor: design === "maximalism" ? colors.accent : colors.line,
+        },
       ]}
     >
       {children}
@@ -128,9 +150,15 @@ export function ErrorText({ message }: { message: string }) {
 }
 const styles = StyleSheet.create({
   card: {
-    padding: 20, borderRadius: 26, borderWidth: 1, gap: 16,
-    shadowColor: "#111c40", shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.09, shadowRadius: 16, elevation: 2,
+    padding: 20,
+    borderRadius: 26,
+    borderWidth: 1,
+    gap: 16,
+    shadowColor: "#111c40",
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.09,
+    shadowRadius: 16,
+    elevation: 2,
   },
   button: {
     minHeight: 48,

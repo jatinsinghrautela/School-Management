@@ -24,6 +24,8 @@ import {
   ErrorText,
   Field,
 } from "../../components/ui";
+import { dailySections } from "../../core/capabilities";
+import { HomeworkAnswer } from "../../components/homework-answer";
 import { ChildPicker } from "../../components/daily-menu";
 function List({
   entries,
@@ -196,25 +198,42 @@ function Learning() {
                 }
               />
             ) : null}
+            {state.identity?.user.role === "student" &&
+            r.type === "homework" ? (
+              <HomeworkAnswer resourceId={r.id} />
+            ) : null}
             {!parent
               ? rows(state.workspace?.submissions)
                   .filter((s) => s.resourceId === r.id)
                   .sort((a, b) => (b.version || 0) - (a.version || 0))
                   .slice(0, 1)
                   .map((s) => (
-                    <Copy key={s.id}>
-                      Latest submission: {s.status}
-                      {s.reviews?.map((v) => ` · ${v.feedback || ""}`).join("")}
-                    </Copy>
+                    <React.Fragment key={s.id}>
+                      {s.attachmentId &&
+                      state.identity?.user.role === "student" ? (
+                        <Button
+                          label="Share my submitted attachment"
+                          disabled={doc.busy}
+                          secondary
+                          onPress={() =>
+                            void doc.download(
+                              `/homework/submissions/${encodeURIComponent(s.id)}/attachment-document`,
+                            )
+                          }
+                        />
+                      ) : null}
+                      <Copy>
+                        Latest submission: {s.status}
+                        {s.reviews
+                          ?.map((v) => ` · ${v.feedback || ""}`)
+                          .join("")}
+                      </Copy>
+                    </React.Fragment>
                   ))
               : null}
           </Card>
         )}
       />
-      <Copy muted>
-        Homework is read-only in this milestone. Use the website to submit
-        answers or attachments.
-      </Copy>
     </>
   );
 }
@@ -567,7 +586,7 @@ export default function Daily() {
   const family = useFamily();
   if (
     !sections.includes(section as Section) ||
-    !["student", "parent"].includes(state.identity?.user.role || "")
+    !dailySections(state.identity?.user.role || "").includes(section)
   )
     return <Redirect href="/" />;
   const parent = state.identity?.user.role === "parent";

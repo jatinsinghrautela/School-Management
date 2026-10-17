@@ -34,7 +34,10 @@ function SignIn() {
   }
   return (
     <>
-      <Hero title="Your school day, connected." detail="A space for bright ideas, everyday progress and everything school." />
+      <Hero
+        title="Your school day, connected."
+        detail="A space for bright ideas, everyday progress and everything school."
+      />
       <Copy muted>
         Sign in with the account provided by your school. No self-registration
         is required.
@@ -206,7 +209,10 @@ function Dashboard() {
         </Card>
       ) : state.workspace ? (
         <>
-          <Hero title="A clearer school day." detail="Your learning, people and plans. Beautifully connected in one place." />
+          <Hero
+            title="A clearer school day."
+            detail="Your learning, people and plans. Beautifully connected in one place."
+          />
           <View style={styles.row}>
             <View style={{ flex: 1 }}>
               <Card>
@@ -230,6 +236,18 @@ function Dashboard() {
             your school access.
           </Copy>
         </Card>
+      ) : null}
+      {["teacher", "principal", "admin", "director", "staff"].includes(
+        identity.user.role,
+      ) ? (
+        <Button label="School workspace" onPress={() => router.push("/work")} />
+      ) : null}
+      {identity.user.role !== "owner" ? (
+        <Button
+          label="School services"
+          secondary
+          onPress={() => router.push("/services")}
+        />
       ) : null}
       <Button
         label="Account & appearance"
@@ -289,7 +307,14 @@ export default function Home() {
               />
             </>
           ) : state.status === "signedOut" ? (
-            <SignIn />
+            <>
+              <SignIn />
+              <Button
+                label="Compare design styles"
+                secondary
+                onPress={() => router.push("/designs")}
+              />
+            </>
           ) : state.identity?.user.passwordChangeRequired ? (
             <PasswordChange />
           ) : (

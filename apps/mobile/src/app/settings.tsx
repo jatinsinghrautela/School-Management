@@ -3,6 +3,7 @@ import { ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Redirect, router } from "expo-router";
 import { useMobile } from "../provider";
+import { ChangePassword } from "../components/change-password";
 import { Button, Card, Copy } from "../components/ui";
 export default function Settings() {
   const { state, session, colors, dark, toggle } = useMobile();
@@ -34,6 +35,11 @@ export default function Settings() {
         </Card>
         <Card>
           <Copy>Appearance</Copy>
+          <Button
+            label="Compare design styles"
+            secondary
+            onPress={() => router.push("/designs")}
+          />
           <Copy muted>
             Follows your device until you choose a mode. Your choice applies for
             this app session.
@@ -43,6 +49,7 @@ export default function Settings() {
             onPress={toggle}
           />
         </Card>
+        <ChangePassword />
         <Copy muted>
           Private school records are not stored offline in this preview.
           Sessions are checked when the app returns to the foreground.

@@ -154,14 +154,14 @@ try {
       const response = await fetch(target, {
         method: req.method(),
         headers: {
-          "Content-Type": "application/json",
+          "Content-Type": req.headers()["content-type"] || "application/json",
           ...(req.headers().authorization
             ? { Authorization: req.headers().authorization }
             : {}),
         },
         ...(["GET", "HEAD"].includes(req.method())
           ? {}
-          : { body: req.postData() }),
+          : { body: req.postDataBuffer() }),
       });
       await route.fulfill({
         status: response.status,
@@ -198,6 +198,35 @@ try {
       );
   };
   await inspect("login");
+  await page
+    .getByRole("button", { name: "Compare design styles", exact: true })
+    .click();
+  for (const design of ["glass", "clay", "maximalism"]) {
+    const button = page.getByRole("button", {
+      name: `Preview ${design}`,
+      exact: true,
+    });
+    if (await button.count()) await button.click();
+    await inspect(`design ${design} dark`);
+    await page
+      .getByRole("button", { name: "Switch to light mode", exact: true })
+      .click();
+    await inspect(`design ${design} light`);
+    await page
+      .getByRole("img", { name: "Schoolglass Desk logo", exact: true })
+      .evaluate((el) => el.parentElement.scrollIntoView({ block: "start" }));
+    await page.screenshot({
+      path: `apps/api/data/mobile-design-${design}.png`,
+      fullPage: true,
+    });
+    await page
+      .getByRole("button", { name: "Switch to dark mode", exact: true })
+      .click();
+  }
+  await page
+    .getByRole("button", { name: "Preview glass", exact: true })
+    .click();
+  await page.getByRole("button", { name: "Back to app", exact: true }).click();
   await login("principal");
   await page.getByText("A clearer school day.", { exact: true }).waitFor();
   await inspect("dark overview");
@@ -210,6 +239,46 @@ try {
   await inspect("light settings");
   await page.getByRole("button", { name: "Back to overview" }).click();
   await inspect("light overview");
+  await page
+    .getByRole("button", { name: "School workspace", exact: true })
+    .click();
+  for (const tab of [
+    "Calendar",
+    "People",
+    "Attendance",
+    "Corrections",
+    "Marks",
+    "Reports",
+    "Resources",
+    "Homework reviews",
+    "Notices",
+    "Leave",
+    "Gallery",
+    "Admissions",
+  ]) {
+    await page.getByRole("button", { name: tab, exact: true }).click();
+    await inspect(`principal ${tab}`);
+  }
+  await page
+    .getByRole("button", { name: "Back to overview", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "School services", exact: true })
+    .click();
+  for (const tab of [
+    "Support",
+    "Privacy",
+    "Fees",
+    "Student records",
+    "Documents",
+    "Messages",
+  ]) {
+    await page.getByRole("button", { name: tab, exact: true }).click();
+    await inspect(`principal service ${tab}`);
+  }
+  await page
+    .getByRole("button", { name: "Back to overview", exact: true })
+    .click();
   await page.screenshot({
     path: "apps/api/data/mobile-overview-light.png",
     fullPage: true,
@@ -225,6 +294,92 @@ try {
     .first()
     .waitFor();
   await inspect("school switch");
+  await page.getByRole("button", { name: "Sign out", exact: true }).click();
+
+  await login("teacher");
+  await page
+    .getByRole("button", { name: "School workspace", exact: true })
+    .click();
+  await page.getByRole("button", { name: "Notices", exact: true }).click();
+  await page.getByLabel("Title", { exact: true }).fill("Mobile teacher notice");
+  await page
+    .getByLabel("Message", { exact: true })
+    .fill("A class-scoped notice published from the mobile workflow.");
+  const teacherUser = (await store.all("users")).find(
+    (u) => u.role === "teacher",
+  );
+  const assignedClass = (await store.all("classes")).find((c) =>
+    teacherUser.classIds.includes(c.id),
+  );
+  await page
+    .getByRole("button", { name: assignedClass.name, exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Review details", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Confirm and save", exact: true })
+    .click();
+  await page
+    .getByText("title: Mobile teacher notice", { exact: true })
+    .waitFor();
+  const newNotice = (await store.all("notices")).find(
+    (n) => n.title === "Mobile teacher notice",
+  );
+  if (
+    newNotice?.audience !== "student" ||
+    !newNotice.classIds.includes(assignedClass.id)
+  )
+    throw Error("Teacher notice class targeting failed");
+  await page.getByRole("button", { name: "Attendance", exact: true }).click();
+  await page
+    .getByRole("button", { name: assignedClass.name, exact: true })
+    .click();
+  const pupil = (await store.all("users")).find(
+    (u) => u.role === "student" && u.classIds.includes(assignedClass.id),
+  );
+  await page.getByRole("button", { name: pupil.name, exact: true }).click();
+  await page.getByLabel("Date YYYY-MM-DD", { exact: true }).fill("2026-10-19");
+  await page.getByRole("button", { name: "present", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Review details", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Confirm and save", exact: true })
+    .click();
+  await page.getByText("date: 2026-10-19", { exact: true }).waitFor();
+  const attendance = (await store.all("attendance")).find(
+    (r) => r.studentId === pupil.id && r.date === "2026-10-19",
+  );
+  if (attendance?.status !== "present")
+    throw Error("Mobile attendance write failed");
+  await page.getByRole("button", { name: "Marks", exact: true }).click();
+  const exam = (await store.all("exams")).find(
+    (r) => r.classId === assignedClass.id && r.status === "draft",
+  );
+  if (exam) {
+    await page.getByRole("button", { name: exam.name, exact: true }).click();
+    const subject = (await store.all("subjects")).find(
+      (r) => r.id === exam.subjects[0].subjectId,
+    );
+    await page.getByRole("button", { name: subject.name, exact: true }).click();
+    await page.getByRole("button", { name: pupil.name, exact: true }).click();
+    await page
+      .getByLabel(`Score (maximum ${exam.subjects[0].maxScore})`, {
+        exact: true,
+      })
+      .fill("84");
+    await page
+      .getByRole("button", { name: "Review details", exact: true })
+      .click();
+    await page
+      .getByRole("button", { name: "Confirm and save", exact: true })
+      .click();
+    await page.getByText("score: 84", { exact: true }).waitFor();
+  }
+  await page
+    .getByRole("button", { name: "Back to overview", exact: true })
+    .click();
   await page.getByRole("button", { name: "Sign out", exact: true }).click();
 
   const dailyLabels = [
@@ -248,6 +403,37 @@ try {
       .getByRole("button", { name: "Back to overview", exact: true })
       .click();
   }
+  await page
+    .getByRole("button", { name: "Homework & resources", exact: true })
+    .click();
+  await page
+    .getByLabel("Your answer (up to 10000 characters)", { exact: true })
+    .first()
+    .fill("My mobile homework answer.");
+  await page
+    .getByRole("button", { name: "Review details", exact: true })
+    .first()
+    .click();
+  await page
+    .getByRole("button", { name: "Confirm and save", exact: true })
+    .click();
+  await page
+    .getByText(
+      "Saved successfully. Refresh records to see the latest details.",
+      { exact: true },
+    )
+    .waitFor();
+  if (
+    !(await store.all("submissions")).some(
+      (r) =>
+        r.studentId === demoStudent.id &&
+        r.answer === "My mobile homework answer.",
+    )
+  )
+    throw Error("Student mobile homework submission failed");
+  await page
+    .getByRole("button", { name: "Back to overview", exact: true })
+    .click();
   await page.getByRole("button", { name: "Sign out", exact: true }).click();
   await login("parent");
   await page
@@ -306,7 +492,7 @@ try {
   await inspect("required password");
   if (errors.length) throw Error(JSON.stringify(errors));
   console.log(
-    "Mobile web preview passed: principal login/logout, director school switch, required-password gate, light/dark readability, accessibility and 390px overflow. Native device behavior remains unverified.",
+    "Mobile web preview passed: three design styles, principal services, teacher notice/attendance/marks, student homework, guardian child scope, required-password gate, light/dark accessibility and 390px overflow. Native device behavior remains unverified.",
   );
 } finally {
   if (browser) await browser.close();

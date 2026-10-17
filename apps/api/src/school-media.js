@@ -178,6 +178,52 @@ export function logoHeader(logo) {
 }
 export function createSchoolMediaRouter(store, scanner) {
   const r = Router({ mergeParams: true });
+  r.get(
+    "/homework/submissions/:submissionId/attachment-document",
+    route(async (req, res) => {
+      const submission = (await store.all("submissions", req.school.id)).find(
+        (s) => s.id === req.params.submissionId && s.schoolId === req.school.id,
+      );
+      if (
+        !submission ||
+        !["student", "teacher", "admin", "principal", "director"].includes(
+          req.user.role,
+        ) ||
+        !canSeeClass(req.user, submission.classId) ||
+        (req.user.role === "student" && submission.studentId !== req.user.id)
+      )
+        fail(404, "Submission attachment not found");
+      const file = (await store.all("files", req.school.id)).find(
+        (f) =>
+          f.id === submission.attachmentId &&
+          f.schoolId === req.school.id &&
+          f.classId === submission.classId &&
+          f.submissionId === submission.id &&
+          f.studentId === submission.studentId &&
+          !f.deleted &&
+          !f.staged &&
+          ["clean", "unscanned"].includes(f.scanStatus) &&
+          ["application/pdf", "image/png", "image/jpeg"].includes(f.mime),
+      );
+      if (!file || !/^[a-f0-9-]{36}$/i.test(file.id))
+        fail(404, "Submission attachment not found");
+      let bytes;
+      try {
+        bytes = await readFile(root + file.id);
+      } catch (e) {
+        if (e.code === "ENOENT") fail(404, "Submission attachment unavailable");
+        throw e;
+      }
+      if (bytes.length > 5 * 1024 * 1024)
+        fail(413, "Attachment exceeds the mobile document limit");
+      res.set("Cache-Control", "private, no-store");
+      res.json({
+        filename: file.name,
+        mime: file.mime,
+        base64: bytes.toString("base64"),
+      });
+    }),
+  );
   const upload = multer({
     storage: multer.memoryStorage(),
     limits: { fileSize: 5 * 1024 * 1024, files: 1, fields: 6 },

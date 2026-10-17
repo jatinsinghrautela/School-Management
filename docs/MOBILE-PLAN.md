@@ -88,3 +88,7 @@ Validated: TypeScript, lint, isolated API/session tests, SDK Doctor 21/21 and An
 ## M2 implementation — student/guardian daily reads
 
 Implemented the eight daily sections, guardian child switching and record refresh, explicit eligible notice receipts, homework/resource and feedback reads, dated holiday/substitution-aware timetable, calendar, recorded attendance, current published results, fee balances/payment receipts and paginated private gallery. Added authenticated native document sharing with scoped temporary cache cleanup; no offline writes or homework submission in this milestone. Added only compatible guardian API reads/payment payload and fixed guardian resources to use configured R2/local storage. Existing school records are unchanged. See MOBILE-DAILY-VIEWS.md for deployment, validation and remaining native-phone acceptance.
+
+## M3 / leadership daily expansion — 17 October 2026
+
+Teacher daily workflows and selected leadership operational flows are now implemented, alongside student homework submission and shared school services. This supersedes the earlier M2 read-only homework note. Three brand-aligned style previews are available in-app. See MOBILE-WORKFLOWS.md for the feature matrix, deliberately web-based desk work, validation and remaining physical-device/release acceptance; no blanket native management parity is claimed.

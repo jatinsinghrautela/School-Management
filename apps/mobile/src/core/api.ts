@@ -86,6 +86,8 @@ export function createApi(
       ? startupTimeout
       : timeout,
   ): Promise<T> {
+    const multipart =
+      typeof FormData !== "undefined" && body instanceof FormData;
     const abort = new AbortController();
     const timer = setTimeout(() => abort.abort(), deadline);
     try {
@@ -95,9 +97,13 @@ export function createApi(
         headers: {
           Accept: "application/json",
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
-          ...(body !== undefined ? { "Content-Type": "application/json" } : {}),
+          ...(body !== undefined && !multipart
+            ? { "Content-Type": "application/json" }
+            : {}),
         },
-        ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
+        ...(body !== undefined
+          ? { body: multipart ? (body as FormData) : JSON.stringify(body) }
+          : {}),
       });
       const raw = await response.text();
       let data;

@@ -54,3 +54,20 @@ test("school reads tolerate a cold start without extending write deadlines or re
   );
   assert.equal(calls, 2);
 });
+
+
+test("private multipart uploads retain the file body and let fetch set its boundary", async () => {
+  const body = new FormData(); body.append("file", new Blob(["%PDF-test"], { type: "application/pdf" }), "answer.pdf");
+  let count = 0;
+  const api = createApi("https://example.test/api", async (url, options) => {
+    count++;
+    assert.equal(url, "https://example.test/api/schools/north/homework/work/attachment");
+    assert.equal(options.body, body);
+    assert.equal(options.headers.Authorization, "Bearer private-token");
+    assert.equal(options.headers["Content-Type"], undefined);
+    assert.equal(options.method, "POST");
+    return new Response(JSON.stringify({ attachmentId: "attachment" }), { status: 201 });
+  });
+  assert.deepEqual(await api.school("private-token", "north", "/homework/work/attachment", body), { attachmentId: "attachment" });
+  assert.equal(count, 1);
+});

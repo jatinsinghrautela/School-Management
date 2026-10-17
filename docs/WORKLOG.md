@@ -423,10 +423,13 @@ Implemented mobile daily navigation, current linked-child switching, scoped noti
 
 Validation: 77 API tests passed, 17 mobile tests/typecheck/lint passed, web build and Android/iOS/web JS exports passed, Expo Doctor 21/21 passed. Isolated 390px UI/axe checks cover all student sections and guardian child/class changes, fees and notice acknowledgement. Test harness now forwards query strings correctly and bounds locator waits. Native file sharing/new guardian route live-deployment acceptance remains pending. No live school data or provider configuration was changed. MOBILE-DAILY-VIEWS.md documents deployment and device tests.
 
-
 ## 17 October 2026 — Mobile visual refresh
 
 - Refreshed the mobile light/dark palette with indigo accents, translucent high-opacity cards, soft raised surfaces and pastel daily-view tiles. Text-bearing surfaces remain deliberately opaque enough to read.
 - Added an original code-drawn orbit hero on sign-in and overview, plus press feedback. One native-driven transform loop pauses on background/navigation blur and respects reduced motion; no blur filters, external artwork, dependencies or network animation traffic added.
 - Verified TypeScript, Expo lint, all 17 mobile tests and web export. Isolated browser checks passed login, school switching, student/guardian daily flows, light/dark accessibility and 390px overflow. Physical-device animation smoothness remains for Android/iOS acceptance.
 - Reload Expo Go to see the mobile update. This change does not modify web/backend behavior, school data or deployment configuration.
+
+## 17 October 2026 — Mobile identity, style comparison and daily workflows
+
+Aligned mint/teal with the website and restored the original window mark. Added Glass/Clay/Maximalism session previews, native teacher workflows and student homework attachments/answers, shared school services, leadership operational actions and account password change. Added one authorized finalized-submission attachment JSON download endpoint with ownership/class/scan/staging regressions. No production data changes. See MOBILE-WORKFLOWS.md for exact coverage, web-only desk workflows, deployment and physical-device acceptance.

@@ -16,6 +16,7 @@ function Navigation() {
         }}
       >
         <Stack.Screen name="index" />
+        <Stack.Screen name="designs" />
         <Stack.Protected
           guard={
             state.status === "ready" &&
@@ -23,10 +24,18 @@ function Navigation() {
           }
         >
           <Stack.Screen name="settings" />
+          <Stack.Screen name="work" />
+          <Stack.Screen name="services" />
           <Stack.Protected
-            guard={["student", "parent"].includes(
-              state.identity?.user.role || "",
-            )}
+            guard={[
+              "student",
+              "parent",
+              "teacher",
+              "staff",
+              "admin",
+              "principal",
+              "director",
+            ].includes(state.identity?.user.role || "")}
           >
             <Stack.Screen name="daily/[section]" />
           </Stack.Protected>

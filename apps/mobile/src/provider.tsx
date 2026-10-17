@@ -29,28 +29,31 @@ const vault = {
   },
 };
 const light = {
-  bg: "#edf1fb",
+  bg: "#ecf4f1",
   surface: "rgba(255,255,255,0.94)",
   hero: "#123c38",
   ink: "#162e30",
   muted: "#51686b",
-  line: "#cbd5e6",
-  accent: "#3854a8",
+  line: "#cededb",
+  accent: "#11796f",
   onAccent: "#ffffff",
   error: "#a12635",
 };
 const dark = {
-  bg: "#101626",
-  surface: "rgba(30,40,61,0.96)",
+  bg: "#101f23",
+  surface: "rgba(25,43,48,0.96)",
   hero: "#153d3b",
   ink: "#f0f7f5",
   muted: "#b2c8cb",
-  line: "#43516c",
-  accent: "#b6c8ff",
-  onAccent: "#17254a",
+  line: "#526e6c",
+  accent: "#a4e8d3",
+  onAccent: "#123c35",
   error: "#ffb3bc",
 };
+export type Design = "glass" | "clay" | "maximalism";
 type Context = {
+  design: Design;
+  setDesign: (design: Design) => void;
   session: Session;
   state: Session["state"];
   colors: typeof light;
@@ -60,6 +63,7 @@ type Context = {
 const MobileContext = createContext<Context | null>(null);
 export function MobileProvider({ children }: { children: React.ReactNode }) {
   const system = useColorScheme();
+  const [design, setDesign] = useState<Design>("glass");
   const [choice, setChoice] = useState<boolean | null>(null);
   const [, redraw] = useState(0);
   const [session] = useState(
@@ -82,6 +86,8 @@ export function MobileProvider({ children }: { children: React.ReactNode }) {
   return (
     <MobileContext.Provider
       value={{
+        design,
+        setDesign,
         session,
         state: session.state,
         colors: isDark ? dark : light,

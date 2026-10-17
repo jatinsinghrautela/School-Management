@@ -45,6 +45,7 @@ export type Entry = {
   studentId?: string;
   resourceId?: string;
   answer?: string;
+  attachmentId?: string;
   reviews?: { feedback?: string; decision?: string; createdAt?: string }[];
 };
 export type Child = {
