@@ -1,3 +1,4 @@
+import { sentenceLabel } from "../core/text";
 import { DateField } from "./date-field";
 import React, { useEffect, useRef, useState } from "react";
 import { Alert, Image, Linking } from "react-native";
@@ -64,7 +65,7 @@ function useAction() {
       await action();
     } catch (e) {
       if (mounted.current && scope === session.scope())
-        setError(e instanceof Error ? e.message : "Please retry");
+        setError(e instanceof Error ? e.message : "Please try again.");
     } finally {
       if (mounted.current && scope === session.scope()) setBusy(false);
     }
@@ -152,7 +153,7 @@ function Learning() {
           <Card>
             <Copy large>{r.title}</Copy>
             <Copy muted>
-              {r.type}
+              {sentenceLabel(r.type || "")}
               {r.dueDate ? ` · Due ${r.dueDate}` : ""}
             </Copy>
             <Copy>{r.description}</Copy>
@@ -214,7 +215,7 @@ function Learning() {
                         />
                       ) : null}
                       <Copy>
-                        Latest submission: {s.status}
+                        Latest submission: {sentenceLabel(s.status || "")}
                         {s.reviews
                           ?.map((v) => ` · ${v.feedback || ""}`)
                           .join("")}
@@ -257,7 +258,7 @@ function Attendance() {
               {r.date} · {r.sessionName || "Daily"}
             </Copy>
             <Copy muted>
-              {r.excludedFromAttendance ? "Holiday — excluded" : r.status}
+              {r.excludedFromAttendance ? "Holiday — excluded" : sentenceLabel(r.status || "")}
             </Copy>
           </Card>
         )}

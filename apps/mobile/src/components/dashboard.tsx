@@ -1,3 +1,4 @@
+import { sentenceLabel } from "../core/text";
 import { Icon } from "./icon";
 import React, { useState } from "react";
 import { Image, Pressable, Text, TextInput, View } from "react-native";
@@ -66,7 +67,7 @@ export function Dashboard() {
         )}
         <View style={{ flex: 1, gap: 3 }}>
           <Text style={{ fontSize: 10, color: colors.muted }}>
-            Welcome back · {identity.user.role}
+            Welcome back · {sentenceLabel(identity.user.role)}
           </Text>
           <Text
             style={{

@@ -1,3 +1,4 @@
+import { sentenceLabel } from "../core/text";
 import { DateField } from "./date-field";
 import { localDate } from "../core/dates";
 import { AttendanceRegister } from "./attendance-register";
@@ -469,7 +470,7 @@ export function WorkContent({ tab }: { tab: string }) {
         />
         {exam ? (
           <>
-            <Copy>Exam status: {value(exam, "status")}</Copy>
+            <Copy>Exam status: {sentenceLabel(value(exam, "status"))}</Copy>
             <Pick
               label="Assigned subject"
               options={named(subs)}
@@ -549,7 +550,7 @@ export function WorkContent({ tab }: { tab: string }) {
               label: "Attendance record",
               choices: list(w.attendance).map((r) => ({
                 id: r.id,
-                name: `${users.find((u) => u.id === r.studentId)?.name} · ${r.date} · ${r.status}`,
+                name: `${users.find((u) => u.id === r.studentId)?.name} · ${r.date} · ${sentenceLabel(value(r, "status"))}`,
               })),
             },
             {
@@ -647,7 +648,7 @@ export function WorkContent({ tab }: { tab: string }) {
                 )
                 .map((r) => ({
                   id: r.id,
-                  name: `${r.employeeName} · ${r.startDate} · ${r.status}`,
+                  name: `${r.employeeName} · ${r.startDate} · ${sentenceLabel(value(r, "status"))}`,
                 })),
             },
             {

@@ -45,7 +45,7 @@ export function ChangePassword() {
             .changePassword(current, next)
             .catch((e) =>
               setError(
-                e instanceof Error ? e.message : "Could not change password",
+                e instanceof Error ? e.message : "Could not change your password.",
               ),
             )
             .finally(() => {

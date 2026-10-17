@@ -1,3 +1,4 @@
+import { sentenceLabel, fieldLabel, recordText } from "../core/text";
 import React from "react";
 import { Image, ScrollView, View } from "react-native";
 import { Redirect, router } from "expo-router";
@@ -45,13 +46,13 @@ export default function Profile() {
         </View>
         <Copy large>{user.name}</Copy>
         <Copy>{user.email}</Copy>
-        <Copy muted>Role: {user.role}</Copy>
+        <Copy muted>Role: {sentenceLabel(user.role)}</Copy>
         <Copy muted>{state.workspace?.school.name || "Platform account"}</Copy>
         {current &&
           ["admissionNumber", "employeeNumber", "phone"].map((key) =>
             value(current, key) ? (
               <Copy key={key}>
-                {key}: {value(current, key)}
+                {fieldLabel(key)}: {recordText(key, current[key])}
               </Copy>
             ) : null,
           )}

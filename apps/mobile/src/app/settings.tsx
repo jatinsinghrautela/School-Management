@@ -1,3 +1,4 @@
+import { sentenceLabel } from "../core/text";
 import React from "react";
 import { ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -32,7 +33,7 @@ export default function Settings() {
         <Card>
           <Copy>{state.identity?.user.name}</Copy>
           <Copy muted>{state.identity?.user.email}</Copy>
-          <Copy muted>{state.identity?.user.role}</Copy>
+          <Copy muted>{sentenceLabel(state.identity?.user.role || "")}</Copy>
         </Card>
         <Card>
           <Copy>Appearance</Copy>

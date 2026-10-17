@@ -1,3 +1,4 @@
+import { fieldLabel, recordText, sentenceLabel } from "../core/text";
 import React, { useEffect, useRef, useState } from "react";
 import { View } from "react-native";
 import { randomUUID } from "expo-crypto";
@@ -22,7 +23,7 @@ export type Input = {
   initial?: string;
 };
 export const choices = (...names: string[]): Choice[] =>
-  names.map((name) => ({ id: name, name }));
+  names.map((name) => ({ id: name, name: sentenceLabel(name) }));
 export function Pick({
   label,
   options,
@@ -243,7 +244,7 @@ export function Records({ rows, fields }: { rows: Row[]; fields: string[] }) {
           {fields.map((f) =>
             value(r, f) ? (
               <Copy key={f}>
-                {f}: {value(r, f)}
+                {fieldLabel(f)}: {recordText(f, r[f])}
               </Copy>
             ) : null,
           )}

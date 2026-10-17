@@ -97,3 +97,8 @@ Preview: [compact login](screenshots/mobile-login-compact.png). Screenshots are 
 Added softly graduated mint/violet aurora shapes behind screen content, drifting and breathing on the same focused animation phase as the orbit/rail. Radial gradients provide a soft-focus appearance without an animated blur filter. The shared loop runs every 10 seconds, pauses when inactive/unfocused and becomes static with Reduced Motion. Screen entry now uses a 520 ms eased fade/lift with a small zoom overshoot and settle, clipped to the content boundary to prevent transient horizontal overflow.
 
 Navigation's blur fallback intensity is 65, with a diagonal glass highlight above native/fallback material. Text and record surfaces stay backed; no extra record-card BlurView, image download, network polling or new dependency. Native Liquid Glass and Reduce Transparency fallbacks remain capability checked. Device smoothness/material fidelity remains a phone acceptance item; browser checks validate transform movement, contrast and layout.
+
+
+## Copy consistency — 17 October 2026
+
+Standardized application-owned labels/statuses to sentence case, with acronyms such as UPI/PDF/URL retained. Records use readable field labels (Student name, Admission number, Created on) instead of camelCase keys; selected boolean fields display Yes/No. Roles, attendance choices/totals, resource types, submission/exam statuses and profile metadata use the same presentation helpers. Fixed singular/plural session and attendance messages and incomplete fallback punctuation. Stored values, submitted option IDs, passwords, email/URL casing, names and user-written notices/answers remain untouched. This is display formatting only and needs no API migration or Render deployment.

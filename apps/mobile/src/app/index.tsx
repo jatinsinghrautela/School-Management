@@ -30,7 +30,7 @@ function SignIn() {
       const response = await api.forgotPassword(email);
       setMessage(response.message);
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Please retry");
+      setMessage(error instanceof Error ? error.message : "Please try again.");
     } finally {
       setSending(false);
     }
@@ -143,7 +143,7 @@ function PasswordChange() {
     try {
       await session.changePassword(current, password);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Please retry");
+      setError(e instanceof Error ? e.message : "Please try again.");
     } finally {
       setBusy(false);
     }

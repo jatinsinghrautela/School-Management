@@ -1,3 +1,4 @@
+import { sentenceLabel } from "../core/text";
 import React, { useRef, useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import { useMobile } from "../provider";
@@ -122,7 +123,8 @@ function AttendanceSheet({
       <Card>
         <SavedMotion>
           <Copy>
-            Class attendance saved for {date}: {pending.length} students.
+            Class attendance saved for {date}: {pending.length}{" "}
+            {pending.length === 1 ? "student" : "students"}.
           </Copy>
         </SavedMotion>
         <Copy muted>
@@ -138,14 +140,15 @@ function AttendanceSheet({
           {review ? "Review class attendance" : "Mark class attendance"}
         </Copy>
         <Copy>
-          {roster.length} students · {unmarked} unmarked ·{" "}
-          {roster.length - pending.length} already recorded
+          {roster.length} {roster.length === 1 ? "student" : "students"} ·{" "}
+          {unmarked} unmarked · {roster.length - pending.length} already
+          recorded
         </Copy>
         <Copy muted>
           {attendanceStatuses
             .map(
               (s) =>
-                `${s}: ${roster.filter((r) => statuses[r.id] === s).length}`,
+                `${sentenceLabel(s)}: ${roster.filter((r) => statuses[r.id] === s).length}`,
             )
             .join(" · ")}
         </Copy>
@@ -194,16 +197,16 @@ function AttendanceSheet({
           <Copy>{r.name}</Copy>
           {r.locked || review ? (
             <Copy>
-              {statuses[r.id] || "Unmarked"}
+              {sentenceLabel(statuses[r.id] || "Unmarked")}
               {r.locked ? " · Already recorded" : ""}
             </Copy>
           ) : (
             <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
               {attendanceStatuses.map((status) => (
                 <Pressable
-                  key={status}
+                  key={sentenceLabel(status)}
                   accessibilityRole="radio"
-                  accessibilityLabel={`${status} for ${r.name}`}
+                  accessibilityLabel={`${sentenceLabel(status)} for ${r.name}`}
                   accessibilityState={{
                     selected: statuses[r.id] === status,
                     disabled: busy,
@@ -234,7 +237,7 @@ function AttendanceSheet({
                       fontWeight: "600",
                     }}
                   >
-                    {status}
+                    {sentenceLabel(status)}
                   </Text>
                 </Pressable>
               ))}

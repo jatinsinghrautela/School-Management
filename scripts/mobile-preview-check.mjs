@@ -315,7 +315,7 @@ try {
     })
     .click();
   await page
-    .getByText("1 other sessions signed out.", { exact: true })
+    .getByText("1 other session signed out.", { exact: true })
     .waitFor();
   const revoked = await fetch(`http://127.0.0.1:${api.address().port}/api/me`, {
     headers: { Authorization: `Bearer ${extraLogin.token}` },
@@ -461,7 +461,7 @@ try {
   await page.screenshot({ path: "apps/api/data/mobile-saving-motion.png" });
   await inspect("animated submission loader");
   await page
-    .getByText("title: Mobile teacher notice", { exact: true })
+    .getByText("Title: Mobile teacher notice", { exact: true })
     .waitFor();
   await action("Record attendance");
   await page.getByRole("button", { name: cls.name, exact: true }).click();
@@ -476,7 +476,7 @@ try {
     .getByRole("button", { name: "Mark remaining present", exact: true })
     .click();
   await page
-    .getByRole("radio", { name: "absent for Demo classmate", exact: true })
+    .getByRole("radio", { name: "Absent for Demo classmate", exact: true })
     .click();
   await page
     .getByRole("button", { name: "Review class attendance", exact: true })

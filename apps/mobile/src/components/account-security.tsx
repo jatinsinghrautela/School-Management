@@ -59,7 +59,7 @@ export function AccountSecurity() {
       const result = await session.revokeOtherSessions();
       if (!active.current || v !== version.current) return;
       setConfirm(false);
-      setMessage(`${result.count} other sessions signed out.`);
+      setMessage(`${result.count} other ${result.count === 1 ? "session" : "sessions"} signed out.`);
       await load();
     } catch (e) {
       if (active.current && v === version.current)
