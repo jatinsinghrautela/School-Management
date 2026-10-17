@@ -1,3 +1,4 @@
+import { AmbientMotion } from "./ambient";
 import React, {
   createContext,
   useContext,
@@ -77,9 +78,14 @@ export function GlassScene({ children }: { children: React.ReactNode }) {
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
       <LinearGradient
         pointerEvents="none"
-        colors={dark ? ["#101b32", "#142b30", "#2b1e36"] : ["#e5efff", "#e4f6ee", "#f8e9f2"]}
+        colors={
+          dark
+            ? ["#101b32", "#142b30", "#2b1e36"]
+            : ["#e5efff", "#e4f6ee", "#f8e9f2"]
+        }
         style={StyleSheet.absoluteFill}
       />
+      <AmbientMotion />
       {children}
     </View>
   );

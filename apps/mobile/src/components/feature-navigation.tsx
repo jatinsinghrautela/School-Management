@@ -184,10 +184,15 @@ export function BottomBar() {
         bottom: Math.max(inset.bottom, 10),
         left: 12,
         right: 12,
-        paddingBottom: 10,
-        paddingTop: 10,
-        paddingHorizontal: 16,
-        borderRadius: 30,
+        paddingBottom: 8,
+        paddingTop: 8,
+        paddingHorizontal: 10,
+        borderRadius: 28,
+        shadowColor: "#061f31",
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.18,
+        shadowRadius: 18,
+        elevation: 8,
         borderColor: colors.line,
         backgroundColor: colors.surface,
         flexDirection: "row",
@@ -208,18 +213,18 @@ export function BottomBar() {
             justifyContent: "center",
             gap: 3,
             borderRadius: 16,
-            backgroundColor: t.active ? colors.bg : "transparent",
+            backgroundColor: t.active ? colors.accent : "transparent",
             opacity: pressed ? 0.7 : 1,
           })}
         >
           <Icon
             name={t.name}
-            color={t.active ? colors.accent : colors.muted}
+            color={t.active ? colors.onAccent : colors.muted}
             size={24}
           />
           <Text
             style={{
-              color: t.active ? colors.ink : colors.muted,
+              color: t.active ? colors.onAccent : colors.muted,
               fontSize: 10,
               fontWeight: "700",
             }}

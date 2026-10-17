@@ -5,16 +5,20 @@ import {
   RefreshControl,
   ScrollView,
   StyleSheet,
+  Text,
+  View,
+  useWindowDimensions,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Redirect } from "expo-router";
 import { needsSchoolChoice } from "../core/session";
 import { api, endpoint, useMobile } from "../provider";
 import { Busy, Button, Card, Copy, ErrorText, Field } from "../components/ui";
-import { Hero } from "../components/hero";
+import { BrandMark } from "../components/hero";
 import { Dashboard } from "../components/dashboard";
 function SignIn() {
-  const { session, state } = useMobile();
+  const { session, state, colors } = useMobile();
+  const { height } = useWindowDimensions();
   const [email, setEmail] = useState(""),
     [password, setPassword] = useState(""),
     [message, setMessage] = useState(""),
@@ -33,14 +37,40 @@ function SignIn() {
   }
   return (
     <>
-      <Hero
-        title="Your school day, connected."
-        detail="A space for bright ideas, everyday progress and everything school."
-      />
-      <Copy muted>
-        Sign in with the account provided by your school. No self-registration
-        is required.
-      </Copy>
+      <View style={{ gap: 8, alignItems: "center" }}>
+        {height > 700 ? (
+          <View
+            style={{
+              padding: 10,
+              borderRadius: 19,
+              backgroundColor: colors.hero,
+            }}
+          >
+            <BrandMark />
+          </View>
+        ) : null}
+        <Text
+          style={{
+            color: colors.ink,
+            fontSize: height > 700 ? 28 : 23,
+            lineHeight: 32,
+            fontWeight: "800",
+            textAlign: "center",
+          }}
+        >
+          A brighter school day.
+        </Text>
+        <Text
+          style={{
+            color: colors.muted,
+            fontSize: 13,
+            lineHeight: 19,
+            textAlign: "center",
+          }}
+        >
+          Sign in with your school account.
+        </Text>
+      </View>
       <Card>
         <Field
           label="Email address"
@@ -83,10 +113,16 @@ function SignIn() {
         />
         {message ? <Copy>{message}</Copy> : null}
       </Card>
-      <Copy muted>
-        Connected to {new URL(endpoint).host}. Reset delivery depends on your
-        school’s configured service.
-      </Copy>
+      <Text
+        style={{
+          color: colors.muted,
+          fontSize: 11,
+          lineHeight: 16,
+          textAlign: "center",
+        }}
+      >
+        Powered by Schoolglass Desk · {new URL(endpoint).host}
+      </Text>
     </>
   );
 }
@@ -152,6 +188,9 @@ function PasswordChange() {
 }
 export default function Home() {
   const { state, session, colors } = useMobile();
+  const [viewport, setViewport] = useState(0),
+    [content, setContent] = useState(0);
+  const login = state.status === "signedOut";
   if (needsSchoolChoice(state)) return <Redirect href="/choose-school" />;
   return (
     <SafeAreaView edges={["left", "right"]} style={{ flex: 1 }}>
@@ -161,7 +200,21 @@ export default function Home() {
       >
         <ScrollView
           keyboardShouldPersistTaps="handled"
-          contentContainerStyle={styles.content}
+          onLayout={(event) => setViewport(event.nativeEvent.layout.height)}
+          onContentSizeChange={(_, h) => setContent(h)}
+          scrollEnabled={!login || !viewport || content > viewport + 2}
+          bounces={!login}
+          showsVerticalScrollIndicator={!login}
+          contentContainerStyle={[
+            styles.content,
+            login && {
+              paddingBottom: 16,
+              paddingTop: 12,
+              gap: 12,
+              flexGrow: 1,
+              justifyContent: "center",
+            },
+          ]}
           refreshControl={
             state.status === "ready" ? (
               <RefreshControl

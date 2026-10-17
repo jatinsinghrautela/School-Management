@@ -1,3 +1,4 @@
+import { BrandMark } from "./hero";
 import { Icon } from "./icon";
 import React from "react";
 import { Pressable, Text, View } from "react-native";
@@ -21,19 +22,21 @@ export function TopBar() {
   )?.name;
   const title = !ready
     ? "Schoolglass Desk"
-    : state.identity?.user.passwordChangeRequired ? "Change password" : selection
-      ? "Choose your school"
-      : path === "/"
-        ? school || "Schoolglass Desk"
-        : path.startsWith("/service/")
-          ? feature?.label || "School service"
-          : path === "/profile"
-            ? "Profile"
-            : path === "/services"
-              ? "Services"
-              : path === "/settings"
-                ? "Account & appearance"
-                : "School workspace";
+    : state.identity?.user.passwordChangeRequired
+      ? "Change password"
+      : selection
+        ? "Choose your school"
+        : path === "/"
+          ? school || "Schoolglass Desk"
+          : path.startsWith("/service/")
+            ? feature?.label || "School service"
+            : path === "/profile"
+              ? "Profile"
+              : path === "/services"
+                ? "Services"
+                : path === "/settings"
+                  ? "Account & appearance"
+                  : "School workspace";
   const back =
     ready && !selection && !["/", "/services", "/profile"].includes(path);
   return (
@@ -41,14 +44,14 @@ export function TopBar() {
       edges={["top", "left", "right"]}
       style={{ paddingHorizontal: 12, paddingTop: 4, paddingBottom: 8 }}
     >
-      <GlassSurface style={{ borderRadius: 24 }}>
+      <GlassSurface style={{ borderRadius: 22, borderColor: colors.line }}>
         <View
           style={{
             flexDirection: "row",
             alignItems: "center",
             gap: 8,
             paddingHorizontal: 12,
-            minHeight: 58,
+            minHeight: 60,
           }}
         >
           {back ? (
@@ -67,6 +70,17 @@ export function TopBar() {
             >
               <Icon name="back" color={colors.accent} size={24} />
             </Pressable>
+          ) : null}
+          {!back ? (
+            <View
+              style={{
+                backgroundColor: colors.hero,
+                padding: 5,
+                borderRadius: 13,
+              }}
+            >
+              <BrandMark />
+            </View>
           ) : null}
           <Text
             accessibilityRole="header"
@@ -87,17 +101,19 @@ export function TopBar() {
               accessibilityLabel="Sign out"
               onPress={() => void session.logout()}
               style={{
-                minWidth: 60,
+                minWidth: 52,
+                gap: 2,
                 minHeight: 44,
                 justifyContent: "center",
                 alignItems: "center",
                 paddingHorizontal: 5,
               }}
             >
+              <Icon name="logout" color={colors.accent} size={19} />
               <Text
                 style={{
                   color: colors.accent,
-                  fontSize: 12,
+                  fontSize: 10,
                   fontWeight: "700",
                 }}
               >

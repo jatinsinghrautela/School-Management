@@ -473,3 +473,12 @@ Replaced per-student attendance submissions with a class/section roster and date
 Validation: 25 mobile tests, typecheck and lint passed; Android/iOS/web JS exports passed. Added date/leap-day and scoped/locked roster tests; local API integration verifies invalid batches save nothing, valid class batches save together, repeat submissions do not duplicate and saved statuses reject direct overwrite. Browser checks verify today default, disabled review on unmarked roster, bulk present plus absent exception, review/edit/submit, 320px accessibility and locked saved entries after refresh, alongside existing role/guardian/security flows. Native picker interaction and long-roster device performance remain acceptance work. New native module requires dependency install/Metro restart and custom development-client rebuild; no Render deployment or migration.
 
 Audit now reports 22 findings (19 high, 3 moderate), including the added picker's indirect Expo path. Wider distribution remains subject to the existing upstream dependency review gate; no forced incompatible upgrade was applied.
+
+
+## 17 October 2026 — M4.3 ambient motion and responsive navigation
+
+Added a travelling accent rail and edge-orbit particles through one transform phase per focused screen. Effects respect Reduced Motion and stop on screen blur/background/unmount, with no extra requests, animated layout or animated blur. Refined branded glass top navigation and icon/text sign-out, plus a high-contrast active-tab capsule and floating dock shadow. Preserved service titles, school/role routing and existing interactions.
+
+Rebuilt login as a compact welcome/form/footer, removing the oversized hero and signed-in bottom clearance. Measured content/viewport determine whether scrolling is needed; ordinary phone login fits without scrolling, while small screens, keyboard resize, large text and long feedback can still reveal all controls. No credentials, account behavior, school data, dependencies or backend configuration changed. Updated the phase plan and workflow documentation; actual native keyboard/material/frame-rate acceptance remains pending.
+
+Validation: all 25 mobile tests, typecheck/lint and Android/iOS/web JS exports passed. Browser checks verify no scroll overflow at 390×844, actual ambient transform movement when motion is enabled, reduced-motion mode and 320px login/control reachability, along with existing role/attendance/security regression flows. Preview uses synthetic data; no live API writes. No Render deployment required.

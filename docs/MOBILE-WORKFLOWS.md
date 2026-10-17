@@ -79,3 +79,14 @@ Mobile input dates use the SDK-compatible system date picker on Android/iOS; web
 Record attendance → choose class/section → today (or choose another date/session) → Mark remaining present → change exceptions → Review class attendance → Confirm class attendance. Unmarked students block submission; existing records display their saved status and are locked. Only new records are sent together in one /attendance/batch request. There is no per-pupil confirmation or automatic retry. The endpoint validates the entire request transactionally and rejects invalid rosters, holidays and attempts to change saved statuses. Use Attendance corrections for changes. The register follows the existing 200-entry batch limit; it does not silently split larger classes into partially saved requests.
 
 Changing date/session resets unsaved selections; the selected date is locked during submission. Successful saves show the date/count; use Refresh school records to reload the saved history. After an interrupted response, refresh before attempting another save. Class/school changes discard the local draft and stale UI updates are ignored. Physical native-picker and long-roster acceptance remains pending.
+
+
+## M4.3 — Ambient motion, navigation and login fit
+
+Added a decorative travelling accent rail and rotating edge-orbit particles to each backed screen, with a single transform phase per focused page. Motion stops on navigation blur, background, unmount and Reduced Motion; effects never imply network connectivity or submission progress. No animated layout, network polling or extra per-card live blur is used. The existing hero and request loaders retain their own lifecycle controls.
+
+The top bar now carries the original brand mark and an icon/text Sign out action; the floating glass dock uses a solid accent capsule for the active tab and a softer shadow. All titles, actions and content continue using shared light/dark colours.
+
+Login is compact, with a short welcome header, account form and small brand/endpoint footer. Removed the oversized hero and signed-in footer clearance from login. At normal phone heights it fits without scrolling; actual measured overflow enables scrolling on small screens, larger accessibility text, keyboard resize and longer errors/status messages. Keyboard avoidance and reachable reset/sign-in controls take precedence over rigid clipping. Native keyboard and device smoothness still need phone acceptance. No API, account, school data or dependency changes.
+
+Preview: [compact login](screenshots/mobile-login-compact.png). Screenshots are local dummy data; animations require the running app.

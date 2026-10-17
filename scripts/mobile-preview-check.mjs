@@ -244,6 +244,21 @@ try {
   };
   await header("Schoolglass Desk").waitFor();
   await inspect("branded login top bar");
+  const scrollOverflow = await page.evaluate(() => [...document.querySelectorAll('div')].some(el => ['auto','scroll'].includes(getComputedStyle(el).overflowY) && el.clientHeight > 0 && el.scrollHeight > el.clientHeight + 2));
+  if (scrollOverflow) throw Error("Normal-height login still needs scrolling");
+  await page.screenshot({ path: "apps/api/data/mobile-login-compact.png" });
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  const ambient = page.getByTestId("ambient-flow").filter({ visible: true }).last();
+  const still = await ambient.evaluate(el => getComputedStyle(el).transform);
+  await page.waitForTimeout(180);
+  const moving = await ambient.evaluate(el => getComputedStyle(el).transform);
+  if (still === moving) throw Error("Ambient motion is not running on a focused screen");
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.setViewportSize({ width: 320, height: 568 });
+  await inspect("compact login at 320px");
+  await page.getByRole("button", { name: "Request password reset", exact: true }).scrollIntoViewIfNeeded();
+  await page.setViewportSize({ width: 390, height: 844 });
+
   await login("principal");
   await header("Schoolglass Desk Demo North").waitFor();
   await inspect("dark glass dashboard");
