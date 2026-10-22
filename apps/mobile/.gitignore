@@ -39,3 +39,10 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# Private signing and local pilot evidence
+credentials.json
+credentials.*.json
+*.keystore
+/signing/
+/.pilot/

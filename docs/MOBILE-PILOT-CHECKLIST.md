@@ -1,6 +1,6 @@
 # Mobile pilot and release checklist
 
-Updated 17 October 2026. See [MOBILE-PLAN.md](MOBILE-PLAN.md) for phase status and [MOBILE-WORKFLOWS.md](MOBILE-WORKFLOWS.md) for native versus website coverage. This document records work still required; unchecked rows are not claims of completed testing. Use dummy accounts/schools for acceptance and preserve existing school data.
+Updated 22 October 2026. See [MOBILE-PLAN.md](MOBILE-PLAN.md) for phase status and [MOBILE-WORKFLOWS.md](MOBILE-WORKFLOWS.md) for native versus website coverage. This document records work still required; unchecked rows are not claims of completed testing. Use dummy accounts/schools for acceptance and preserve existing school data.
 
 ## M4.1 — Account security acceptance
 
@@ -23,7 +23,7 @@ Two-device walkthrough: sign in to a dummy account on the website and in Expo Go
 
 ## M5.1 — Build preparation
 
-- [ ] Re-run the isolated mobile dependency audit and review the upstream findings recorded in apps/mobile/README.md. Do not use forced incompatible package overrides.
+- [x] Re-run the isolated mobile dependency audit and review the upstream findings recorded in apps/mobile/README.md. Do not use forced incompatible package overrides.
 - [ ] Confirm Node/Expo SDK 57 compatibility, Android SDK/licenses, Java and actual adb/device connectivity. Earlier availability checks do not prove native build readiness.
 - [ ] Decide the first signed pilot target. Android preview APK is the initial route; iOS provisioning and release testing need their own supported setup.
 - [ ] Configure private signing credentials outside the repository. No keystore, password, API token, MySQL or R2 secret belongs in app.json, EXPO_PUBLIC variables or Git.
@@ -81,3 +81,6 @@ Distribution: signed pilot approval precedes wider distribution. App-store accou
 
 
 M4.7 native navigation acceptance: reload the new route graph (restart Metro with --clear if needed). Test left/right tab swipes, distant tab taps, rapid reversal, dock drags, service Back, keyboard/vertical scrolling, Reduce Motion, and logout after browsing several services. Slides should move both pages together in tab order; they begin after swipe release. Confirm /login appears on logout and Back cannot restore a previous user's tab or form. Browser tests measure paired transforms, but do not establish phone frame-rate.
+
+
+M5.1 preparation is recorded in [MOBILE-BUILD-GUIDE.md](MOBILE-BUILD-GUIDE.md). Original icons and an internal APK profile are configured. The 22 October audit still has 22 findings (19 high, 3 moderate); recording them does not resolve or waive them. SDK directories/Java/adb-file presence are checked, but licenses, actual device connectivity, signing and native installation remain unchecked.

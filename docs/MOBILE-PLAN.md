@@ -1,6 +1,6 @@
 # Mobile development plan — Schoolglass Desk
 
-Started 15 October 2026; status reviewed 17 October 2026. Native source and Expo previews are implemented; no signed production mobile release has shipped. Existing website/data remain intact. Android-first is the recommended initial target; maintain iOS-compatible source.
+Started 15 October 2026; status reviewed 22 October 2026. Native source and Expo previews are implemented; no signed production mobile release has shipped. Existing website/data remain intact. Android-first is the recommended initial target; maintain iOS-compatible source.
 
 ## Current phases and next steps
 
@@ -19,7 +19,7 @@ This table is the current source of truth; dated implementation notes below are 
 | M4.5 Calendar, reports and tab ownership | Month calendar/details/legend, report tables/PDF actions, School day hub, swipe tabs and draggable glass indicator | Implemented 17 October 2026; validation recorded in WORKLOG.md | Native swipe/material/share-sheet acceptance on both phones |
 | M4.6 Navigation and compact records | Floating content blur, simpler swipe/tab motion, marks register, aligned timetable, login glow/theme control | Implemented 18 October 2026; validation in WORKLOG.md | Physical iOS/Android motion and blur acceptance |
 | M4.7 Directional tab slides | Paired outgoing/incoming full-width slides in a shared tab navigator; preserved URLs and guards | Implemented 18 October 2026; checks in WORKLOG.md | Native transition feel and back gestures |
-| M5.1 Pilot preparation | Reproducible build setup, dependency review, signing and device matrix | Checklist documented; signed build not started | Resolve/review upstream audit gates, verify SDK/licenses and private signing setup |
+| M5.1 Pilot preparation | Reproducible build setup, dependency review, signing and device matrix | APK profile, original icons, preflight/report and build guide implemented 22 October; signed build not started | Resolve/review upstream audit gates, verify SDK/licenses and private signing setup |
 | M5.2 Device pilot | Signed Android preview, iOS preview route, lifecycle/slow-network/accessibility checks | Pending | Record actual device results and fix failures; owner accepts pilot |
 | M6 Optional extensions | Push, carefully scoped offline reads/sync, additional mobile management | Planned, not enabled | Define feature contracts and cost/privacy constraints individually; no offline writes or push without separate acceptance |
 

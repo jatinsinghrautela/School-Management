@@ -1,6 +1,6 @@
-# Schoolglass Desk mobile (M1 + M2)
+# Schoolglass Desk mobile
 
-This Expo/React Native app uses the existing Schoolglass Desk API. It is an early foundation preview, not complete mobile feature parity. Android and iOS source are supported; native device acceptance is still pending.
+This Expo/React Native app uses the existing Schoolglass Desk API. Daily student/teacher and selected leadership workflows are implemented; signed mobile release and device acceptance are still pending. Android and iOS source are supported; native device acceptance is still pending.
 
 ## Install and start
 
@@ -13,7 +13,7 @@ npm run mobile:start
 
 For a physical iPhone, first sign in to the same free Expo account in Expo CLI and Expo Go (steps below). Install Expo Go on your Android/iPhone. Use the SDK-compatible version shown by Expo. Put phone and PC on the same Wi-Fi, then scan the terminal QR code (Expo Go on Android, Camera/Expo Go on iPhone). The Metro development server requires this PC while previewing; the live website remains independent. Router, secure storage and other modules used here are included in the compatible Expo Go client; if client/SDK versions differ, use a matching client or a development build.
 
-The default API is https://schoolglass.jatinsinghrautela.com/api. Only sign in to live accounts deliberately; attendance/fees/etc. are not written by this foundation. Password change/reset/logout are real operations, even from a preview. Ordinary tests use isolated demo memory and never live credentials. Do not publish credentials or student screenshots.
+The default API is https://schoolglass.jatinsinghrautela.com/api. Only sign in to live accounts deliberately; attendance, notices, homework and fee actions write real data when you confirm them. Password change/reset/logout are real operations, even from a preview. Ordinary tests use isolated demo memory and never live credentials. Do not publish credentials or student screenshots.
 
 For local dummy data, start the API from a separate terminal with explicit demo settings and no cloud credentials. Bind to 0.0.0.0 for phone LAN access, choose port 4100, and use your PC LAN address (not localhost) in apps/mobile/.env:
 
@@ -70,7 +70,7 @@ No code or database change fixes an Expo account mismatch. Do not share Expo pas
 - Local clearing on logout, server revocation attempt, explicit warning if revocation cannot be confirmed.
 - Loading/retry/error handling including Render cold starts and Cloudflare non-JSON challenges.
 
-Student and guardian daily views are now included: notices, homework/resources, dated timetable, calendar, attendance, published results, fees/receipts and private gallery. See ../../docs/MOBILE-DAILY-VIEWS.md for role setup, backend deployment and phone checks. Homework submission, push, offline writes and complete staff/owner tools remain later work. No persistent school-record cache is used. Web preview intentionally keeps tokens in memory instead of browser persistence; it does not verify native SecureStore behavior. New screens will use existing backend permissions and protected file routes.
+Student and guardian daily views are now included: notices, homework/resources, dated timetable, calendar, attendance, published results, fees/receipts and private gallery. See ../../docs/MOBILE-DAILY-VIEWS.md for role setup, backend deployment and phone checks. Homework submission is implemented. Push, offline writes and complete staff/owner tools remain later work. No persistent school-record cache is used. Web preview intentionally keeps tokens in memory instead of browser persistence; it does not verify native SecureStore behavior. New screens will use existing backend permissions and protected file routes.
 
 ## Verify
 
@@ -141,3 +141,14 @@ The 17 October dependency audit now reports 22 findings (19 high, 3 moderate); t
 Reload the app after restarting Metro. No dependency install, API redeploy or migration is needed. Calendar has a month grid, holiday/event legend, selected-date details and monthly holiday list. Published results render as school-branded tables, with authenticated PDF download/save/share actions for eligible students/guardians and teachers. The PDFs use existing configured school logos, report formatting and teacher/principal sign-off names/lines; this update does not generate handwritten signatures.
 
 Swipe horizontally between Home, School day, Services and Profile, or drag the green-tinted glass indicator. Pages keep the tab that opened them. Tapping the active tab returns to its hub. The supplied reference inspired the elastic capsule motion; actual native optical refraction varies by platform. Verify native gestures/keyboard/back interactions, PDF sharing and glass rendering on both phones before wider distribution. Reduced Motion and Reduce Transparency fallbacks remain available.
+
+
+## M5.1 — Standalone Android pilot preparation
+
+Build/configuration steps: [Android pilot build guide](../../docs/MOBILE-BUILD-GUIDE.md). `eas.json` defines an internal standalone APK profile; no build has been submitted. Original launcher/adaptive icons are generated locally from the existing Schoolglass mark.
+
+```powershell
+npm --prefix apps/mobile run pilot:preflight -- --audit --save
+```
+
+The ignored `.pilot/preflight.json` records local tooling/configuration and audit counts without credentials. `--strict` fails until all release gates are resolved. As of 22 October 2026 the audit still reports 22 findings (19 high, 3 moderate), and project linking/signing/phone acceptance remain pending. SDK-compatible patch updates are Expo 57.0.31, Router 57.0.29 and Sharing 57.0.24. Expo Go users should restart Metro with `--clear` after installing dependencies. No Render deployment is needed.

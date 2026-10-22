@@ -4,7 +4,7 @@
   "main": "expo-router/entry",
   "dependencies": {
     "@react-native-community/datetimepicker": "9.1.0",
-    "expo": "~57.0.30",
+    "expo": "~57.0.31",
     "expo-blur": "~57.0.3",
     "expo-constants": "~57.0.22",
     "expo-crypto": "~57.0.4",
@@ -13,9 +13,9 @@
     "expo-glass-effect": "~57.0.4",
     "expo-linear-gradient": "~57.0.2",
     "expo-linking": "~57.0.13",
-    "expo-router": "~57.0.28",
+    "expo-router": "~57.0.29",
     "expo-secure-store": "~57.0.4",
-    "expo-sharing": "~57.0.23",
+    "expo-sharing": "~57.0.24",
     "expo-status-bar": "~57.0.1",
     "expo-system-ui": "~57.0.4",
     "react": "19.2.3",
@@ -41,7 +41,8 @@
     "web": "expo start --web",
     "typecheck": "tsc --noEmit",
     "lint": "expo lint",
-    "test": "node --test test/*.test.mjs"
+    "test": "node --test test/*.test.mjs",
+    "pilot:preflight": "node scripts/pilot-preflight.mjs"
   },
   "private": true,
   "type": "module",

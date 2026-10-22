@@ -547,3 +547,18 @@ Validation: typecheck/lint and all 27 tests passed; iOS/Android/web exports pass
 M4.7 guard follow-up: the public /login screen is now outside the protected tab and feature navigator. Opening / while signed out resolves to Login; logout removes the entire private navigator and its saved tab/service history. Signed-out retained service/profile/settings pages return no private content while root guards select the public screen, avoiding competing redirects into protected tabs. Added an early service-logout acceptance check and verified later logout after browsing all leadership services. Reduce Motion also sets the explicit transition duration to zero.
 
 Final M4.7 isolated browser review passed completely: paired directional transforms, dock drag/Home action, service logout/login, all leadership services, director choice/switching, teacher notices and attendance, student/guardian workflows and required-password gates. Accessibility and small-screen overflow checks passed. No production API requests or data changes.
+
+
+## 22 October 2026 — M5.1 Android pilot preparation
+
+Added an EAS internal standalone Android APK preview profile, explicit approved HTTPS API, local version/build counters, and original launcher/adaptive icons generated from the existing Schoolglass geometric mark with a reproducible Node script. No project ID placeholder, private credentials, cloud build or store submission was created. Expanded ignore rules for local pilot reports and signing material.
+
+Added a read-only `pilot:preflight` command with optional audit/local JSON report and a strict mode that fails unresolved gates. It checks release configuration, unexpected public environment names, icon-file existence, local Java/Android file presence and configured project ID without printing tokens or querying the school API. It explicitly reports no signed build. Its project-ID check is local configuration evidence, not remote account verification. Added tests for rejecting HTTP/credential-bearing endpoints, unexpected public variables and Metro-dependent builds.
+
+Applied only Expo-recommended compatible patch updates: Expo 57.0.31, Router 57.0.29 and Sharing 57.0.24, preserving SDK 57 and the mobile lockfile. Expo CLI account is signed in; Java 17.0.16, Android SDK platforms 34/35/36, build tools and adb files exist. EAS project linking, quotas, actual SDK/license/device verification, signing and physical acceptance remain open. The refreshed audit still reports 22 findings (19 high, 3 moderate); they were recorded, not waived or forced away with incompatible downgrades.
+
+Documented build, archive review, signing backup, APK install, update/versioning, cancellation, recovery and zero-investment boundaries in MOBILE-BUILD-GUIDE.md. Updated phase table, device checklist and stale README coverage statements. No backend/web changes, live school operations, paid services or signed binary produced.
+
+Validation: all 29 mobile tests passed; lint/typecheck passed; Expo compatibility check reports dependencies up to date, Doctor 21/21 passed, and Android/iOS/web exports passed. Pilot preflight config is valid and correctly reports missing EAS project setup, audit review and manual signing/device gates. Original icon inspected visually; ignored report/credential paths verified. Native acceptance remains pending.
+
+Final post-patch isolated browser review passed across leadership/director, teacher, student and guardian workflows, including directional tabs, logout guards, calendar/report reads and confirmed writes against synthetic local data only.

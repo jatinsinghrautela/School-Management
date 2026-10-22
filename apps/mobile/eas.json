@@ -1,0 +1,17 @@
+{
+  "cli": {
+    "appVersionSource": "local"
+  },
+  "build": {
+    "preview": {
+      "distribution": "internal",
+      "environment": "preview",
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://schoolglass.jatinsinghrautela.com"
+      },
+      "android": {
+        "buildType": "apk"
+      }
+    }
+  }
+}

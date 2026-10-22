@@ -8,11 +8,17 @@
     "userInterfaceStyle": "automatic",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.jatinsinghrautela.schoolglass"
+      "bundleIdentifier": "com.jatinsinghrautela.schoolglass",
+      "buildNumber": "1"
     },
     "android": {
       "package": "com.jatinsinghrautela.schoolglass",
-      "predictiveBackGestureEnabled": true
+      "predictiveBackGestureEnabled": true,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#123f3a"
+      },
+      "versionCode": 1
     },
     "plugins": [
       "expo-router",
@@ -28,6 +34,7 @@
     ],
     "web": {
       "bundler": "metro"
-    }
+    },
+    "icon": "./assets/icon.png"
   }
 }
