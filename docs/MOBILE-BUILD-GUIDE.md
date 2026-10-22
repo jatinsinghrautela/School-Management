@@ -142,3 +142,6 @@ Retry [5bc4f0eb](https://expo.dev/accounts/jatinsinghrautela/projects/schoolglas
 Open the build/install link on your Android phone, download and install the APK, then open Schoolglass Desk and sign in with a dummy school account. No Expo Go, Metro or PC is required for this Android preview. Internet and the shared API are required. Use the phone acceptance checklist before wider distribution; dependency advisories remain unresolved. The installation link is not an authentication credential, but keep this private pilot within your test group. No account or school data is embedded in the app. Runtime account access still requires server authentication.
 
 Local artifact and raw build evidence are intentionally ignored under apps/mobile/.pilot and are not committed to GitHub. Source/build fixes are recorded in commit 7b49cf9; the pre-existing local Expo tsconfig formatting/generated-type include edit remains unstaged. Do not infer that the cloud Git commit label alone describes dirty archive contents: EAS stages the reviewed local archive.
+
+
+For reusable Android APK and iOS IPA instructions covering cloud EAS, local EAS, native Android/Xcode, signing, simulator builds and contributor setup, see [Build Android and iOS locally or with Expo](MOBILE-APK-IPA-BUILDING.md).

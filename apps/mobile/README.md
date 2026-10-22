@@ -170,3 +170,6 @@ Repository-root .easignore applies to the whole Git archive. The checker verifie
 ### Updated Android pilot — 0.1.1/2
 
 The replacement APK includes login keyboard/password visibility, glass navigation contrast and sign-out confirmation fixes. Build b4b700cf-306e-4706-bba6-6cb5a39762ca succeeded and its signature matches the first APK; install it over the existing app. See the [build guide](../../docs/MOBILE-BUILD-GUIDE.md) for the current verified download, checksum, free-usage record and phone acceptance steps. Physical-device regression acceptance remains pending. No OTA update or store release is configured.
+
+
+For reusable Android APK and iOS IPA instructions covering cloud EAS, local EAS, native Android/Xcode, signing, simulator builds and contributor setup, see [Build Android and iOS locally or with Expo](../../docs/MOBILE-APK-IPA-BUILDING.md).

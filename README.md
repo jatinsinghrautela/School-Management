@@ -130,3 +130,8 @@ Phase 4 adds owner-only [platform monitoring](docs/PLATFORM-MONITORING.md) and o
 Browser regression checks: `npx playwright install chromium`, then `npm run test:e2e`. These use isolated synthetic demo data. See [browser testing instructions](docs/BROWSER-TESTS.md).
 
 The [Phase 4 local release bundle](docs/PHASE-4.md) adds school privacy notices, current-password personal exports and reviewed privacy requests under Security, a three-engine browser matrix, uptime probes and a synthetic capacity baseline. Install Firefox/WebKit alongside Chromium, then run `npm run release:verify` for a dated local evidence report. [Domain/server setup](docs/DEPLOY-LATER.md) is documented for later; no domain or production deployment is configured yet. Independent security, jurisdiction/consent/retention, actual-host recovery/HTTPS and a controlled pilot remain required before real student data.
+
+
+## Build the mobile app
+
+See [Android APK and iOS IPA builds: local tools and Expo EAS](docs/MOBILE-APK-IPA-BUILDING.md) for prerequisites, contributor/project setup, signing, cloud/local commands, device and simulator installation, costs and troubleshooting. Current Android pilot downloads and verification history are in the [pilot build guide](docs/MOBILE-BUILD-GUIDE.md).
