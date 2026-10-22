@@ -165,3 +165,8 @@ npm run pilot:archive:check -- .pilot/<archive-name>
 ```
 
 Repository-root .easignore applies to the whole Git archive. The checker verifies expected mobile config/lockfile and enforces a mobile-only source/assets/build-input allowlist. It rejects backend/web/docs/tests, environment files/examples, local evidence, signing paths and symlinks. The reviewed archive has 70 files. It does not scan file contents or upload anything. Keep .pilot outputs ignored.
+
+
+### Updated Android pilot — 0.1.1/2
+
+The replacement APK includes login keyboard/password visibility, glass navigation contrast and sign-out confirmation fixes. Build b4b700cf-306e-4706-bba6-6cb5a39762ca succeeded and its signature matches the first APK; install it over the existing app. See the [build guide](../../docs/MOBILE-BUILD-GUIDE.md) for the current verified download, checksum, free-usage record and phone acceptance steps. Physical-device regression acceptance remains pending. No OTA update or store release is configured.

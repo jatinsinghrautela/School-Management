@@ -621,3 +621,17 @@ Added a shared sign-out confirmation for the navigation button and the connectio
 
 Validation: mobile TypeScript and lint checks passed; diff whitespace check passed. Native dialog acceptance remains pending.
 
+
+
+## 22 October 2026 — Approved replacement Android APK 0.1.1/2
+
+Owner explicitly requested building the replacement APK containing login keyboard/password controls, navigation contrast and sign-out confirmation. Before upload, EAS Free usage was Android 1/15, estimated charges zero. Staged a fresh 71-file mobile-only archive: zero flagged paths, no matches for two known local secret values or checked private-key/token patterns. These are bounded checks, not a universal audit. No school data/backend source/env/signing files are included. No cloud secret export requested.
+
+Submitted build b4b700cf-306e-4706-bba6-6cb5a39762ca with preview/internal APK, same Expo-managed signing credentials, app 0.1.1/versionCode2 and unchanged package ID. CLI reported no Plain text/Sensitive preview variables and only the profile's public API URL. Existing source typecheck/lint/tests and browser checks remain passed as recorded above. Build is in progress; no duplicate job, paid upgrade, store submission or live-data mutation. Pre-existing tsconfig edit remains unstaged.
+
+
+### Replacement build finished and verified
+
+Build b4b700cf-306e-4706-bba6-6cb5a39762ca finished successfully, Gradle assembleRelease 11m50s. Downloaded 104,588,824-byte APK into ignored .pilot. SHA-256: 88009d4ba8049d7dbeca9364d114a77b399918f59a0e594fda86e3425afcdb90. apksigner verifies one RSA2048 signer with valid v2 signature; certificate SHA-256 c6992b2386a0eaf90c691021ecd92dee5efa9eccc8c338363007dccc5cf9db3f matches the prior APK. aapt confirms Schoolglass Desk, same package, version0.1.1/code2, minimumAPI24/target36, four architectures, and windowSoftInputMode0x10 (adjustResize). Exact-byte checks for two known local secrets found no APK entries; no values printed or committed.
+
+Expo Free usage after success: Android 2/15; estimated overage/total charges zero. Added current download/install link and update-over-existing instructions to the build guide/checklist; source build corresponds to commit686ea05 plus the pre-existing local tsconfig edit staged in the reviewed archive (still unstaged in Git). No APK/raw evidence/signing files or credentials committed; no school data changed. No paid subscription, duplicate build or store submission. Physical-phone regression acceptance and existing dependency review gates remain pending.

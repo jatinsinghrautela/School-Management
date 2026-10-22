@@ -94,10 +94,13 @@ Signed Android pilot ready: [install/build page](https://expo.dev/accounts/jatin
 
 ### Login keyboard regression — replacement pilot
 
-0.1.0/1 has an owner-reported Android keyboard overlap. Source fix 0.1.1/2 is prepared; replacement APK build awaits approval. After installing it, open/focus email then password, show/hide the password while the keyboard stays open, scroll to Sign in, dismiss/reopen the keyboard, rotate the phone and repeat in both themes/large text. Repeat with the mandatory three-password screen. Record actual phone results; browser short-viewport checks are not native keyboard acceptance.
+0.1.0/1 has an owner-reported Android keyboard overlap. Source fix 0.1.1/2 is prepared; replacement APK build succeeded; see the latest build-guide download. After installing it, open/focus email then password, show/hide the password while the keyboard stays open, scroll to Sign in, dismiss/reopen the keyboard, rotate the phone and repeat in both themes/large text. Repeat with the mandatory three-password screen. Record actual phone results; browser short-viewport checks are not native keyboard acceptance.
 
 
 Navigation contrast regression: prepared 0.1.1/2 includes stronger glass backings for light/dark navigation and readable inactive labels. On both phones, inspect the top bar, Sign out, all dock labels and the moving selected capsule over the hero poster and pale/dark record cards, before and after scrolling. Repeat in both themes and with Reduce Transparency enabled. Local browser screenshots passed; native material results still need phone confirmation.
 
 
 Sign-out confirmation: tap the top navigation Sign out, cancel and confirm the current session remains usable; reopen, dismiss with Android Back/outside and verify the same. Reopen and choose Sign out: expect login and no private screen restored via Back. Repeat from Connection paused and in both themes. Browser preview uses its own confirmation dialog; native phone appearance remains pending.
+
+
+0.1.1/2 replacement artifact verified: [download](https://expo.dev/artifacts/eas/t8fwjBCNdE_BUdw9zDdCULMOu8MZ99RJMR1ESt8Pg6Y.apk) / [build](https://expo.dev/accounts/jatinsinghrautela/projects/schoolglass-desk/builds/b4b700cf-306e-4706-bba6-6cb5a39762ca). Signature matches 0.1.0/1; versionCode incremented to2 and manifest adjustResize checked. Free Android usage now 2/15, estimated charges $0. Owner installation and native keyboard/contrast/confirmation acceptance remain pending; earlier awaiting-approval statements above are historical handoffs.
