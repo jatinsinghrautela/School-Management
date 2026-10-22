@@ -1,13 +1,13 @@
 # Schoolglass Desk — Android pilot build guide
 
-Updated 22 October 2026. The owner approved a private Android build after confidentiality review. The mobile-only archive was uploaded to Expo EAS; build 5bc4f0eb-154f-4fb0-b497-59d8a324fed7 is in progress. No installation, phone acceptance or store release is claimed. Preserve all school data. Test with dummy accounts: a standalone app uses the same live API and its writes are real.
+Updated 22 October 2026. The owner approved a private Android build after confidentiality review. The mobile-only archive was uploaded to Expo EAS; build 5bc4f0eb-154f-4fb0-b497-59d8a324fed7 finished successfully. No installation, phone acceptance or store release is claimed. Preserve all school data. Test with dummy accounts: a standalone app uses the same live API and its writes are real.
 
 ## Current readiness
 
 - SDK-compatible Expo patch updates applied; original 1024 px launcher/adaptive icons generated locally from the existing geometric Schoolglass mark.
 - `apps/mobile/eas.json` has one `preview` profile: internally distributed, standalone Android APK, approved HTTPS API, no development client/Metro dependency.
 - Java 17, Android platforms 34/35/36, build tools and adb files exist on this PC. This does not establish accepted licenses, a working Gradle build or a connected/authorized phone.
-- Expo project linked: @jatinsinghrautela/schoolglass-desk, ID eef665c0-7729-4f71-89f2-99daf806fa68. EAS usage checked 22 October: Free plan, Android builds 0/15 used in the current cycle, no estimated charges. Re-check before submission. Expo-managed Android signing credentials were created for the first attempt and reused for the retry; no private key was exported. Build completion, installation and phone acceptance remain pending.
+- Expo project linked: @jatinsinghrautela/schoolglass-desk, ID eef665c0-7729-4f71-89f2-99daf806fa68. EAS usage checked 22 October: Free plan, Android builds 0/15 used in the current cycle, no estimated charges. After the successful build: Android 1/15 used, overall 1/30, no overages and estimated total charges $0. Re-check before another submission. Expo-managed Android signing credentials were created for the first attempt and reused for the retry; no private key was exported. The signed Android build succeeded; installation and phone acceptance remain pending.
 - Audit on 22 October: **22 findings: 19 high, 3 moderate**. They include Expo/Metro/React Native dependency chains; they are package findings, not 22 independent confirmed exploits. Do not assume they are all harmless or all present in the runtime bundle. Review before distribution; do not run `npm audit fix --force`, which proposes incompatible downgrades.
 
 ## 1. Verify source and local configuration
@@ -103,4 +103,21 @@ The owner explicitly approved source upload provided confidential data was exclu
 
 First job [3b9543f2](https://expo.dev/accounts/jatinsinghrautela/projects/schoolglass-desk/builds/3b9543f2-b1b0-4499-ad73-ac497dfb6406) failed during npm installation: the lockfile omitted optional @emnapi/core/runtime 1.11.3 records. Reproduced with npm 10, repaired in a clean isolated folder, and verified using npm 10 Linux-targeted ci dry-run. No existing dependency version or application behavior changed. EAS usage after this early failure remained Android 0/15 with estimated charges zero.
 
-Retry [5bc4f0eb](https://expo.dev/accounts/jatinsinghrautela/projects/schoolglass-desk/builds/5bc4f0eb-154f-4fb0-b497-59d8a324fed7) uses the repaired lockfile and the same Expo-managed signing key. Its archive passed the mobile-only path check; compared with the content-reviewed archive, only public npm lockfile metadata changed. Build is currently in progress. Do not start a duplicate job; inspect this job's status/logs first. APK verification, installation and physical-device acceptance remain pending. No paid upgrade, store submission or school-data mutation was performed. Public distribution remains gated by [dependency review](MOBILE-DEPENDENCY-REVIEW.md).
+Retry [5bc4f0eb](https://expo.dev/accounts/jatinsinghrautela/projects/schoolglass-desk/builds/5bc4f0eb-154f-4fb0-b497-59d8a324fed7) uses the repaired lockfile and the same Expo-managed signing key. Its archive passed the mobile-only path check; compared with the content-reviewed archive, only public npm lockfile metadata changed. Build finished successfully: Gradle assembleRelease completed in 20 minutes 33 seconds. Do not start a duplicate job; inspect this job's status/logs first. APK signature/identity verification passed; installation and physical-device acceptance remain pending. No paid upgrade, store submission or school-data mutation was performed. Public distribution remains gated by [dependency review](MOBILE-DEPENDENCY-REVIEW.md).
+
+## Verified Android pilot artifact — 22 October 2026
+
+- [Build details and install/QR page](https://expo.dev/accounts/jatinsinghrautela/projects/schoolglass-desk/builds/5bc4f0eb-154f-4fb0-b497-59d8a324fed7)
+- [Download Android APK](https://expo.dev/artifacts/eas/9sxmFOIysFgWzNVl-pVmwrLbyNz33IaVn05qax7McsA.apk)
+- App: Schoolglass Desk; package `com.jatinsinghrautela.schoolglass`; version `0.1.0`; versionCode `1`.
+- Android minimum API 24 (Android 7.0), target API 36. ARM64, ARMv7, x86 and x86_64 native libraries packaged. This metadata does not prove every device works.
+- Download size: 104,586,556 bytes (about 99.7 MiB).
+- APK SHA-256: `36354c4309e7ea3637fbe4662a7e254cf8402c78547a82ef9a2fd44b3effe050`.
+- Android build-tools apksigner verification passed using APK Signature Scheme v2, one RSA 2048-bit signer.
+- Signing certificate SHA-256: `c6992b2386a0eaf90c691021ecd92dee5efa9eccc8c338363007dccc5cf9db3f` (public fingerprint, not a private key).
+- Known local secret-value exact-byte checks found no matches in APK entries. This bounded check does not replace a complete security audit.
+- Expo Free usage after completion: Android 1/15; iOS 0/15; total 1/30; overages zero; estimated charges $0 at inspection.
+
+Open the build/install link on your Android phone, download and install the APK, then open Schoolglass Desk and sign in with a dummy school account. No Expo Go, Metro or PC is required for this Android preview. Internet and the shared API are required. Use the phone acceptance checklist before wider distribution; dependency advisories remain unresolved. The installation link is not an authentication credential, but keep this private pilot within your test group. No account or school data is embedded in the app. Runtime account access still requires server authentication.
+
+Local artifact and raw build evidence are intentionally ignored under apps/mobile/.pilot and are not committed to GitHub. Source/build fixes are recorded in commit 7b49cf9; the pre-existing local Expo tsconfig formatting/generated-type include edit remains unstaged. Do not infer that the cloud Git commit label alone describes dirty archive contents: EAS stages the reviewed local archive.

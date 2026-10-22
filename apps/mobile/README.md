@@ -156,7 +156,7 @@ The ignored `.pilot/preflight.json` records local tooling/configuration and audi
 
 ### Expo link and archive review — 22 October 2026
 
-Project linked to @jatinsinghrautela/schoolglass-desk. Read [dependency review](../../docs/MOBILE-DEPENDENCY-REVIEW.md) and the [build guide](../../docs/MOBILE-BUILD-GUIDE.md) before a pilot build. The owner approved a confidentiality-reviewed private Android build. The first job failed at dependency installation; the repaired lockfile passed npm 10 Linux-targeted validation. Retry 5bc4f0eb-154f-4fb0-b497-59d8a324fed7 is running; APK/device acceptance is pending. See the build guide for current status.
+Project linked to @jatinsinghrautela/schoolglass-desk. Read [dependency review](../../docs/MOBILE-DEPENDENCY-REVIEW.md) and the [build guide](../../docs/MOBILE-BUILD-GUIDE.md) before a pilot build. The owner approved a confidentiality-reviewed private Android build. The first job failed at dependency installation; the repaired lockfile passed npm 10 Linux-targeted validation. Retry 5bc4f0eb-154f-4fb0-b497-59d8a324fed7 finished successfully; phone acceptance is pending. See the build guide for current status.
 
 From apps/mobile, create a fresh local archive with EAS build:inspect, then run:
 

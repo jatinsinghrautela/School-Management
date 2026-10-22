@@ -586,3 +586,10 @@ A proposed full cloud-environment export was rejected by automatic approval revi
 First job 3b9543f2-b1b0-4499-ad73-ac497dfb6406 failed during npm ci: missing optional @emnapi/core/runtime 1.11.3 lockfile records. Reproduced using npm 10; repaired in a clean isolated folder and passed Linux-targeted npm 10 ci dry-run. No existing package versions changed. EAS account usage after the early failure remained Android 0/15, estimated charges zero. Retry job 5bc4f0eb-154f-4fb0-b497-59d8a324fed7 is running with the repaired lockfile and existing remote signing key; no duplicate job, paid plan or store submission requested.
 
 Validation: typecheck, lint and all 30 mobile tests passed with loopback access. The initial sandbox-only integration run could not connect to its synthetic local API; rerunning with local network access passed. Archive checker passed with 70 files/zero flagged paths. Native build result and phone acceptance are still pending; known upstream dependency gates remain. Pre-existing tsconfig edit remains unstaged.
+
+
+### Successful artifact verification
+
+Retry 5bc4f0eb-154f-4fb0-b497-59d8a324fed7 finished successfully (Gradle assembleRelease 20m33s). Downloaded the 104,586,556-byte APK into ignored .pilot. apksigner verification passed: one RSA 2048-bit signer, v2 signature valid. aapt confirms Schoolglass Desk, com.jatinsinghrautela.schoolglass, 0.1.0/1, minimum API24/target36 and four native architectures. APK SHA-256 is 36354c4309e7ea3637fbe4662a7e254cf8402c78547a82ef9a2fd44b3effe050. Exact-byte checks for two known local secret values found no matching APK entries; this is bounded verification, not a universal audit.
+
+Post-success Expo usage: Free, Android 1/15, iOS 0/15, total 1/30; no overages and estimated total charges zero. Added artifact/install links, identity/hash/signature details and the dummy-account acceptance handoff to the build guide. No APK, raw signed log URLs, account usage export, private signing key, credentials or school data are committed. Phone installation/acceptance, iOS signed distribution and upstream dependency gates remain pending. No paid plan or store submission was made.
