@@ -84,3 +84,6 @@ M4.7 native navigation acceptance: reload the new route graph (restart Metro wit
 
 
 M5.1 preparation is recorded in [MOBILE-BUILD-GUIDE.md](MOBILE-BUILD-GUIDE.md). Original icons and an internal APK profile are configured. The 22 October audit still has 22 findings (19 high, 3 moderate); recording them does not resolve or waive them. SDK directories/Java/adb-file presence are checked, but licenses, actual device connectivity, signing and native installation remain unchecked.
+
+
+22 October continuation: Expo project linked; Free allowance verified at 0/15 Android builds used; repository-root .easignore and local archive checker verified (334 files, zero flagged paths). Cloud build upload was blocked by automatic approval review and was not submitted. No signing, installation or phone check is marked complete. See MOBILE-DEPENDENCY-REVIEW.md for the three underlying unresolved advisories.

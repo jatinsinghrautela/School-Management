@@ -42,7 +42,8 @@
     "typecheck": "tsc --noEmit",
     "lint": "expo lint",
     "test": "node --test test/*.test.mjs",
-    "pilot:preflight": "node scripts/pilot-preflight.mjs"
+    "pilot:preflight": "node scripts/pilot-preflight.mjs",
+    "pilot:archive:check": "node scripts/pilot-archive-check.mjs"
   },
   "private": true,
   "type": "module",

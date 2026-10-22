@@ -152,3 +152,16 @@ npm --prefix apps/mobile run pilot:preflight -- --audit --save
 ```
 
 The ignored `.pilot/preflight.json` records local tooling/configuration and audit counts without credentials. `--strict` fails until all release gates are resolved. As of 22 October 2026 the audit still reports 22 findings (19 high, 3 moderate), and project linking/signing/phone acceptance remain pending. SDK-compatible patch updates are Expo 57.0.31, Router 57.0.29 and Sharing 57.0.24. Expo Go users should restart Metro with `--clear` after installing dependencies. No Render deployment is needed.
+
+
+### Expo link and archive review — 22 October 2026
+
+Project linked to @jatinsinghrautela/schoolglass-desk. Read [dependency review](../../docs/MOBILE-DEPENDENCY-REVIEW.md) and the [build guide](../../docs/MOBILE-BUILD-GUIDE.md) before a pilot build. No cloud build or APK has been produced; source upload awaits explicit approval after automatic approval review blocked submission.
+
+From apps/mobile, create a fresh local archive with EAS build:inspect, then run:
+
+```powershell
+npm run pilot:archive:check -- .pilot/<archive-name>
+```
+
+Repository-root .easignore applies to the whole Git archive. The checker verifies expected mobile config/lockfile and rejects local evidence, Git metadata, environment/signing paths and symlinks. It does not scan file contents or upload anything. Keep .pilot outputs ignored.

@@ -1,13 +1,13 @@
 # Schoolglass Desk — Android pilot build guide
 
-Prepared 22 October 2026. M5.1 provides build configuration and local checks. No signed APK, IPA, cloud build or store release has been produced. Preserve all school data. Test with dummy accounts: a standalone app uses the same live API and its writes are real.
+Prepared 22 October 2026. Expo project linking and local archive review are complete; cloud source upload/build submission awaits explicit approval. No signed APK, IPA, cloud build or store release has been produced. Preserve all school data. Test with dummy accounts: a standalone app uses the same live API and its writes are real.
 
 ## Current readiness
 
 - SDK-compatible Expo patch updates applied; original 1024 px launcher/adaptive icons generated locally from the existing geometric Schoolglass mark.
 - `apps/mobile/eas.json` has one `preview` profile: internally distributed, standalone Android APK, approved HTTPS API, no development client/Metro dependency.
 - Java 17, Android platforms 34/35/36, build tools and adb files exist on this PC. This does not establish accepted licenses, a working Gradle build or a connected/authorized phone.
-- Expo CLI is signed in. EAS project linking, account build allowance, signing setup, actual build/install and phone acceptance remain to be verified.
+- Expo project linked: @jatinsinghrautela/schoolglass-desk, ID eef665c0-7729-4f71-89f2-99daf806fa68. EAS usage checked 22 October: Free plan, Android builds 0/15 used in the current cycle, no estimated charges. Re-check before submission. Signing, actual build/install and phone acceptance remain pending.
 - Audit on 22 October: **22 findings: 19 high, 3 moderate**. They include Expo/Metro/React Native dependency chains; they are package findings, not 22 independent confirmed exploits. Do not assume they are all harmless or all present in the runtime bundle. Review before distribution; do not run `npm audit fix --force`, which proposes incompatible downgrades.
 
 ## 1. Verify source and local configuration
@@ -42,7 +42,7 @@ npx expo whoami
 npx eas-cli@latest init
 ```
 
-Select/create the project for Schoolglass Desk under your own account. Review changes to app.json: EAS adds a real `extra.eas.projectId`. No placeholder is supplied here. Commit that non-secret ID after checking the account/project. Re-run the preflight to confirm the ID is present, then verify the actual project/account with `npx eas-cli@latest project:info`. The local preflight cannot prove that a project ID exists remotely. Do not add database, R2 or school credentials to Expo settings.
+Select/create the project for Schoolglass Desk under your own account. Review changes to app.json: EAS adds a real `extra.eas.projectId`. The repository now contains the real project ID above; do not create a duplicate project. Commit that non-secret ID after checking the account/project. Re-run the preflight to confirm the ID is present, then verify the actual project/account with `npx eas-cli@latest project:info`. The local preflight cannot prove that a project ID exists remotely. Do not add database, R2 or school credentials to Expo settings.
 
 Before starting a build, check your account dashboard's current Free allowance and billing settings. A free account does not imply unlimited builds. Stop if the quota is exhausted or an upgrade/payment is requested. No billing plan or build job is enabled by repository configuration alone.
 
@@ -50,7 +50,16 @@ Before starting a build, check your account dashboard's current Free allowance a
 
 The preview profile explicitly uses `https://schoolglass.jatinsinghrautela.com`. Every `EXPO_PUBLIC_*` value is bundled into the app and visible to recipients. Only the API URL is approved. Review EAS preview-environment variables for accidental overrides; do not put server secrets there. Android application ID is `com.jatinsinghrautela.schoolglass`.
 
-Before uploading, inspect the build archive using the EAS CLI's build inspection feature, and check its current `--help` for supported options. Ensure ignored `.env`, API data/uploads, `.pilot`, signing files and credentials are absent. Do not attach that archive to GitHub or chat. The checked-in .gitignore files exclude local data, native generated directories and private signing material; review ignores again if new secret filenames are introduced.
+Before uploading, inspect a fresh build archive and run its local checker:
+
+```powershell
+npx eas-cli@latest build:inspect --platform android --stage archive --profile preview --output .pilot/<new-archive-name>
+npm run pilot:archive:check -- .pilot/<new-archive-name>
+```
+
+These commands create/check a local copy, not a cloud build. The checked 22 October archive had 334 files and zero flagged paths. Use a new output directory; do not force-delete an old one casually. Repository-root .easignore is required because EAS stages the Git root, not just apps/mobile. It excludes Git metadata, local evidence, environment files and signing material. The checker rejects links and expected private path names, but is not a content-based secret scanner. Review new configuration values before each upload.
+
+Ensure ignored `.env`, API data/uploads, `.pilot`, signing files and credentials are absent. Do not attach that archive to GitHub or chat. The checked-in .gitignore files exclude local data, native generated directories and private signing material; review ignores again if new secret filenames are introduced.
 
 Review the original icon on a round/squircle Android launcher and on iOS. Regenerate with `node apps/mobile/scripts/generate-brand-assets.mjs` from the repository root. These are original code-drawn assets, not downloaded artwork; store branding acceptance remains a manual step.
 
@@ -86,3 +95,8 @@ Keep iPhone testing in compatible Expo Go for now. An Android APK cannot install
 ## Reference sources
 
 [Expo APK profiles](https://docs.expo.dev/build-reference/apk/), [EAS configuration](https://docs.expo.dev/build/eas-json/), [internal distribution](https://docs.expo.dev/build/internal-distribution/), [SDK 57 reference](https://docs.expo.dev/versions/v57.0.0/). Account quotas and platform requirements can change; verify them before requesting a build.
+
+
+## Current handoff
+
+The Expo project and free allowance are verified, and the local archive passes the privacy-path check. Automatic approval review rejected cloud submission because source/configuration would be uploaded to Expo and build allowance consumed without explicit approval for that destination/action. No build was queued. The next step requires approval to upload the reviewed source to Expo EAS and consume one included Android build; no paid plan or store submission is proposed. Read [dependency review](MOBILE-DEPENDENCY-REVIEW.md) before considering wider distribution.

@@ -35,6 +35,13 @@
     "web": {
       "bundler": "metro"
     },
-    "icon": "./assets/icon.png"
+    "icon": "./assets/icon.png",
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "eef665c0-7729-4f71-89f2-99daf806fa68"
+      }
+    },
+    "owner": "jatinsinghrautela"
   }
 }

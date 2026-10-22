@@ -562,3 +562,16 @@ Documented build, archive review, signing backup, APK install, update/versioning
 Validation: all 29 mobile tests passed; lint/typecheck passed; Expo compatibility check reports dependencies up to date, Doctor 21/21 passed, and Android/iOS/web exports passed. Pilot preflight config is valid and correctly reports missing EAS project setup, audit review and manual signing/device gates. Original icon inspected visually; ignored report/credential paths verified. Native acceptance remains pending.
 
 Final post-patch isolated browser review passed across leadership/director, teacher, student and guardian workflows, including directional tabs, logout guards, calendar/report reads and confirmed writes against synthetic local data only.
+
+
+## 22 October 2026 — Expo linking, quota verification and upload review
+
+Created/linked the free @jatinsinghrautela/schoolglass-desk project (eef665c0-7729-4f71-89f2-99daf806fa68) under the already signed-in owner account and configured its existing original icon. Checked EAS usage: Free plan, Android 0/15 builds used for the current cycle and estimated charges zero at the time of inspection. No paid upgrade or store submission was requested.
+
+Reviewed the 22 audit findings against their three advisory roots and installed/registry metadata. braces 3.0.3 and node-forge 1.4.0 have no newer registry fix; patched decode-uri-component 0.5.0 is ESM-only while the installed query-string expects a CommonJS callable. No unverified override, major downgrade or audit suppression was applied. Added MOBILE-DEPENDENCY-REVIEW.md; public distribution remains gated.
+
+Local EAS staging initially included Git metadata and ignored pilot reports. EAS's Git-root staging requires repository-root .easignore; added explicit exclusions for metadata, local evidence, environment/signing material and generated native directories while retaining example configuration. Added a read-only pilot:archive:check command that rejects private path patterns/symlinks, checks mobile config/lockfile and limits inspection to a dedicated canonical directory inside .pilot. Verified the revised local archive: 334 files, zero flagged paths. It is not a content secret scanner.
+
+Automatic approval review rejected the attempted cloud-build action before execution because it would upload source/configuration to Expo and consume allowance without explicit authorization for that upload. No build was queued, no artifact/signing key produced, and the rejection was not bypassed. Completed local preparation and documented the exact pending approval: upload reviewed source to Expo EAS and consume one included Android build, without paid plan or store submission. No school API/data was touched.
+
+Validation: all 30 tests, typecheck and lint passed. Archive scanner tests cover metadata, local records, environment/signing files, Windows/case variants and allowed examples; actual revised archive passed. Existing app runtime is unchanged apart from its non-secret Expo project configuration; previous source/export/browser validation remains recorded in the earlier entry. Pre-existing tsconfig edit remains unstaged.
