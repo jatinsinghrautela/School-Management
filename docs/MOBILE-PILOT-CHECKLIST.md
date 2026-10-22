@@ -98,3 +98,6 @@ Signed Android pilot ready: [install/build page](https://expo.dev/accounts/jatin
 
 
 Navigation contrast regression: prepared 0.1.1/2 includes stronger glass backings for light/dark navigation and readable inactive labels. On both phones, inspect the top bar, Sign out, all dock labels and the moving selected capsule over the hero poster and pale/dark record cards, before and after scrolling. Repeat in both themes and with Reduce Transparency enabled. Local browser screenshots passed; native material results still need phone confirmation.
+
+
+Sign-out confirmation: tap the top navigation Sign out, cancel and confirm the current session remains usable; reopen, dismiss with Android Back/outside and verify the same. Reopen and choose Sign out: expect login and no private screen restored via Back. Repeat from Connection paused and in both themes. Browser preview uses its own confirmation dialog; native phone appearance remains pending.

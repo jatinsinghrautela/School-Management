@@ -613,3 +613,11 @@ Owner screenshots showed inactive light-theme dock labels blending into the dark
 Strengthened unselected tab foreground colours in both themes and made the small Sign out label use the primary readable text colour. Preserved dock position, green selected indicator, gestures and transitions. Mobile data, backend and web UI are unchanged.
 
 Validation: typecheck/lint and all 30 mobile tests passed; web export passed. Isolated synthetic principal sign-in reviewed both themes before/after scrolling and at 320px width, with zero page errors/horizontal overflow and all four tab labels visible. Screenshots were inspected for light/dark poster and scrolled states, plus the small light layout. All API traffic was redirected to an ephemeral local demo store; external requests blocked and no live school data touched. Local screenshots/review scripts remain ignored in .pilot. Native Android/iOS material rendering remains a physical-phone acceptance check. This joins the prepared 0.1.1/2 login correction; no new EAS build or quota consumption was started. Pre-existing tsconfig edit remains unstaged.
+
+
+## 22 October 2026 — Confirm before signing out
+
+Added a shared sign-out confirmation for the navigation button and the connection-paused screen. Android/iOS show Cancel and Sign out; Cancel, Android Back and outside dismissal leave the session unchanged. Only the explicit Sign out callback invokes the existing session cleanup/revocation. iOS alert follows the selected app theme, with Cancel preferred; the web preview uses the browser confirmation dialog. No new dependency, school data change or cloud build. Native popup appearance/dismissal remains a phone check. This is part of prepared 0.1.1/2.
+
+Validation: mobile TypeScript and lint checks passed; diff whitespace check passed. Native dialog acceptance remains pending.
+

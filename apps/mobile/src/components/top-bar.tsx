@@ -1,3 +1,4 @@
+import { confirmSignOut } from "./confirm-sign-out";
 import { BrandMark } from "./hero";
 import { Icon } from "./icon";
 import React from "react";
@@ -124,7 +125,9 @@ export function TopBar() {
             <Pressable
               accessibilityRole="button"
               accessibilityLabel="Sign out"
-              onPress={() => void session.logout()}
+              onPress={() =>
+                confirmSignOut(() => void session.logout(), dark)
+              }
               style={{
                 minWidth: 52,
                 gap: 2,

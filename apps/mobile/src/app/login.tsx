@@ -15,6 +15,7 @@ import { Redirect } from "expo-router";
 import { needsSchoolChoice } from "../core/session";
 import { api, endpoint, useMobile } from "../provider";
 import { Busy, Button, Card, Copy, ErrorText, Field } from "../components/ui";
+import { confirmSignOut } from "../components/confirm-sign-out";
 import { LoginGlow } from "../components/login-glow";
 import { Dashboard } from "../components/dashboard";
 function SignIn({ keyboardOpen }: { keyboardOpen: boolean }) {
@@ -177,7 +178,7 @@ function PasswordChange() {
   );
 }
 export default function Home() {
-  const { state, session, colors } = useMobile();
+  const { state, session, colors, dark } = useMobile();
   const container = useRef<View>(null);
   const [keyboardOffset, setKeyboardOffset] = useState(0);
   const [keyboardOpen, setKeyboardOpen] = useState(false);
@@ -252,7 +253,9 @@ export default function Home() {
               <Button
                 label="Sign out on this device"
                 secondary
-                onPress={() => void session.logout()}
+                onPress={() =>
+                  confirmSignOut(() => void session.logout(), dark)
+                }
               />
             </>
           ) : state.status === "signedOut" ? (
