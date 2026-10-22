@@ -95,3 +95,6 @@ Signed Android pilot ready: [install/build page](https://expo.dev/accounts/jatin
 ### Login keyboard regression — replacement pilot
 
 0.1.0/1 has an owner-reported Android keyboard overlap. Source fix 0.1.1/2 is prepared; replacement APK build awaits approval. After installing it, open/focus email then password, show/hide the password while the keyboard stays open, scroll to Sign in, dismiss/reopen the keyboard, rotate the phone and repeat in both themes/large text. Repeat with the mandatory three-password screen. Record actual phone results; browser short-viewport checks are not native keyboard acceptance.
+
+
+Navigation contrast regression: prepared 0.1.1/2 includes stronger glass backings for light/dark navigation and readable inactive labels. On both phones, inspect the top bar, Sign out, all dock labels and the moving selected capsule over the hero poster and pale/dark record cards, before and after scrolling. Repeat in both themes and with Reduce Transparency enabled. Local browser screenshots passed; native material results still need phone confirmation.

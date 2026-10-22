@@ -165,24 +165,33 @@ export function GlassSurface({
           blurMethod="dimezisBlurViewSdk31Plus"
           intensity={65}
           tint={dark ? "dark" : "light"}
+          style={StyleSheet.absoluteFill}
+        />
+      )}
+      {/* Keep foreground contrast independent of the sampled poster and native blur tint.
+          This layer must be ABOVE the material on Android, iOS and web. */}
+      {!opaque ? (
+        <View
+          pointerEvents="none"
+          testID="navigation-contrast-tint"
           style={[
             StyleSheet.absoluteFill,
             {
               backgroundColor: green
                 ? dark
-                  ? "rgba(43,100,83,0.45)"
-                  : "rgba(163,227,199,0.50)"
+                  ? "rgba(21,65,55,0.86)"
+                  : "rgba(213,241,231,0.86)"
                 : dark
                   ? floating
-                    ? "rgba(20,35,49,0.38)"
-                    : "rgba(20,35,49,0.85)"
+                    ? "rgba(16,30,43,0.88)"
+                    : "rgba(16,30,43,0.94)"
                   : floating
-                    ? "rgba(250,253,255,0.40)"
-                    : "rgba(250,253,255,0.82)",
+                    ? "rgba(248,253,255,0.88)"
+                    : "rgba(248,253,255,0.94)",
             },
           ]}
         />
-      )}
+      ) : null}
       {!opaque ? (
         <LinearGradient
           pointerEvents="none"

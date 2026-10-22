@@ -137,7 +137,7 @@ export function TopBar() {
               <Icon name="logout" color={colors.accent} size={19} />
               <Text
                 style={{
-                  color: colors.accent,
+                  color: colors.ink,
                   fontSize: 10,
                   fontWeight: "700",
                 }}

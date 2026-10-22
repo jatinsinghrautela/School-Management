@@ -129,6 +129,7 @@ export function LiquidTabs() {
     [position, stretch, driver, settle],
   );
   const names = ["Home", "School day", "Services", "Profile"];
+  const inactiveInk = dark ? "#d0dfdf" : "#344f53";
   return (
     <GlassSurface
       floating
@@ -217,12 +218,12 @@ export function LiquidTabs() {
           >
             <Icon
               name={name}
-              color={tabs.index === i ? colors.ink : colors.muted}
+              color={tabs.index === i ? colors.ink : inactiveInk}
               size={24}
             />
             <Text
               style={{
-                color: tabs.index === i ? colors.ink : colors.muted,
+                color: tabs.index === i ? colors.ink : inactiveInk,
                 fontSize: 10,
                 fontWeight: tabs.index === i ? "800" : "600",
               }}
