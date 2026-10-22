@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
+  Keyboard,
   KeyboardAvoidingView,
   Platform,
   RefreshControl,
@@ -16,7 +17,7 @@ import { api, endpoint, useMobile } from "../provider";
 import { Busy, Button, Card, Copy, ErrorText, Field } from "../components/ui";
 import { LoginGlow } from "../components/login-glow";
 import { Dashboard } from "../components/dashboard";
-function SignIn() {
+function SignIn({ keyboardOpen }: { keyboardOpen: boolean }) {
   const { session, state, colors } = useMobile();
   const { height } = useWindowDimensions();
   const [email, setEmail] = useState(""),
@@ -38,11 +39,11 @@ function SignIn() {
   return (
     <>
       <View style={{ gap: 8, alignItems: "center" }}>
-        <LoginGlow compact={height <= 700} />
+        {!keyboardOpen ? <LoginGlow compact={height <= 700} /> : null}
         <Text
           style={{
             color: colors.ink,
-            fontSize: height > 700 ? 28 : 23,
+            fontSize: keyboardOpen ? 19 : height > 700 ? 28 : 23,
             lineHeight: 32,
             fontWeight: "800",
             textAlign: "center",
@@ -177,21 +178,42 @@ function PasswordChange() {
 }
 export default function Home() {
   const { state, session, colors } = useMobile();
-  const [viewport, setViewport] = useState(0),
-    [content, setContent] = useState(0);
+  const container = useRef<View>(null);
+  const [keyboardOffset, setKeyboardOffset] = useState(0);
+  const [keyboardOpen, setKeyboardOpen] = useState(false);
+  useEffect(() => {
+    const shown = Keyboard.addListener("keyboardDidShow", () =>
+      setKeyboardOpen(true),
+    );
+    const hidden = Keyboard.addListener("keyboardDidHide", () =>
+      setKeyboardOpen(false),
+    );
+    return () => {
+      shown.remove();
+      hidden.remove();
+    };
+  }, []);
   const login = state.status === "signedOut";
   if (needsSchoolChoice(state)) return <Redirect href="/choose-school" />;
   return (
-    <SafeAreaView edges={["left", "right"]} style={{ flex: 1 }}>
+    <SafeAreaView
+      ref={container}
+      edges={["left", "right", "bottom"]}
+      style={{ flex: 1 }}
+      onLayout={() => {
+        // The custom top bar sits outside this screen; account for its real height.
+        container.current?.measureInWindow((_, y) => setKeyboardOffset(y));
+      }}
+    >
       <KeyboardAvoidingView
         style={{ flex: 1 }}
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={keyboardOffset}
       >
         <ScrollView
           keyboardShouldPersistTaps="handled"
-          onLayout={(event) => setViewport(event.nativeEvent.layout.height)}
-          onContentSizeChange={(_, h) => setContent(h)}
-          scrollEnabled={!login || !viewport || content > viewport + 2}
+          style={{ flex: 1 }}
+          keyboardDismissMode={Platform.OS === "ios" ? "interactive" : "on-drag"}
           bounces={!login}
           showsVerticalScrollIndicator={!login}
           contentContainerStyle={[
@@ -201,7 +223,7 @@ export default function Home() {
               paddingTop: 12,
               gap: 12,
               flexGrow: 1,
-              justifyContent: "center",
+              justifyContent: keyboardOpen ? "flex-start" : "center",
             },
           ]}
           refreshControl={
@@ -235,7 +257,7 @@ export default function Home() {
             </>
           ) : state.status === "signedOut" ? (
             <>
-              <SignIn />
+              <SignIn keyboardOpen={keyboardOpen} />
             </>
           ) : state.identity?.user.passwordChangeRequired ? (
             <PasswordChange />

@@ -90,3 +90,8 @@ M5.1 preparation is recorded in [MOBILE-BUILD-GUIDE.md](MOBILE-BUILD-GUIDE.md). 
 
 
 Signed Android pilot ready: [install/build page](https://expo.dev/accounts/jatinsinghrautela/projects/schoolglass-desk/builds/5bc4f0eb-154f-4fb0-b497-59d8a324fed7). APK 0.1.0/1 verified with apksigner; package/minimum/target metadata checked. Android usage is now 1/15 and estimated charges $0. Test on a physical Android phone with dummy accounts; record the result separately from build verification. All phone-result rows remain pending until actually tested.
+
+
+### Login keyboard regression — replacement pilot
+
+0.1.0/1 has an owner-reported Android keyboard overlap. Source fix 0.1.1/2 is prepared; replacement APK build awaits approval. After installing it, open/focus email then password, show/hide the password while the keyboard stays open, scroll to Sign in, dismiss/reopen the keyboard, rotate the phone and repeat in both themes/large text. Repeat with the mandatory three-password screen. Record actual phone results; browser short-viewport checks are not native keyboard acceptance.

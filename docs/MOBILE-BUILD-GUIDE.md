@@ -2,6 +2,12 @@
 
 Updated 22 October 2026. The owner approved a private Android build after confidentiality review. The mobile-only archive was uploaded to Expo EAS; build 5bc4f0eb-154f-4fb0-b497-59d8a324fed7 finished successfully. No installation, phone acceptance or store release is claimed. Preserve all school data. Test with dummy accounts: a standalone app uses the same live API and its writes are real.
 
+## Login correction awaiting a replacement APK
+
+The owner reported that the 0.1.0/1 Android pilot hides the password behind the keyboard and has no visibility control. Source for 0.1.1/2 corrects Android keyboard avoidance, measures the custom top bar offset, keeps login scrolling available, and compacts the decorative header while the keyboard is open. Shared password fields now have accessible show/hide controls. Android resize mode is explicit. The APK linked below is still the original 0.1.0/1 build and does not contain this correction. A replacement build/install is required; no OTA updates are configured. The prior approval covered one included build; another cloud build has not been started pending approval to use the next included build.
+
+Validation: typecheck/lint and 30 mobile tests passed. Six isolated browser cases passed across light/dark and 390x844, 360x640, 360x330 viewports; masking/show/hide preserves the value, scrolling can reveal the input, no horizontal overflow or browser errors. These do not simulate a native Android keyboard. Verify the replacement APK with a physical keyboard-open/close test, portrait/landscape, large text, both themes and password visibility toggling without losing typed content. Keep the same package/signing key and install over the existing app.
+
 ## Current readiness
 
 - SDK-compatible Expo patch updates applied; original 1024 px launcher/adaptive icons generated locally from the existing geometric Schoolglass mark.
@@ -86,7 +92,7 @@ Keep iPhone testing in compatible Expo Go for now. An Android APK cannot install
 ## 6. Update, stop and recover
 
 - Mobile code changes are not deployed by Render. Render deploys the shared web/API; a standalone APK needs a new compatible build/install. No over-the-air update service is configured.
-- Before a new APK, increment app.json's `version` and Android `versionCode`, preserve the package ID/signing key, run checks and review API backward compatibility. Current version/code: 0.1.0/1. iOS buildNumber is 1 as preparation only.
+- Before a new APK, increment app.json's `version` and Android `versionCode`, preserve the package ID/signing key, run checks and review API backward compatibility. Prepared source version/code: 0.1.1/2; last built APK: 0.1.0/1. iOS buildNumber is 1 as preparation only.
 - Stop a queued/running EAS build in your project dashboard using its cancel action. Canceling does not promise that consumed allowance is refunded; check account usage. Removing an installed test app does not cancel cloud jobs.
 - Stop Metro with Ctrl+C; no standalone build depends on it. Remove the test APK through Android settings when finished. Uninstalling removes local app state; revoke its school session through Active sessions if needed.
 - If a key is lost, recover your secure backup/EAS-managed signing credentials. A different key cannot seamlessly update the existing installation. Never rotate production keys casually.

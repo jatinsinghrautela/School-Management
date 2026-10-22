@@ -2,6 +2,8 @@ import React from "react";
 import Svg, { Path } from "react-native-svg";
 /** Original small line drawings; no icon-font loading or remote artwork. */
 const paths: Record<string, string> = {
+  eye: "M2 12s3-7 10-7 10 7 10 7-3 7-10 7S2 12 2 12ZM15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0",
+  "eye-off": "M3 3l18 18M9 5.5c6-2 10 3 13 6.5-1 2-2 3.5-4 5M6 7c-2 2-3 3.5-4 5 0 0 3 7 10 7 2 0 3.5-.5 5-1M10 10a3 3 0 0 0 4 4",
   home: "M3 11 12 3l9 8M5 10v11h5v-7h4v7h5V10",
   profile: "M16 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0M4 21v-3c0-6 16-6 16 0v3M4 21h16",
   people:

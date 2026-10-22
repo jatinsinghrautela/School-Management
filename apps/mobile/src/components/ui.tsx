@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Pressable,
   StyleSheet,
@@ -115,26 +115,63 @@ export function Button({
     </Pressable>
   );
 }
-export function Field({ label, ...props }: TextInputProps & { label: string }) {
+export function Field({
+  label,
+  secureTextEntry,
+  style,
+  ...props
+}: TextInputProps & { label: string }) {
   const { colors } = useMobile();
+  const [revealed, setRevealed] = useState(false);
   return (
     <View style={{ gap: 6 }}>
       <Copy>{label}</Copy>
-      <TextInput
-        accessibilityLabel={label}
-        placeholderTextColor={colors.muted}
-        autoCapitalize="none"
-        autoCorrect={false}
-        {...props}
-        style={[
-          styles.input,
-          {
-            borderColor: colors.line,
-            color: colors.ink,
-            backgroundColor: colors.bg,
-          },
-        ]}
-      />
+      <View style={{ position: "relative" }}>
+        <TextInput
+          accessibilityLabel={label}
+          placeholderTextColor={colors.muted}
+          autoCapitalize="none"
+          autoCorrect={false}
+          {...props}
+          secureTextEntry={secureTextEntry ? !revealed : secureTextEntry}
+          style={[
+            styles.input,
+            {
+              borderColor: colors.line,
+              color: colors.ink,
+              backgroundColor: colors.bg,
+            },
+            secureTextEntry && { paddingRight: 60 },
+            style,
+          ]}
+        />
+        {secureTextEntry ? (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={`${revealed ? "Hide" : "Show"} ${label.toLowerCase()}`}
+            accessibilityHint="Changes password visibility without changing its value."
+            disabled={props.editable === false}
+            onPress={() => setRevealed((value) => !value)}
+            style={({ pressed }) => ({
+              position: "absolute",
+              right: 4,
+              top: 3,
+              bottom: 3,
+              minWidth: 44,
+              minHeight: 44,
+              alignItems: "center",
+              justifyContent: "center",
+              opacity: props.editable === false ? 0.45 : pressed ? 0.6 : 1,
+            })}
+          >
+            <Icon
+              name={revealed ? "eye-off" : "eye"}
+              color={colors.ink}
+              size={22}
+            />
+          </Pressable>
+        ) : null}
+      </View>
     </View>
   );
 }
