@@ -1,8 +1,11 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { archiveProblems } from "../scripts/pilot-archive-check.mjs";
-test("pilot archive scanner detects local records, metadata and signing material without rejecting example configuration", () => {
+test("pilot archive scanner detects local records, metadata and signing material and excludes non-mobile source", () => {
   const blocked = [
+    "compose.yaml",
+    "apps/api/.env.example",
+    "docs/MOBILE-BUILD-GUIDE.md",
     ".git/config",
     ".GIT/HEAD",
     "apps\\api\\data\\student.json",
@@ -17,12 +20,7 @@ test("pilot archive scanner detects local records, metadata and signing material
   ];
   assert.deepEqual(archiveProblems(blocked), blocked);
   assert.deepEqual(
-    archiveProblems([
-      "apps/mobile/.env.example",
-      "apps/mobile/app.json",
-      "apps/mobile/package-lock.json",
-      "docs/MOBILE-BUILD-GUIDE.md",
-    ]),
+    archiveProblems(["apps/mobile/app.json", "apps/mobile/package-lock.json"]),
     [],
   );
 });

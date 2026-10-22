@@ -6,7 +6,22 @@ export function archiveProblems(paths) {
     const name = path.replaceAll("\\", "/");
     const parts = name.split("/");
     const last = parts.at(-1);
+    const allowed =
+      name === ".easignore" ||
+      name.startsWith("apps/mobile/src/") ||
+      name.startsWith("apps/mobile/assets/") ||
+      [
+        "app.json",
+        "eas.json",
+        "package.json",
+        "package-lock.json",
+        "tsconfig.json",
+        ".npmrc",
+        ".gitignore",
+        "LICENSE",
+      ].some((file) => name === `apps/mobile/${file}`);
     return (
+      !allowed ||
       parts.some((p) =>
         [".git", ".pilot", "node_modules", "signing"].includes(p.toLowerCase()),
       ) ||

@@ -25,11 +25,11 @@ Two-device walkthrough: sign in to a dummy account on the website and in Expo Go
 
 - [x] Re-run the isolated mobile dependency audit and review the upstream findings recorded in apps/mobile/README.md. Do not use forced incompatible package overrides.
 - [ ] Confirm Node/Expo SDK 57 compatibility, Android SDK/licenses, Java and actual adb/device connectivity. Earlier availability checks do not prove native build readiness.
-- [ ] Decide the first signed pilot target. Android preview APK is the initial route; iOS provisioning and release testing need their own supported setup.
-- [ ] Configure private signing credentials outside the repository. No keystore, password, API token, MySQL or R2 secret belongs in app.json, EXPO_PUBLIC variables or Git.
+- [x] Decide the first signed pilot target. Android preview APK is the initial route; iOS provisioning and release testing need their own supported setup.
+- [x] Configure private signing credentials outside the repository. Expo-managed Android key created and reused; no key export. No keystore, password, API token, MySQL or R2 secret belongs in app.json, EXPO_PUBLIC variables or Git.
 - [ ] Verify final app identity and original icon/splash assets for a custom binary; current Expo preview identity is not store-release acceptance.
 - [ ] Run mobile typecheck, lint, tests and native JS exports. Then build/install an actual signed binary; JS export alone is not an APK/IPA.
-- [ ] Review any current free build quota before requesting a cloud build. Do not start paid services, store registration or publication automatically.
+- [x] Review any current free build quota before requesting a cloud build. Do not start paid services, store registration or publication automatically.
 
 Local source verification from the repository root:
 
@@ -87,3 +87,6 @@ M5.1 preparation is recorded in [MOBILE-BUILD-GUIDE.md](MOBILE-BUILD-GUIDE.md). 
 
 
 22 October continuation: Expo project linked; Free allowance verified at 0/15 Android builds used; repository-root .easignore and local archive checker verified (334 files, zero flagged paths). Cloud build upload was blocked by automatic approval review and was not submitted. No signing, installation or phone check is marked complete. See MOBILE-DEPENDENCY-REVIEW.md for the three underlying unresolved advisories.
+
+
+22 October approved continuation: mobile-only archive contains 70 files and passed path/content review as bounded checks. Owner approved source upload; Expo-managed Android signing is configured. First build failed at npm installation without consuming allowance (still 0/15, estimated charges zero); repaired optional lockfile records pass npm 10 Linux-targeted ci dry-run. Retry 5bc4f0eb-154f-4fb0-b497-59d8a324fed7 is in progress. Artifact/signature verification and all physical-phone checks remain pending. Earlier no-build status above records the prior handoff, not the current state.

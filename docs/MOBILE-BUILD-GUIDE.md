@@ -1,13 +1,13 @@
 # Schoolglass Desk — Android pilot build guide
 
-Prepared 22 October 2026. Expo project linking and local archive review are complete; cloud source upload/build submission awaits explicit approval. No signed APK, IPA, cloud build or store release has been produced. Preserve all school data. Test with dummy accounts: a standalone app uses the same live API and its writes are real.
+Updated 22 October 2026. The owner approved a private Android build after confidentiality review. The mobile-only archive was uploaded to Expo EAS; build 5bc4f0eb-154f-4fb0-b497-59d8a324fed7 is in progress. No installation, phone acceptance or store release is claimed. Preserve all school data. Test with dummy accounts: a standalone app uses the same live API and its writes are real.
 
 ## Current readiness
 
 - SDK-compatible Expo patch updates applied; original 1024 px launcher/adaptive icons generated locally from the existing geometric Schoolglass mark.
 - `apps/mobile/eas.json` has one `preview` profile: internally distributed, standalone Android APK, approved HTTPS API, no development client/Metro dependency.
 - Java 17, Android platforms 34/35/36, build tools and adb files exist on this PC. This does not establish accepted licenses, a working Gradle build or a connected/authorized phone.
-- Expo project linked: @jatinsinghrautela/schoolglass-desk, ID eef665c0-7729-4f71-89f2-99daf806fa68. EAS usage checked 22 October: Free plan, Android builds 0/15 used in the current cycle, no estimated charges. Re-check before submission. Signing, actual build/install and phone acceptance remain pending.
+- Expo project linked: @jatinsinghrautela/schoolglass-desk, ID eef665c0-7729-4f71-89f2-99daf806fa68. EAS usage checked 22 October: Free plan, Android builds 0/15 used in the current cycle, no estimated charges. Re-check before submission. Expo-managed Android signing credentials were created for the first attempt and reused for the retry; no private key was exported. Build completion, installation and phone acceptance remain pending.
 - Audit on 22 October: **22 findings: 19 high, 3 moderate**. They include Expo/Metro/React Native dependency chains; they are package findings, not 22 independent confirmed exploits. Do not assume they are all harmless or all present in the runtime bundle. Review before distribution; do not run `npm audit fix --force`, which proposes incompatible downgrades.
 
 ## 1. Verify source and local configuration
@@ -37,7 +37,7 @@ Bundle export verifies JavaScript/asset packaging, not a native binary. Android 
 Use your existing free Expo account; never send its password/token in chat.
 
 ```powershell
-cd "D:\Personal Projects\School Managementpps\mobile"
+cd "D:\Personal Projects\School Management\apps\mobile"
 npx expo whoami
 npx eas-cli@latest init
 ```
@@ -57,7 +57,7 @@ npx eas-cli@latest build:inspect --platform android --stage archive --profile pr
 npm run pilot:archive:check -- .pilot/<new-archive-name>
 ```
 
-These commands create/check a local copy, not a cloud build. The checked 22 October archive had 334 files and zero flagged paths. Use a new output directory; do not force-delete an old one casually. Repository-root .easignore is required because EAS stages the Git root, not just apps/mobile. It excludes Git metadata, local evidence, environment files and signing material. The checker rejects links and expected private path names, but is not a content-based secret scanner. Review new configuration values before each upload.
+These commands create/check a local copy, not a cloud build. The final 22 October mobile-only archive has 70 files and zero flagged paths. Use a new output directory; do not force-delete an old one casually. Repository-root .easignore is required because EAS stages the Git root, not just apps/mobile. It now allowlists only mobile source/assets and the explicit mobile build inputs. Backend/web source, documentation, tests, environment examples, local evidence and signing material are excluded. The checker rejects all other paths and links, but is not a content-based secret scanner. A separate local content review found no matches for the known local secret values or checked private-key/token patterns in the mobile archive; this is bounded verification, not a universal guarantee. Review new configuration values before each upload.
 
 Ensure ignored `.env`, API data/uploads, `.pilot`, signing files and credentials are absent. Do not attach that archive to GitHub or chat. The checked-in .gitignore files exclude local data, native generated directories and private signing material; review ignores again if new secret filenames are introduced.
 
@@ -97,6 +97,10 @@ Keep iPhone testing in compatible Expo Go for now. An Android APK cannot install
 [Expo APK profiles](https://docs.expo.dev/build-reference/apk/), [EAS configuration](https://docs.expo.dev/build/eas-json/), [internal distribution](https://docs.expo.dev/build/internal-distribution/), [SDK 57 reference](https://docs.expo.dev/versions/v57.0.0/). Account quotas and platform requirements can change; verify them before requesting a build.
 
 
-## Current handoff
+## Current build record
 
-The Expo project and free allowance are verified, and the local archive passes the privacy-path check. Automatic approval review rejected cloud submission because source/configuration would be uploaded to Expo and build allowance consumed without explicit approval for that destination/action. No build was queued. The next step requires approval to upload the reviewed source to Expo EAS and consume one included Android build; no paid plan or store submission is proposed. Read [dependency review](MOBILE-DEPENDENCY-REVIEW.md) before considering wider distribution.
+The owner explicitly approved source upload provided confidential data was excluded. A whole-repository archive was rejected during local review and was never uploaded; the root allowlist was tightened to 70 mobile-only files. No school records, API environment files, MySQL/R2 credentials or signing keys were uploaded in the source archive. A full cloud-environment export was blocked by automatic approval review and skipped; no secret values were retrieved. The build CLI reported no preview Plain text/Sensitive environment variables; only the profile's public API URL was loaded.
+
+First job [3b9543f2](https://expo.dev/accounts/jatinsinghrautela/projects/schoolglass-desk/builds/3b9543f2-b1b0-4499-ad73-ac497dfb6406) failed during npm installation: the lockfile omitted optional @emnapi/core/runtime 1.11.3 records. Reproduced with npm 10, repaired in a clean isolated folder, and verified using npm 10 Linux-targeted ci dry-run. No existing dependency version or application behavior changed. EAS usage after this early failure remained Android 0/15 with estimated charges zero.
+
+Retry [5bc4f0eb](https://expo.dev/accounts/jatinsinghrautela/projects/schoolglass-desk/builds/5bc4f0eb-154f-4fb0-b497-59d8a324fed7) uses the repaired lockfile and the same Expo-managed signing key. Its archive passed the mobile-only path check; compared with the content-reviewed archive, only public npm lockfile metadata changed. Build is currently in progress. Do not start a duplicate job; inspect this job's status/logs first. APK verification, installation and physical-device acceptance remain pending. No paid upgrade, store submission or school-data mutation was performed. Public distribution remains gated by [dependency review](MOBILE-DEPENDENCY-REVIEW.md).
